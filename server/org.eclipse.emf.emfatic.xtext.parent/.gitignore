@@ -1,0 +1,10 @@
+# kde
+.directory
+
+# xtext
+src-gen
+xtext-gen
+
+# maven & eclispe build
+target
+bin

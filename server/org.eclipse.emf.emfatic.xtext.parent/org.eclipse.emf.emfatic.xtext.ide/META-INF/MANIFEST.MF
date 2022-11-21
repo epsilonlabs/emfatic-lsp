@@ -1,0 +1,15 @@
+Manifest-Version: 1.0
+Automatic-Module-Name: org.eclipse.emf.emfatic.xtext.ide
+Bundle-ManifestVersion: 2
+Bundle-Name: org.eclipse.emf.emfatic.xtext.ide
+Bundle-Vendor: My Company
+Bundle-Version: 1.0.0.qualifier
+Bundle-SymbolicName: org.eclipse.emf.emfatic.xtext.ide; singleton:=true
+Bundle-ActivationPolicy: lazy
+Require-Bundle: org.eclipse.emf.emfatic.xtext,
+ org.eclipse.xtext.ide,
+ org.eclipse.xtext.xbase.ide,
+ org.antlr.runtime;bundle-version="[3.2.0,3.2.1)"
+Bundle-RequiredExecutionEnvironment: JavaSE-11
+Export-Package: org.eclipse.emf.emfatic.xtext.ide.contentassist.antlr.internal,
+ org.eclipse.emf.emfatic.xtext.ide.contentassist.antlr

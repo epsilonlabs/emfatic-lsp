@@ -1,0 +1,9 @@
+grammar org.eclipse.emf.emfatic.xtext.Emfatic with org.eclipse.xtext.common.Terminals
+
+generate emfatic "http://www.eclipse.org/emf/emfatic/xtext/Emfatic"
+
+Model:
+	greetings+=Greeting*;
+	
+Greeting:
+	'Hello' name=ID '!';

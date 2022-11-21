@@ -1,0 +1,29 @@
+Manifest-Version: 1.0
+Automatic-Module-Name: org.eclipse.emf.emfatic.xtext
+Bundle-ManifestVersion: 2
+Bundle-Name: org.eclipse.emf.emfatic.xtext
+Bundle-Vendor: My Company
+Bundle-Version: 1.0.0.qualifier
+Bundle-SymbolicName: org.eclipse.emf.emfatic.xtext; singleton:=true
+Bundle-ActivationPolicy: lazy
+Require-Bundle: org.eclipse.xtext,
+ org.eclipse.xtext.xbase,
+ org.eclipse.equinox.common;bundle-version="3.5.0",
+ org.eclipse.emf.ecore,
+ org.eclipse.xtext.xbase.lib;bundle-version="2.14.0",
+ org.eclipse.xtext.util,
+ org.eclipse.emf.common,
+ org.antlr.runtime;bundle-version="[3.2.0,3.2.1)"
+Bundle-RequiredExecutionEnvironment: JavaSE-11
+Export-Package: org.eclipse.emf.emfatic.xtext.services,
+ org.eclipse.emf.emfatic.xtext.emfatic,
+ org.eclipse.emf.emfatic.xtext.emfatic.util,
+ org.eclipse.emf.emfatic.xtext.validation,
+ org.eclipse.emf.emfatic.xtext.parser.antlr,
+ org.eclipse.emf.emfatic.xtext.serializer,
+ org.eclipse.emf.emfatic.xtext.parser.antlr.internal,
+ org.eclipse.emf.emfatic.xtext,
+ org.eclipse.emf.emfatic.xtext.generator,
+ org.eclipse.emf.emfatic.xtext.emfatic.impl,
+ org.eclipse.emf.emfatic.xtext.scoping
+Import-Package: org.apache.log4j
