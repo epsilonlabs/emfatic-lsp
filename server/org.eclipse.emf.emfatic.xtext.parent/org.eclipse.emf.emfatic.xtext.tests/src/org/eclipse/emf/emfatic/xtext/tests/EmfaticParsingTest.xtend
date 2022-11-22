@@ -4,24 +4,327 @@
 package org.eclipse.emf.emfatic.xtext.tests
 
 import com.google.inject.Inject
-import org.eclipse.emf.emfatic.xtext.emfatic.Model
 import org.eclipse.xtext.testing.InjectWith
 import org.eclipse.xtext.testing.extensions.InjectionExtension
 import org.eclipse.xtext.testing.util.ParseHelper
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.^extension.ExtendWith
+import org.eclipse.emf.emfatic.xtext.emfatic.CompUnit
 
 @ExtendWith(InjectionExtension)
 @InjectWith(EmfaticInjectorProvider)
 class EmfaticParsingTest {
 	@Inject
-	ParseHelper<Model> parseHelper
+	ParseHelper<CompUnit> parseHelper
 	
 	@Test
-	def void loadModel() {
+	def void mainPackage() {
 		val result = parseHelper.parse('''
-			Hello Xtext!
+			package test;
+		''')
+		Assertions.assertNotNull(result)
+		val errors = result.eResource.errors
+		Assertions.assertTrue(errors.isEmpty, '''Unexpected errors: «errors.join(", ")»''')
+	}
+	
+	@Test
+	def void mainPackageWithAnnotation() {
+		val result = parseHelper.parse('''
+			@namespace(uri="http://www.eclipse.org/emf/2002/Ecore", prefix="ecore")
+			package ecore;
+		''')
+		Assertions.assertNotNull(result)
+		val errors = result.eResource.errors
+		Assertions.assertTrue(errors.isEmpty, '''Unexpected errors: «errors.join(", ")»''')
+	}
+	
+	@Test
+	def void imports() {
+		val result = parseHelper.parse('''
+			package main;
+			import "platform:/resource/proj1/foo.ecore";
+			import "http://www.eclipse.org/emf/2002/Ecore";
+		''')
+		Assertions.assertNotNull(result)
+		val errors = result.eResource.errors
+		Assertions.assertTrue(errors.isEmpty, '''Unexpected errors: «errors.join(", ")»''')
+	}
+	
+	@Test
+	def void subPackage() {
+		val result = parseHelper.parse('''
+			package main;
+			
+			package sub1 {
+			}
+			
+			package sub2 {
+			  package sub2_1 { }
+			  package sub2_2 { }
+			}
+		''')
+		Assertions.assertNotNull(result)
+		val errors = result.eResource.errors
+		Assertions.assertTrue(errors.isEmpty, '''Unexpected errors: «errors.join(", ")»''')
+	}
+	
+	@Test
+	def void classKind() {
+		val result = parseHelper.parse('''
+			package main;
+			
+			class C1 { } // isInterface=false, isAbstract=false
+			abstract class C2 { } // isInterface=false, isAbstract=true
+			interface I1 { } // isInterface=true,  isAbstract=false
+			abstract interface I2 { } // isInterface=true,  isAbstract=true
+		''')
+		Assertions.assertNotNull(result)
+		val errors = result.eResource.errors
+		Assertions.assertTrue(errors.isEmpty, '''Unexpected errors: «errors.join(", ")»''')
+	}
+	
+	@Test
+	def void classInheritance() {
+		val result = parseHelper.parse('''
+			package main;
+			
+			class A { }
+			class B { }
+			class C extends A, B { }
+			class D extends C { }
+		''')
+		Assertions.assertNotNull(result)
+		val errors = result.eResource.errors
+		Assertions.assertTrue(errors.isEmpty, '''Unexpected errors: «errors.join(", ")»''')
+	}
+	
+	@Test
+	def void classInstanceClassName() {
+		val result = parseHelper.parse('''
+			package main;
+			
+			class EStringToStringMapEntry : java.util.Map$Entry {
+			  // ... contents omitted ...
+			}
+		''')
+		Assertions.assertNotNull(result)
+		val errors = result.eResource.errors
+		Assertions.assertTrue(errors.isEmpty, '''Unexpected errors: «errors.join(", ")»''')
+	}
+	
+	@Test
+	def void dataTypes() {
+		val result = parseHelper.parse('''
+			package main;
+			
+			datatype EInt : int;
+			datatype EIntegerObject : java.lang.Integer;
+			transient datatype EJavaObject : java.lang.Object;
+			
+			datatype EFeatureMapEntry : org.eclipse.emf.ecore.util.FeatureMap$Entry;
+			datatype EByteArray : "byte[]";  // Note: [ and ] are not legal identifier characters and must be in quotes
+		''')
+		Assertions.assertNotNull(result)
+		val errors = result.eResource.errors
+		Assertions.assertTrue(errors.isEmpty, '''Unexpected errors: «errors.join(", ")»''')
+	}
+	
+	@Test
+	def void enummeratedTypes() {
+		val result = parseHelper.parse('''
+			package main;
+			
+			enum E {
+			  A=1;
+			  B=2;
+			  C=3;
+			}
+		''')
+		Assertions.assertNotNull(result)
+		val errors = result.eResource.errors
+		Assertions.assertTrue(errors.isEmpty, '''Unexpected errors: «errors.join(", ")»''')
+	}
+	
+	@Test
+	def void enummeratedTypesReasonable() {
+		val result = parseHelper.parse('''
+			package main;
+			
+			enum E {
+			  A;  // = 0 (if not specified, first literal has value 0)
+			  B = 3;
+			  C; // = 4 (in general, unspecified values are 1 greater than previous value)
+			  D; // = 5
+			}
+		''')
+		Assertions.assertNotNull(result)
+		val errors = result.eResource.errors
+		Assertions.assertTrue(errors.isEmpty, '''Unexpected errors: «errors.join(", ")»''')
+	}
+	
+	@Test
+	def void mapEntry() {
+		val result = parseHelper.parse('''
+			package main;
+			
+			mapentry EStringToStringMapEntry : String -> String;
+		''')
+		Assertions.assertNotNull(result)
+		val errors = result.eResource.errors
+		Assertions.assertTrue(errors.isEmpty, '''Unexpected errors: «errors.join(", ")»''')
+	}
+	
+	@Test
+	def void typeExpressions() {
+		val result = parseHelper.parse('''
+			package test;
+			
+			datatype D1 : int;
+			
+			package P {
+			  datatype D2 : int;
+			}
+			
+			class C {
+			  attr D1 d1;
+			  attr P.D2 d2;
+			  attr ecore.EString s1;
+			  attr String s2;
+			}
+		''')
+		Assertions.assertNotNull(result)
+		val errors = result.eResource.errors
+		Assertions.assertTrue(errors.isEmpty, '''Unexpected errors: «errors.join(", ")»''')
+	}
+	
+	@Test
+	def void multiplicityExpressions() {
+		val result = parseHelper.parse('''
+			package test;
+			
+			class C {
+			  attr String[1] s1;
+			  attr String[0..3] s2;
+			  attr String[*] s3;
+			  attr String[+] s4;
+			}
+		''')
+		Assertions.assertNotNull(result)
+		val errors = result.eResource.errors
+		Assertions.assertTrue(errors.isEmpty, '''Unexpected errors: «errors.join(", ")»''')
+	}
+	
+	@Test
+	def void escapeKeywords() {
+		val result = parseHelper.parse('''
+			package test;
+			
+			class EClass extends EClassifier {
+			  // ...
+			  attr EBoolean ~abstract;
+			  attr EBoolean ~interface;
+			  // ...
+			}
+		''')
+		Assertions.assertNotNull(result)
+		val errors = result.eResource.errors
+		Assertions.assertTrue(errors.isEmpty, '''Unexpected errors: «errors.join(", ")»''')
+	}
+	
+	@Test
+	def void features() {
+		val result = parseHelper.parse('''
+			package test;
+			
+			class EPackage extends ENamedElement {
+			  op EClassifier getEClassifier(EString name);
+			  attr EString nsURI;
+			  attr EString nsPrefix;
+			  transient !resolve ref EFactory[1]#ePackage eFactoryInstance;
+			  val EClassifier[*]#ePackage eClassifiers;
+			  val EPackage[*]#eSuperPackage eSubpackages;
+			  readonly transient ref EPackage#eSubpackages eSuperPackage;
+			}
+		''')
+		Assertions.assertNotNull(result)
+		val errors = result.eResource.errors
+		Assertions.assertTrue(errors.isEmpty, '''Unexpected errors: «errors.join(", ")»''')
+	}
+	
+	@Test
+	def void attributes() {
+		val result = parseHelper.parse('''
+			package test;
+			
+			class C {
+			  attr String s;
+			  attr int i = 1;
+			  attr ecore.EBoolean b = true;
+			}
+		''')
+		Assertions.assertNotNull(result)
+		val errors = result.eResource.errors
+		Assertions.assertTrue(errors.isEmpty, '''Unexpected errors: «errors.join(", ")»''')
+	}
+	
+	@Test
+	def void references() {
+		val result = parseHelper.parse('''
+			package test;
+			
+			class EPackage extends ENamedElement {
+			  // ...
+			  val EPackage[*]#eSuperPackage eSubpackages;
+			  readonly transient ref EPackage#eSubpackages eSuperPackage;
+			}
+		''')
+		Assertions.assertNotNull(result)
+		val errors = result.eResource.errors
+		Assertions.assertTrue(errors.isEmpty, '''Unexpected errors: «errors.join(", ")»''')
+	}
+	
+	@Test
+	def void operations() {
+		val result = parseHelper.parse('''
+			package test;
+			
+			class X {
+			  op String getFullName();
+			  op void returnsNothing();
+			  op int add(int a, int b);
+			  op EObject doSomething(int a, ecore.EBoolean b) throws ExceptionA, ExceptionB;
+			}
+		''')
+		Assertions.assertNotNull(result)
+		val errors = result.eResource.errors
+		Assertions.assertTrue(errors.isEmpty, '''Unexpected errors: «errors.join(", ")»''')
+	}
+	
+	@Test
+	def void annotations() {
+		val result = parseHelper.parse('''
+			@"http://source/uri"("key1"="value1", "key2"="value2")
+			@sourceLabel(key.a="value1", key.b="value2")
+			@simpleAttr
+			package test;
+		''')
+		Assertions.assertNotNull(result)
+		val errors = result.eResource.errors
+		Assertions.assertTrue(errors.isEmpty, '''Unexpected errors: «errors.join(", ")»''')
+	}
+	
+	@Test
+	def void annotationsLabels() {
+		val result = parseHelper.parse('''
+			@EmfaticAnnotationMap(myLabel="http://foo/bar")
+			@genmodel(documentation="model documentation")
+			package test;
+			
+			@ecore(constraints="constraintA constraintB")
+			@myLabel(key="value")
+			class C {
+			}
 		''')
 		Assertions.assertNotNull(result)
 		val errors = result.eResource.errors

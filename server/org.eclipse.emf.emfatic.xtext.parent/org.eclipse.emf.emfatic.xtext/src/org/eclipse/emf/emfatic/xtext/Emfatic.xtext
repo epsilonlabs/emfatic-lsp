@@ -2,8 +2,275 @@ grammar org.eclipse.emf.emfatic.xtext.Emfatic with org.eclipse.xtext.common.Term
 
 generate emfatic "http://www.eclipse.org/emf/emfatic/xtext/Emfatic"
 
-Model:
-	greetings+=Greeting*;
+
+CompUnit:
+	package=PackageDecl
+	importStmts+=Import*
+	topLevelDecls+=TopLevelDecl*
+;
 	
-Greeting:
-	'Hello' name=ID '!';
+/**
+ * Annotations come before the Package. The package name can be qualified.
+ */
+PackageDecl:
+	annotations+=Annotation* 'package' name=QualifiedID SEMI
+;
+
+QualifiedID:
+	id1=ID (QID_SEPARATOR idn+=ID)*
+;
+
+
+/**
+ * Annotations
+ */
+StringOrQualifiedID:
+	literal=STRING | id=QualifiedID
+;
+
+Annotation:
+	AT source=StringOrQualifiedID (LPAREN values=KeyEqualsValueList RPAREN)?
+;
+
+KeyEqualsValueList:
+	kv1=KeyEqualsValue (COMMA kvn+=KeyEqualsValue)*
+;
+
+KeyEqualsValue: 
+	key=StringOrQualifiedID EQUALS value=StringOrQualifiedID
+;
+
+/**
+ * Imports
+ */
+Import:
+	'import' (alias=ID EQUALS)? uri=StringOrQualifiedID SEMI
+;
+
+
+TopLevelDecl:
+	annotations+=Annotation* decl=(SubPackageDecl | ClassDecl | DataTypeDecl | EnumDecl | MapEntryDecl)
+;
+
+/*
+ * Subpackages
+ */
+SubPackageDecl returns Declaration:
+	'package' name=ID LCURLY topLevelDecls+=TopLevelDecl* RCURLY
+;
+
+/*
+ * Class Declaration
+ */
+ClassDecl returns Declaration:
+	abstract?='abstract'? kind=ClassKind name=ID
+	(typeParamsInfo=TypeParamsInfo)?
+	("extends" superTypes=CommaListBoundExceptWild)? 
+    (COLON instClassName=BoundExceptWildcard)? 
+    LCURLY members+=ClassMemberDecl* RCURLY
+;
+
+CommaListBoundExceptWild:
+	tb+=BoundExceptWildcard (COMMA tb+=BoundExceptWildcard)*
+;
+
+ClassKind:
+	'class'|'interface'
+;
+
+TypeParamsInfo:
+	LT OneOrMoreTypeParams GT
+;
+
+OneOrMoreTypeParams:
+	tp+=TypeParam (COMMA tp+=TypeParam)*
+;
+
+TypeParam: 
+	typeVarName=ID (typeBoundsInfo=TypeBoundsInfo)?
+;
+
+TypeBoundsInfo:
+	"extends" OneOrMoreTypeParamBounds
+;
+
+OneOrMoreTypeParamBounds:
+	tb+=BoundExceptWildcard (AMP tb+=BoundExceptWildcard)*
+; 
+
+BoundExceptWildcard:
+	rawTNameOrTVarOrParamzedTName=QualifiedID (LT typeArgs=OneOrMoreTypeArgs GT)?
+; 
+
+OneOrMoreTypeArgs:
+	ta+=TypeArg (COMMA t+=TypeArg)*
+;
+
+TypeArg:
+	BoundExceptWildcard | Wildcard
+;
+
+Wildcard:
+	{Wildcard} QMARK ( ExtendsOrSuper extends=BoundExceptWildcard )?
+; 
+
+ExtendsOrSuper : "extends" | "super" ; 
+
+/*
+ * Class Members
+ */
+ClassMemberDecl:
+	(annotations+=Annotation* modifiers+=OptNegatedModifier*)
+	member=(Attribute | Reference | Operation)
+;
+
+Attribute returns Member:
+	"attr" type=TypeWithMulti name=ID (EQUALS defValue=DefaultValueExpr)? SEMI
+; 
+
+TypeWithMulti:
+	name=BoundExceptWildcard (multiplicity=Multiplicity)?
+;
+
+Multiplicity:
+	{Multiplicity} LSQUARE (expr=MultiplicityExpr)? RSQUARE
+;
+
+MultiplicityExpr:
+	lowerBound=SimpleMultiplicityExpr (DOT_DOT upperBound=SimpleMultiplicityExpr)?
+;
+
+SimpleMultiplicityExpr:
+	STAR | PLUS | QMARK | INT
+;
+
+Reference returns Member:
+	kind=REFERENCEKIND type=TypeWithMulti (HASH oppositeName=ID)? name=ID SEMI
+;
+
+REFERENCEKIND:
+	"ref" | "val"
+;
+
+OptNegatedModifier : (BANG)? MODIFIER ;
+
+MODIFIER
+// keyword        EMF meaning
+: "readonly"   // EStructuralFeature.changeable = false
+| "volatile"   // EStructuralFeature.volatile   = true
+| "transient"  // EStructuralFeature.transient  = true
+| "unsettable" // EStructuralFeature.unsettable = true
+| "derived"    // EStructuralFeature.derived    = true
+| "unique"     // *ETypedElement.unique         = true  -- bag?
+| "ordered"    // *ETypedElement.ordered        = true  -- random?
+| "resolve"    // *EReference.resolveProxies    = true  -- local?
+| "id"         // EAttribute.id                 = true
+;
+
+
+
+DefaultValueExpr returns Expr:
+	BoolExpr | IntExpr | StringExpr | CharExpr
+;
+
+BoolExpr:
+	value=TrueOrFalse
+;
+
+TrueOrFalse : "true" | "false" ;
+
+IntExpr:
+	(negative=MINUS)? value=INT
+;
+
+StringExpr:
+	value=STRING
+;
+
+CharExpr:
+	value=CHAR
+;
+
+Operation returns Member:
+	"op" (typeParamsInfo=TypeParamsInfo)? 
+   resType=ResultType name=ID LPAREN (params=Params)? RPAREN 
+   ("throws" exceptions=CommaListBoundExceptWild)? SEMI
+;
+
+ResultType:
+	type=TypeWithMulti | void?=VOIDCONTAINER
+; 
+
+VOIDCONTAINER: 
+	"void" ; 
+
+Params:
+	p+=Param (COMMA p+=Param)*
+; 
+
+Param:
+	leadingAnnotations+=Annotation* modifiers+=OptNegatedModifier* type=TypeWithMulti name=ID trailingAnnotations+=Annotation*
+;
+
+/*
+ * Data Types and Enums
+ */
+ 
+// "transient" means !serializable
+DataTypeDecl returns Declaration:
+	(transient?=TransientModifier)? "datatype" name=ID COLON instClassName=StringOrQualifiedID SEMI
+; // TODO datatypes should accept type parameters
+TransientModifier : "transient" ;
+
+EnumDecl returns Declaration:
+	"enum" name=ID LCURLY enumLiterals+=EnumLiteral* RCURLY
+;
+
+EnumLiteral:
+	leadingAnnotations+=Annotation* name=ID (EQUALS val=INT)? trailingAnnotations+=Annotation* SEMI
+;
+
+MapEntryDecl returns Declaration:
+	"mapentry" name=ID COLON key=TypeWithMulti MINUS_GT value=TypeWithMulti SEMI
+;
+
+
+QID_SEPARATOR : DOT | DOLLAR ;
+
+SEMI: ';';
+DOT_DOT: '..';
+DOT: '.';
+DOLLAR: '$';
+AT: '@';
+LPAREN: '(';
+RPAREN: ')';
+COMMA: ',';
+EQUALS: '=';
+LCURLY: '{';
+RCURLY:  '}';
+LT: '<';
+GT: '>';
+AMP: '&';
+QMARK: '?';
+COLON: ':';
+MINUS_GT: '->';
+LSQUARE: '[';
+RSQUARE: ']';
+STAR: '*';
+PLUS: '+';
+BANG: '!';
+HASH: '#';
+MINUS: '-';
+
+
+@Override 
+terminal ID: '~'?('a'..'z'|'A'..'Z'|'_') ('a'..'z'|'A'..'Z'|'_'|'0'..'9')*;
+
+@Override 
+terminal STRING:
+	'"' ( '\\' . /* 'b'|'t'|'n'|'f'|'r'|'u'|'"'|"'"|'\\' */ | !('\\'|'"') )* '"'
+;
+			
+terminal CHAR:
+	"'" ( '\\' . /* 'b'|'t'|'n'|'f'|'r'|'u'|'"'|"'"|'\\' */ | !('\\'|"'") ) "'"
+;
