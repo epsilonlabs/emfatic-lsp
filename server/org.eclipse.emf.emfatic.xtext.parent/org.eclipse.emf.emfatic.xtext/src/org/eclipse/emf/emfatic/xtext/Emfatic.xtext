@@ -17,9 +17,8 @@ PackageDecl:
 ;
 
 QualifiedID:
-	id1=ID (QID_SEPARATOR idn+=ID)*
+	ID (QID_SEPARATOR ID)*
 ;
-
 
 /**
  * Annotations
@@ -33,11 +32,11 @@ Annotation:
 ;
 
 KeyEqualsValueList:
-	kv1=KeyEqualsValue (COMMA kvn+=KeyEqualsValue)*
+	kv+=KeyEqualsValue (COMMA kv+=KeyEqualsValue)*
 ;
 
 KeyEqualsValue: 
-	key=StringOrQualifiedID EQUALS value=StringOrQualifiedID
+	key=(STRING | QualifiedID) EQUALS value=(STRING | QualifiedID)
 ;
 
 /**
@@ -49,20 +48,24 @@ Import:
 
 
 TopLevelDecl:
-	annotations+=Annotation* decl=(SubPackageDecl | ClassDecl | DataTypeDecl | EnumDecl | MapEntryDecl)
+	annotations+=Annotation* decl=Declaration
+;
+
+Declaration:
+	(SubPackageDecl | ClassDecl | DataTypeDecl | EnumDecl | MapEntryDecl)
 ;
 
 /*
  * Subpackages
  */
-SubPackageDecl returns Declaration:
+SubPackageDecl:
 	'package' name=ID LCURLY topLevelDecls+=TopLevelDecl* RCURLY
 ;
 
 /*
  * Class Declaration
  */
-ClassDecl returns Declaration:
+ClassDecl:
 	abstract?='abstract'? kind=ClassKind name=ID
 	(typeParamsInfo=TypeParamsInfo)?
 	("extends" superTypes=CommaListBoundExceptWild)? 
@@ -99,11 +102,11 @@ OneOrMoreTypeParamBounds:
 ; 
 
 BoundExceptWildcard:
-	rawTNameOrTVarOrParamzedTName=QualifiedID (LT typeArgs=OneOrMoreTypeArgs GT)?
+	name=QualifiedID (LT typeArgs=OneOrMoreTypeArgs GT)?
 ; 
 
 OneOrMoreTypeArgs:
-	ta+=TypeArg (COMMA t+=TypeArg)*
+	ta+=TypeArg (COMMA ta+=TypeArg)*
 ;
 
 TypeArg:
@@ -121,15 +124,19 @@ ExtendsOrSuper : "extends" | "super" ;
  */
 ClassMemberDecl:
 	(annotations+=Annotation* modifiers+=OptNegatedModifier*)
-	member=(Attribute | Reference | Operation)
+	member=ClassMember
 ;
 
-Attribute returns Member:
+ClassMember:
+	(Attribute | Reference | Operation)
+;
+
+Attribute:
 	"attr" type=TypeWithMulti name=ID (EQUALS defValue=DefaultValueExpr)? SEMI
 ; 
 
 TypeWithMulti:
-	name=BoundExceptWildcard (multiplicity=Multiplicity)?
+	type=BoundExceptWildcard (multiplicity=Multiplicity)?
 ;
 
 Multiplicity:
@@ -144,7 +151,7 @@ SimpleMultiplicityExpr:
 	STAR | PLUS | QMARK | INT
 ;
 
-Reference returns Member:
+Reference:
 	kind=REFERENCEKIND type=TypeWithMulti (HASH oppositeName=ID)? name=ID SEMI
 ;
 
@@ -191,7 +198,7 @@ CharExpr:
 	value=CHAR
 ;
 
-Operation returns Member:
+Operation:
 	"op" (typeParamsInfo=TypeParamsInfo)? 
    resType=ResultType name=ID LPAREN (params=Params)? RPAREN 
    ("throws" exceptions=CommaListBoundExceptWild)? SEMI
@@ -217,12 +224,12 @@ Param:
  */
  
 // "transient" means !serializable
-DataTypeDecl returns Declaration:
-	(transient?=TransientModifier)? "datatype" name=ID COLON instClassName=StringOrQualifiedID SEMI
+DataTypeDecl:
+	(transient?="transient")? "datatype" name=ID COLON instanceClassName=StringOrQualifiedID SEMI
 ; // TODO datatypes should accept type parameters
-TransientModifier : "transient" ;
 
-EnumDecl returns Declaration:
+
+EnumDecl:
 	"enum" name=ID LCURLY enumLiterals+=EnumLiteral* RCURLY
 ;
 
@@ -230,7 +237,7 @@ EnumLiteral:
 	leadingAnnotations+=Annotation* name=ID (EQUALS val=INT)? trailingAnnotations+=Annotation* SEMI
 ;
 
-MapEntryDecl returns Declaration:
+MapEntryDecl:
 	"mapentry" name=ID COLON key=TypeWithMulti MINUS_GT value=TypeWithMulti SEMI
 ;
 
