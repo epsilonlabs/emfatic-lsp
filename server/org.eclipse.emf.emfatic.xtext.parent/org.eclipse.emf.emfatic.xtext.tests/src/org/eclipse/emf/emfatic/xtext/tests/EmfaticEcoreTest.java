@@ -3,7 +3,32 @@
  */
 package org.eclipse.emf.emfatic.xtext.tests;
 
-import com.google.inject.Inject;
+import java.io.InputStream;
+import java.net.URISyntaxException;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
+
+import org.eclipse.emf.common.util.EList;
+import org.eclipse.emf.common.util.URI;
+import org.eclipse.emf.emfatic.xtext.emfatic.Annotation;
+import org.eclipse.emf.emfatic.xtext.emfatic.BoundExceptWildcard;
+import org.eclipse.emf.emfatic.xtext.emfatic.ClassDecl;
+import org.eclipse.emf.emfatic.xtext.emfatic.CompUnit;
+import org.eclipse.emf.emfatic.xtext.emfatic.DataTypeDecl;
+import org.eclipse.emf.emfatic.xtext.emfatic.EnumDecl;
+import org.eclipse.emf.emfatic.xtext.emfatic.Import;
+import org.eclipse.emf.emfatic.xtext.emfatic.KeyEqualsValue;
+import org.eclipse.emf.emfatic.xtext.emfatic.MapEntryDecl;
+import org.eclipse.emf.emfatic.xtext.emfatic.Operation;
+import org.eclipse.emf.emfatic.xtext.emfatic.PackageDecl;
+import org.eclipse.emf.emfatic.xtext.emfatic.Param;
+import org.eclipse.emf.emfatic.xtext.emfatic.ResultType;
+import org.eclipse.emf.emfatic.xtext.emfatic.StringOrQualifiedID;
+import org.eclipse.emf.emfatic.xtext.emfatic.SubPackageDecl;
+import org.eclipse.emf.emfatic.xtext.emfatic.TopLevelDecl;
+import org.eclipse.emf.emfatic.xtext.emfatic.TypeWithMulti;
+import org.eclipse.xtext.resource.XtextResourceSet;
 import org.eclipse.xtext.testing.InjectWith;
 import org.eclipse.xtext.testing.extensions.InjectionExtension;
 import org.eclipse.xtext.testing.util.ParseHelper;
@@ -11,34 +36,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
-import java.io.InputStream;
-import java.net.URISyntaxException;
-import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import org.eclipse.emf.common.util.EList;
-import org.eclipse.emf.common.util.URI;
-import org.eclipse.emf.emfatic.xtext.emfatic.Annotation;
-import org.eclipse.emf.emfatic.xtext.emfatic.BoundExceptWildcard;
-import org.eclipse.emf.emfatic.xtext.emfatic.ClassDecl;
-import org.eclipse.emf.emfatic.xtext.emfatic.ClassMemberDecl;
-import org.eclipse.emf.emfatic.xtext.emfatic.CommaListBoundExceptWild;
-import org.eclipse.emf.emfatic.xtext.emfatic.CompUnit;
-import org.eclipse.emf.emfatic.xtext.emfatic.DataTypeDecl;
-import org.eclipse.emf.emfatic.xtext.emfatic.EnumDecl;
-import org.eclipse.emf.emfatic.xtext.emfatic.Import;
-import org.eclipse.emf.emfatic.xtext.emfatic.KeyEqualsValue;
-import org.eclipse.emf.emfatic.xtext.emfatic.KeyEqualsValueList;
-import org.eclipse.emf.emfatic.xtext.emfatic.MapEntryDecl;
-import org.eclipse.emf.emfatic.xtext.emfatic.Operation;
-import org.eclipse.emf.emfatic.xtext.emfatic.PackageDecl;
-import org.eclipse.emf.emfatic.xtext.emfatic.Param;
-import org.eclipse.emf.emfatic.xtext.emfatic.StringOrQualifiedID;
-import org.eclipse.emf.emfatic.xtext.emfatic.SubPackageDecl;
-import org.eclipse.emf.emfatic.xtext.emfatic.TopLevelDecl;
-import org.eclipse.xtext.resource.XtextResourceSet;
+import com.google.inject.Inject;
 import com.google.inject.Provider;
 
 @ExtendWith(InjectionExtension.class)
@@ -63,12 +61,12 @@ class EmfaticEcoreTest {
 		StringOrQualifiedID source = namespace.getSource();
 		Assertions.assertNull(source.getLiteral());
 		Assertions.assertEquals("namespace", source.getId());
-		KeyEqualsValueList values = namespace.getValues();
-		Assertions.assertEquals(2, values.getKv().size());
-		KeyEqualsValue keyVal = values.getKv().get(0);
+		EList<KeyEqualsValue> values = namespace.getKv();
+		Assertions.assertEquals(2, values.size());
+		KeyEqualsValue keyVal = values.get(0);
 		Assertions.assertEquals("uri", keyVal.getKey());
 		Assertions.assertEquals("http://www.eclipse.org/emf/2002/Ecore", keyVal.getValue());
-		keyVal = values.getKv().get(1);
+		keyVal = values.get(1);
 		Assertions.assertEquals("prefix", keyVal.getKey());
 		Assertions.assertEquals("ecore", keyVal.getValue());
 	}
@@ -98,7 +96,7 @@ class EmfaticEcoreTest {
 		CompUnit compUnit = parseHelper.parse(complete, uri, null, resourceSetProvider.get());
 		EList<TopLevelDecl> topLevelDecls = compUnit.getTopLevelDecls();
 		List<TopLevelDecl> subPacakges = topLevelDecls.stream()
-			.filter(tld -> tld.getDecl() instanceof SubPackageDecl)
+			.filter(tld -> tld.getDeclaration() instanceof SubPackageDecl)
 			.collect(Collectors.toList());
 		Assertions.assertEquals(0, subPacakges.size());
 	}
@@ -110,7 +108,7 @@ class EmfaticEcoreTest {
 		CompUnit compUnit = parseHelper.parse(complete, uri, null, resourceSetProvider.get());
 		EList<TopLevelDecl> topLevelDecls = compUnit.getTopLevelDecls();
 		List<TopLevelDecl> classes = topLevelDecls.stream()
-				.filter(tld -> tld.getDecl() instanceof ClassDecl)
+				.filter(tld -> tld.getDeclaration() instanceof ClassDecl)
 				.collect(Collectors.toList());
 		Assertions.assertEquals(20, classes.size());
 	}
@@ -122,7 +120,7 @@ class EmfaticEcoreTest {
 		CompUnit compUnit = parseHelper.parse(complete, uri, null, resourceSetProvider.get());
 		EList<TopLevelDecl> topLevelDecls = compUnit.getTopLevelDecls();
 		List<TopLevelDecl> datatypes = topLevelDecls.stream()
-				.filter(tld -> tld.getDecl() instanceof DataTypeDecl)
+				.filter(tld -> tld.getDeclaration() instanceof DataTypeDecl)
 				.collect(Collectors.toList());
 			Assertions.assertEquals(32, datatypes.size());
 	}
@@ -134,7 +132,7 @@ class EmfaticEcoreTest {
 		CompUnit compUnit = parseHelper.parse(complete, uri, null, resourceSetProvider.get());
 		EList<TopLevelDecl> topLevelDecls = compUnit.getTopLevelDecls();
 		List<TopLevelDecl> enums = topLevelDecls.stream()
-			.filter(tld -> tld.getDecl() instanceof EnumDecl)
+			.filter(tld -> tld.getDeclaration() instanceof EnumDecl)
 			.collect(Collectors.toList());
 		Assertions.assertEquals(0, enums.size());
 	}
@@ -146,7 +144,7 @@ class EmfaticEcoreTest {
 		CompUnit compUnit = parseHelper.parse(complete, uri, null, resourceSetProvider.get());
 		EList<TopLevelDecl> topLevelDecls = compUnit.getTopLevelDecls();
 		List<TopLevelDecl> mapentries = topLevelDecls.stream()
-			.filter(tld -> tld.getDecl() instanceof MapEntryDecl)
+			.filter(tld -> tld.getDeclaration() instanceof MapEntryDecl)
 			.collect(Collectors.toList());
 		Assertions.assertEquals(0, mapentries.size());
 	}
@@ -157,8 +155,8 @@ class EmfaticEcoreTest {
 		URI uri = URI.createURI(getClass().getResource("/ecore.emf").toURI().toString());
 		CompUnit compUnit = parseHelper.parse(complete, uri, null, resourceSetProvider.get());
 		TopLevelDecl declaration = compUnit.getTopLevelDecls().stream()
-				.filter(tld -> tld.getDecl() instanceof ClassDecl
-						&& Objects.equals("EAttribute", ((ClassDecl)tld.getDecl()).getName()))
+				.filter(tld -> tld.getDeclaration() instanceof ClassDecl
+						&& Objects.equals("EAttribute", ((ClassDecl)tld.getDeclaration()).getName()))
 				.findFirst()
 				.orElseThrow();
 		// Annotation
@@ -167,20 +165,20 @@ class EmfaticEcoreTest {
 		StringOrQualifiedID source = annot.getSource();
 		Assertions.assertNull(source.getLiteral());
 		Assertions.assertEquals("Ecore", source.getId());
-		KeyEqualsValueList values = annot.getValues();
-		Assertions.assertEquals(1, values.getKv().size());
-		KeyEqualsValue keyVal = values.getKv().get(0);
+		EList<KeyEqualsValue> values = annot.getKv();
+		Assertions.assertEquals(1, values.size());
+		KeyEqualsValue keyVal = values.get(0);
 		Assertions.assertEquals("constraints", keyVal.getKey());
 		Assertions.assertEquals("ConsistentTransient", keyVal.getValue());
 		// Class
-		ClassDecl cls = (ClassDecl) declaration.getDecl();
+		ClassDecl cls = (ClassDecl) declaration.getDeclaration();
 		Assertions.assertFalse(cls.isAbstract());
 		Assertions.assertEquals("class", cls.getKind());
 		Assertions.assertNull(cls.getTypeParamsInfo());
-		EList<BoundExceptWildcard> superTypes = cls.getSuperTypes().getTb();
+		EList<BoundExceptWildcard> superTypes = cls.getSuperTypes();
 		Assertions.assertEquals(1, superTypes.size());
 		Assertions.assertEquals("EStructuralFeature", superTypes.get(0).getName());
-		Assertions.assertNull(superTypes.get(0).getTypeArgs());
+		Assertions.assertEquals(0, superTypes.get(0).getTypeArgs().size());
 		Assertions.assertNull(cls.getInstClassName());
 		Assertions.assertEquals(2, cls.getMembers().size());
 	}
@@ -192,9 +190,9 @@ class EmfaticEcoreTest {
 		URI uri = URI.createURI(getClass().getResource("/ecore.emf").toURI().toString());
 		CompUnit compUnit = parseHelper.parse(complete, uri, null, resourceSetProvider.get());
 		ClassDecl eClass = compUnit.getTopLevelDecls().stream()
-				.filter(tld -> tld.getDecl() instanceof ClassDecl
-						&& Objects.equals("EClass", ((ClassDecl)tld.getDecl()).getName()))
-				.map(tld -> (ClassDecl) tld.getDecl())
+				.filter(tld -> tld.getDeclaration() instanceof ClassDecl
+						&& Objects.equals("EClass", ((ClassDecl)tld.getDeclaration()).getName()))
+				.map(tld -> (ClassDecl) tld.getDeclaration())
 				.findFirst()
 				.orElseThrow();
 		// Operations
@@ -207,20 +205,27 @@ class EmfaticEcoreTest {
 				.filter(op -> Objects.equals("getFeatureCount", op.getName()))
 				.findFirst()
 				.orElseThrow();
-		Assertions.assertEquals("EInt", getFeatureCount.getResType().getType().getType().getName());
-		Assertions.assertNull(getFeatureCount.getParams());
+		ResultType resultType = getFeatureCount.getResType();
+		Assertions.assertFalse(resultType.isVoid());
+		TypeWithMulti resultTypeMulti = (TypeWithMulti)resultType;
+		Assertions.assertEquals("EInt", resultTypeMulti.getType().getName());
+		Assertions.assertEquals(0, getFeatureCount.getParams().size());
 		Operation getEStructuralFeature = ops.stream()
 				.filter(op -> Objects.equals("getEStructuralFeature", op.getName()))
 				.findFirst()
 				.orElseThrow();
-		Assertions.assertEquals("EStructuralFeature", getEStructuralFeature.getResType().getType().getType().getName());
-		Assertions.assertEquals(1, getEStructuralFeature.getParams().getP().size());
-		Param featureID = getEStructuralFeature.getParams().getP().get(0);
+		resultType = getEStructuralFeature.getResType();
+		Assertions.assertFalse(resultType.isVoid());
+		resultTypeMulti = (TypeWithMulti)resultType;
+		
+		Assertions.assertEquals("EStructuralFeature", resultTypeMulti.getType().getName());
+		Assertions.assertEquals(1, getEStructuralFeature.getParams().size());
+		Param featureID = getEStructuralFeature.getParams().get(0);
 		Assertions.assertEquals("featureID", featureID.getName());
 		Assertions.assertEquals(0, featureID.getLeadingAnnotations().size());
 		Assertions.assertEquals(0, featureID.getTrailingAnnotations().size());
 		Assertions.assertEquals(0, featureID.getModifiers().size());
-		Assertions.assertEquals("EInt", featureID.getType().getType().getName());
+		Assertions.assertEquals("EInt", featureID.getTypeWithMulti().getType().getName());
 		// Attributes
 		
 		

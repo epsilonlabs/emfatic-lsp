@@ -21,10 +21,7 @@
     </genClasses>
     <genClasses ecoreClass="Emfatic.ecore#//Annotation">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Emfatic.ecore#//Annotation/source"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Emfatic.ecore#//Annotation/values"/>
-    </genClasses>
-    <genClasses ecoreClass="Emfatic.ecore#//KeyEqualsValueList">
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Emfatic.ecore#//KeyEqualsValueList/kv"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Emfatic.ecore#//Annotation/kv"/>
     </genClasses>
     <genClasses ecoreClass="Emfatic.ecore#//KeyEqualsValue">
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Emfatic.ecore#//KeyEqualsValue/key"/>
@@ -36,7 +33,7 @@
     </genClasses>
     <genClasses ecoreClass="Emfatic.ecore#//TopLevelDecl">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Emfatic.ecore#//TopLevelDecl/annotations"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Emfatic.ecore#//TopLevelDecl/decl"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Emfatic.ecore#//TopLevelDecl/declaration"/>
     </genClasses>
     <genClasses ecoreClass="Emfatic.ecore#//Declaration">
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Emfatic.ecore#//Declaration/name"/>
@@ -52,27 +49,19 @@
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Emfatic.ecore#//ClassDecl/instClassName"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Emfatic.ecore#//ClassDecl/members"/>
     </genClasses>
-    <genClasses ecoreClass="Emfatic.ecore#//CommaListBoundExceptWild">
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Emfatic.ecore#//CommaListBoundExceptWild/tb"/>
-    </genClasses>
-    <genClasses ecoreClass="Emfatic.ecore#//TypeParamsInfo"/>
-    <genClasses ecoreClass="Emfatic.ecore#//OneOrMoreTypeParams">
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Emfatic.ecore#//OneOrMoreTypeParams/tp"/>
+    <genClasses ecoreClass="Emfatic.ecore#//TypeParamsInfo">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Emfatic.ecore#//TypeParamsInfo/tp"/>
     </genClasses>
     <genClasses ecoreClass="Emfatic.ecore#//TypeParam">
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Emfatic.ecore#//TypeParam/typeVarName"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Emfatic.ecore#//TypeParam/typeBoundsInfo"/>
     </genClasses>
-    <genClasses ecoreClass="Emfatic.ecore#//TypeBoundsInfo"/>
-    <genClasses ecoreClass="Emfatic.ecore#//OneOrMoreTypeParamBounds">
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Emfatic.ecore#//OneOrMoreTypeParamBounds/tb"/>
+    <genClasses ecoreClass="Emfatic.ecore#//TypeBoundsInfo">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Emfatic.ecore#//TypeBoundsInfo/tb"/>
     </genClasses>
     <genClasses ecoreClass="Emfatic.ecore#//BoundExceptWildcard">
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Emfatic.ecore#//BoundExceptWildcard/name"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Emfatic.ecore#//BoundExceptWildcard/typeArgs"/>
-    </genClasses>
-    <genClasses ecoreClass="Emfatic.ecore#//OneOrMoreTypeArgs">
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Emfatic.ecore#//OneOrMoreTypeArgs/ta"/>
     </genClasses>
     <genClasses ecoreClass="Emfatic.ecore#//TypeArg"/>
     <genClasses ecoreClass="Emfatic.ecore#//Wildcard">
@@ -87,7 +76,7 @@
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Emfatic.ecore#//ClassMember/name"/>
     </genClasses>
     <genClasses ecoreClass="Emfatic.ecore#//Attribute">
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Emfatic.ecore#//Attribute/type"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Emfatic.ecore#//Attribute/typeWithMulti"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Emfatic.ecore#//Attribute/defValue"/>
     </genClasses>
     <genClasses ecoreClass="Emfatic.ecore#//TypeWithMulti">
@@ -95,15 +84,12 @@
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Emfatic.ecore#//TypeWithMulti/multiplicity"/>
     </genClasses>
     <genClasses ecoreClass="Emfatic.ecore#//Multiplicity">
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Emfatic.ecore#//Multiplicity/expr"/>
-    </genClasses>
-    <genClasses ecoreClass="Emfatic.ecore#//MultiplicityExpr">
-      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Emfatic.ecore#//MultiplicityExpr/lowerBound"/>
-      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Emfatic.ecore#//MultiplicityExpr/upperBound"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Emfatic.ecore#//Multiplicity/lowerBound"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Emfatic.ecore#//Multiplicity/upperBound"/>
     </genClasses>
     <genClasses ecoreClass="Emfatic.ecore#//Reference">
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Emfatic.ecore#//Reference/kind"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Emfatic.ecore#//Reference/type"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Emfatic.ecore#//Reference/typeWithMulti"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Emfatic.ecore#//Reference/oppositeName"/>
     </genClasses>
     <genClasses ecoreClass="Emfatic.ecore#//Expr"/>
@@ -127,16 +113,12 @@
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Emfatic.ecore#//Operation/exceptions"/>
     </genClasses>
     <genClasses ecoreClass="Emfatic.ecore#//ResultType">
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Emfatic.ecore#//ResultType/type"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Emfatic.ecore#//ResultType/void"/>
-    </genClasses>
-    <genClasses ecoreClass="Emfatic.ecore#//Params">
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Emfatic.ecore#//Params/p"/>
     </genClasses>
     <genClasses ecoreClass="Emfatic.ecore#//Param">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Emfatic.ecore#//Param/leadingAnnotations"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Emfatic.ecore#//Param/modifiers"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Emfatic.ecore#//Param/type"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Emfatic.ecore#//Param/typeWithMulti"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Emfatic.ecore#//Param/name"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Emfatic.ecore#//Param/trailingAnnotations"/>
     </genClasses>

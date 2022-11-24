@@ -22,10 +22,6 @@
   <eClassifiers xsi:type="ecore:EClass" name="Annotation">
     <eStructuralFeatures xsi:type="ecore:EReference" name="source" eType="#//StringOrQualifiedID"
         containment="true"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="values" eType="#//KeyEqualsValueList"
-        containment="true"/>
-  </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="KeyEqualsValueList">
     <eStructuralFeatures xsi:type="ecore:EReference" name="kv" upperBound="-1" eType="#//KeyEqualsValue"
         containment="true"/>
   </eClassifiers>
@@ -41,7 +37,7 @@
   <eClassifiers xsi:type="ecore:EClass" name="TopLevelDecl">
     <eStructuralFeatures xsi:type="ecore:EReference" name="annotations" upperBound="-1"
         eType="#//Annotation" containment="true"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="decl" eType="#//Declaration"
+    <eStructuralFeatures xsi:type="ecore:EReference" name="declaration" eType="#//Declaration"
         containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Declaration">
@@ -56,19 +52,14 @@
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="kind" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="typeParamsInfo" eType="#//TypeParamsInfo"
         containment="true"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="superTypes" eType="#//CommaListBoundExceptWild"
-        containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="superTypes" upperBound="-1"
+        eType="#//BoundExceptWildcard" containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="instClassName" eType="#//BoundExceptWildcard"
         containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="members" upperBound="-1"
         eType="#//ClassMemberDecl" containment="true"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="CommaListBoundExceptWild">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="tb" upperBound="-1" eType="#//BoundExceptWildcard"
-        containment="true"/>
-  </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="TypeParamsInfo"/>
-  <eClassifiers xsi:type="ecore:EClass" name="OneOrMoreTypeParams" eSuperTypes="#//TypeParamsInfo">
+  <eClassifiers xsi:type="ecore:EClass" name="TypeParamsInfo">
     <eStructuralFeatures xsi:type="ecore:EReference" name="tp" upperBound="-1" eType="#//TypeParam"
         containment="true"/>
   </eClassifiers>
@@ -77,19 +68,14 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="typeBoundsInfo" eType="#//TypeBoundsInfo"
         containment="true"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="TypeBoundsInfo"/>
-  <eClassifiers xsi:type="ecore:EClass" name="OneOrMoreTypeParamBounds" eSuperTypes="#//TypeBoundsInfo">
+  <eClassifiers xsi:type="ecore:EClass" name="TypeBoundsInfo">
     <eStructuralFeatures xsi:type="ecore:EReference" name="tb" upperBound="-1" eType="#//BoundExceptWildcard"
         containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="BoundExceptWildcard" eSuperTypes="#//TypeArg">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="typeArgs" eType="#//OneOrMoreTypeArgs"
-        containment="true"/>
-  </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="OneOrMoreTypeArgs">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="ta" upperBound="-1" eType="#//TypeArg"
-        containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="typeArgs" upperBound="-1"
+        eType="#//TypeArg" containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="TypeArg"/>
   <eClassifiers xsi:type="ecore:EClass" name="Wildcard" eSuperTypes="#//TypeArg">
@@ -108,28 +94,24 @@
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Attribute" eSuperTypes="#//ClassMember">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="type" eType="#//TypeWithMulti"
+    <eStructuralFeatures xsi:type="ecore:EReference" name="typeWithMulti" eType="#//TypeWithMulti"
         containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="defValue" eType="#//Expr"
         containment="true"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="TypeWithMulti">
+  <eClassifiers xsi:type="ecore:EClass" name="TypeWithMulti" eSuperTypes="#//ResultType">
     <eStructuralFeatures xsi:type="ecore:EReference" name="type" eType="#//BoundExceptWildcard"
         containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="multiplicity" eType="#//Multiplicity"
         containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Multiplicity">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="expr" eType="#//MultiplicityExpr"
-        containment="true"/>
-  </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="MultiplicityExpr">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="lowerBound" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="upperBound" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Reference" eSuperTypes="#//ClassMember">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="kind" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="type" eType="#//TypeWithMulti"
+    <eStructuralFeatures xsi:type="ecore:EReference" name="typeWithMulti" eType="#//TypeWithMulti"
         containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="oppositeName" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
   </eClassifiers>
@@ -148,30 +130,28 @@
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="value" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Operation" eSuperTypes="#//ClassMember">
+    <eOperations name="list">
+      <eTypeParameters name="Long"/>
+      <eParameters name="size" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EInt"/>
+    </eOperations>
     <eStructuralFeatures xsi:type="ecore:EReference" name="typeParamsInfo" eType="#//TypeParamsInfo"
         containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="resType" eType="#//ResultType"
         containment="true"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="params" eType="#//Params"
-        containment="true"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="exceptions" eType="#//CommaListBoundExceptWild"
-        containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="params" upperBound="-1"
+        eType="#//Param" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="exceptions" upperBound="-1"
+        eType="#//BoundExceptWildcard" containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="ResultType">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="type" eType="#//TypeWithMulti"
-        containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="void" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"/>
-  </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="Params">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="p" upperBound="-1" eType="#//Param"
-        containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Param">
     <eStructuralFeatures xsi:type="ecore:EReference" name="leadingAnnotations" upperBound="-1"
         eType="#//Annotation" containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="modifiers" unique="false"
         upperBound="-1" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="type" eType="#//TypeWithMulti"
+    <eStructuralFeatures xsi:type="ecore:EReference" name="typeWithMulti" eType="#//TypeWithMulti"
         containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="trailingAnnotations" upperBound="-1"

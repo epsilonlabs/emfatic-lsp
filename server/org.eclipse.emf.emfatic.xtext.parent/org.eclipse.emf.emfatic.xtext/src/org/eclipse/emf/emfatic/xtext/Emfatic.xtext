@@ -2,7 +2,24 @@ grammar org.eclipse.emf.emfatic.xtext.Emfatic with org.eclipse.xtext.common.Term
 
 generate emfatic "http://www.eclipse.org/emf/emfatic/xtext/Emfatic"
 
+/**
+ * This grammar is a translation of the original grammar at
+ * https://git.eclipse.org/c/emfatic/org.eclipse.emfatic.git/tree/bundles/org.eclipse.emf.emfatic.core/grammar/Emfatic.ast
+ * 
+ * The original syntax rules will be added as comments and relevant changes
+ * documented
+ */
 
+/**
+ * sequence compUnit [entry] : packageDecl importStmts topLevelDecls;
+ * 
+ * We have simplified this rule by removing the list rules:
+ * 
+ * 		list importStmts : importStmt* ;
+ * 		list topLevelDecls : topLevelDecl* ;
+ * 
+ * and using a multi-value assignment instead
+ */
 CompUnit:
 	package=PackageDecl
 	importStmts+=Import*
@@ -10,45 +27,86 @@ CompUnit:
 ;
 	
 /**
- * Annotations come before the Package. The package name can be qualified.
+ * sequence packageDecl : annotations "package" name=qualifiedID SEMI ;
+ * 
+ * We have simplified this rule by removing the list rule:
+ * 
+ * 		list annotations : annotation* ;
+ * 
+ * and using a multi-value assignment instead
  */
 PackageDecl:
 	annotations+=Annotation* 'package' name=QualifiedID SEMI
 ;
 
+/**
+ * list qualifiedID : id1=ID (qidSeparator idn=ID)* ;
+ */
 QualifiedID:
 	ID (QID_SEPARATOR ID)*
 ;
 
 /**
- * Annotations
+ * token qidSeparator : DOT | DOLLAR ;
+ */
+QID_SEPARATOR : DOT | DOLLAR ;
+
+/**
+ * abstract stringLiteralOrQualifiedID : stringLiteralContainer | qualifiedIDContainer ;
+ * 
+ * We modified the rule so we can differentiate STRING literals from QualifiedIDs.
+ * The main reason is to have a clear separation for implementing the 
+ * ImportedNamespaceAwareLocalScopeProvider. But this also help for validating
+ * annotations that use known or user defined Annotation Labels 
+ * 
+ * We removed two rules: 
+ * 
+ * 		sequence stringLiteralContainer : STRING_LITERAL ;
+ * 		sequence qualifiedIDContainer : qualifiedID ;
  */
 StringOrQualifiedID:
 	literal=STRING | id=QualifiedID
 ;
 
+/**
+ * sequence annotation : AT source=stringLiteralOrQualifiedID LPAREN keyEqualsValueList RPAREN ;
+ * 
+ * We have simplified this rule by removing the list rule:
+ * 
+ * 		list keyEqualsValueList : kv1=keyEqualsValue (COMMA kvn=keyEqualsValue)* ;
+ * 
+ * and using multi-value assignment instead
+ */
 Annotation:
-	AT source=StringOrQualifiedID (LPAREN values=KeyEqualsValueList RPAREN)?
+	AT source=StringOrQualifiedID (LPAREN kv+=KeyEqualsValue (COMMA kv+=KeyEqualsValue)* RPAREN)?
 ;
 
-KeyEqualsValueList:
-	kv+=KeyEqualsValue (COMMA kv+=KeyEqualsValue)*
-;
-
+/**
+ * sequence keyEqualsValue : key=stringLiteralOrQualifiedID EQUALS value=stringLiteralOrQualifiedID ;
+ * 
+ * For this case, we are not concerned with differentiating between String literas
+ * and QualifiedIDs.
+ */
 KeyEqualsValue: 
 	key=(STRING | QualifiedID) EQUALS value=(STRING | QualifiedID)
 ;
 
 /**
- * Imports
+ * sequence importStmt : "import" (alias=ID EQUALS)? uri=stringLiteralOrQualifiedID SEMI;
  */
 Import:
 	'import' (alias=ID EQUALS)? uri=StringOrQualifiedID SEMI
 ;
 
-
+/**
+ * abstract topLevelDecl : (annotations) 
+ *		subPackageDecl | classDecl | dataTypeDecl | enumDecl | mapEntryDecl ;
+ * 
+ * We have introduced a Declaration rule so that top level declarations have
+ * a common supertype (else TopLevelDecl would be a huge class).
+ */
 TopLevelDecl:
-	annotations+=Annotation* decl=Declaration
+	annotations+=Annotation* declaration=Declaration
 ;
 
 Declaration:
@@ -56,71 +114,142 @@ Declaration:
 ;
 
 /*
- * Subpackages
+ * sequence subPackageDecl : "package" name=ID LCURLY topLevelDecls RCURLY ;
+ * 
+ * We have simplified this rule by removing the list rules:
+ * 
+ * 		list topLevelDecls : topLevelDecl* ;
+ * 
+ * and using a multi-value assignment instead
  */
 SubPackageDecl:
 	'package' name=ID LCURLY topLevelDecls+=TopLevelDecl* RCURLY
 ;
 
 /*
- * Class Declaration
+ * sequence classDecl : (abstractModifier)? 
+                     classKind name=ID 
+                     (typeParamsInfo=typeParamsInfo)?
+                     ("extends" superTypes=commaListBoundExceptWild)? 
+                     (COLON instClassName=boundExceptWildcard)? 
+                     LCURLY classMemberDecls RCURLY ;
+                   
+ * abstractModifuer rule was replaced by a boolean assignment
+ * 
+ * We have simplified this rule by removing the list rules:
+ * 
+ * 		list commaListBoundExceptWild : tb1=boundExceptWildcard (COMMA tbn=boundExceptWildcard)*;
+ * 
+ * and using a multi-value assignment instead
+ * 
  */
-ClassDecl:
-	abstract?='abstract'? kind=ClassKind name=ID
+ClassDecl returns ClassifierDeclaration:
+	abstract?='abstract'?
+	kind=ClassKind name=ID
 	(typeParamsInfo=TypeParamsInfo)?
-	("extends" superTypes=CommaListBoundExceptWild)? 
+	("extends" superTypes+=BoundExceptWildcard (COMMA superTypes+=BoundExceptWildcard)*)? 
     (COLON instClassName=BoundExceptWildcard)? 
     LCURLY members+=ClassMemberDecl* RCURLY
 ;
 
-CommaListBoundExceptWild:
-	tb+=BoundExceptWildcard (COMMA tb+=BoundExceptWildcard)*
-;
+//CommaListBoundExceptWild:
+//	tb+=BoundExceptWildcard (COMMA tb+=BoundExceptWildcard)*
+//;
 
+/**
+ * token classKind : "class" | "interface" ;
+ */
 ClassKind:
 	'class'|'interface'
 ;
 
+/**
+ * sequence typeParamsInfo : LT oneOrMoreTypeParams GT ; 
+ * 
+ * We have simplified this rule by removing the list rules:
+ * 
+ * 		list oneOrMoreTypeParams : tp1=typeParam (COMMA tpn=typeParam)* ;
+ * 
+ * and using a multi-value assignment instead
+ * 
+ */
 TypeParamsInfo:
-	LT OneOrMoreTypeParams GT
+	LT tp+=TypeParam (COMMA tp+=TypeParam)* GT
 ;
 
-OneOrMoreTypeParams:
-	tp+=TypeParam (COMMA tp+=TypeParam)*
-;
-
+/**
+ * sequence typeParam : typeVarName=ID (typeBoundsInfo=typeBoundsInfo)? ;
+ */
 TypeParam: 
 	typeVarName=ID (typeBoundsInfo=TypeBoundsInfo)?
 ;
 
+/**
+ * sequence typeBoundsInfo : "extends" oneOrMoreTypeParamBounds ;
+ * 
+ * We have simplified this rule by removing the list rules:
+ * 
+ * 		list oneOrMoreTypeParamBounds : tb1=boundExceptWildcard (AMP tbn=boundExceptWildcard)*; 
+ * 
+ * and using a multi-value assignment instead
+ */
 TypeBoundsInfo:
-	"extends" OneOrMoreTypeParamBounds
+	"extends" tb+=BoundExceptWildcard (AMP tb+=BoundExceptWildcard)*
 ;
 
-OneOrMoreTypeParamBounds:
-	tb+=BoundExceptWildcard (AMP tb+=BoundExceptWildcard)*
-; 
-
+/**
+ * sequence boundExceptWildcard : rawTNameOrTVarOrParamzedTName=qualifiedID (LT oneOrMoreTypeArgs GT)? ; 
+ * 
+ * We just use name instead of rawTNameOrTVarOrParamzedTName. However, the old
+ * name hints at the context resolution: raw, type reference, qualified.
+ * 
+ * We have simplified this rule by removing the list rules:
+ * 
+ * 		list oneOrMoreTypeArgs : ta1=typeArg (COMMA tan=typeArg)*;
+ * 
+ * and using a multi-value assignment instead
+ * 
+ */
 BoundExceptWildcard:
-	name=QualifiedID (LT typeArgs=OneOrMoreTypeArgs GT)?
+	name=QualifiedID (LT typeArgs+=TypeArg (COMMA typeArgs+=TypeArg)* GT)?
 ; 
 
-OneOrMoreTypeArgs:
-	ta+=TypeArg (COMMA ta+=TypeArg)*
-;
-
+/**
+ * abstract typeArg : boundExceptWildcard | wildcard  ;
+ */
 TypeArg:
 	BoundExceptWildcard | Wildcard
 ;
 
+/**
+ * sequence wildcard : QMARK ( extendsOrSuper boundExceptWildcard )? ; 
+ */
 Wildcard:
 	{Wildcard} QMARK ( ExtendsOrSuper extends=BoundExceptWildcard )?
 ; 
 
+/**
+ * token extendsOrSuper : "extends" | "super" ; 
+ */
 ExtendsOrSuper : "extends" | "super" ; 
 
+// there are no array types in EMF
+
+/* dot means package nesting, there are no inner classes in EMF */
+
 /*
- * Class Members
+ * abstract classMemberDecl : (annotations modifiers) attribute | reference | operation ;
+ * 
+ * We have introduced a Declaration rule so that top level declarations have
+ * a common supertype (else ClassMemberDecl would be a huge class).
+ * 
+ * We have simplified this rule by removing the list rules:
+ * 
+ * 		list annotations : annotation* ;
+ * 		list modifiers : optNegatedModifier* ;
+ * 
+ * and using a multi-value assignment instead
+ * 
  */
 ClassMemberDecl:
 	(annotations+=Annotation* modifiers+=OptNegatedModifier*)
@@ -131,37 +260,65 @@ ClassMember:
 	(Attribute | Reference | Operation)
 ;
 
+/**
+ * sequence attribute : "attr" typeWithMulti name=ID (EQUALS defaultValueExpr)? SEMI ; 
+ * 
+ * Originally typeWithMulti is not assigned, in Xtext we need to assign it
+ */
 Attribute:
-	"attr" type=TypeWithMulti name=ID (EQUALS defValue=DefaultValueExpr)? SEMI
+	"attr" typeWithMulti=TypeWithMulti name=ID (EQUALS defValue=DefaultValueExpr)? SEMI
 ; 
 
+/** 
+ * sequence typeWithMulti : name=boundExceptWildcard (multiplicity)? ;
+ */
 TypeWithMulti:
 	type=BoundExceptWildcard (multiplicity=Multiplicity)?
 ;
 
+/**
+ * sequence multiplicity : LSQUARE (multiplicityExpr)? RSQUARE ;
+ * 
+ * We have simplified this rule by removing the rule:
+ * 
+ * 		sequence multiplicityExpr : lowerBound=simpleMultiplicityExpr (DOT_DOT upperBound=simpleMultiplicityExpr)? ;
+ * 
+ * and using a multi-value assignment instead
+ */
 Multiplicity:
-	{Multiplicity} LSQUARE (expr=MultiplicityExpr)? RSQUARE
+	{Multiplicity} LSQUARE (lowerBound=SimpleMultiplicityExpr (DOT_DOT upperBound=SimpleMultiplicityExpr)?)? RSQUARE
 ;
 
-MultiplicityExpr:
-	lowerBound=SimpleMultiplicityExpr (DOT_DOT upperBound=SimpleMultiplicityExpr)?
-;
-
+/**
+ * token simpleMultiplicityExpr : STAR | PLUS | QMARK | INT_LITERAL ;
+ */
 SimpleMultiplicityExpr:
 	STAR | PLUS | QMARK | INT
 ;
 
+/**
+ * sequence reference : referenceKind typeWithMulti (HASH oppositeName=ID)? name=ID SEMI ;
+ */
 Reference:
-	kind=REFERENCEKIND type=TypeWithMulti (HASH oppositeName=ID)? name=ID SEMI
+	kind=ReferenceKind typeWithMulti=TypeWithMulti (HASH oppositeName=ID)? name=ID SEMI
 ;
 
-REFERENCEKIND:
+/**
+ * token referenceKind : "ref" | "val" ;
+ */
+ReferenceKind:
 	"ref" | "val"
 ;
 
-OptNegatedModifier : (BANG)? MODIFIER ;
+/**
+ * sequence optNegatedModifier : (BANG)? modifier ;
+ */
+OptNegatedModifier : (BANG)? Modifier ;
 
-MODIFIER
+/**
+ * token modifier
+ */
+Modifier
 // keyword        EMF meaning
 : "readonly"   // EStructuralFeature.changeable = false
 | "volatile"   // EStructuralFeature.volatile   = true
@@ -174,49 +331,84 @@ MODIFIER
 | "id"         // EAttribute.id                 = true
 ;
 
-
-
+/**
+ * abstract defaultValueExpr : boolExpr | intExpr | stringExpr | charExpr ;
+ */
 DefaultValueExpr returns Expr:
 	BoolExpr | IntExpr | StringExpr | CharExpr
 ;
 
+/**
+ * sequence boolExpr : trueOrFalse ;
+ */
 BoolExpr:
 	value=TrueOrFalse
 ;
 
+/**
+ * token trueOrFalse : "true" | "false" ;
+ */
 TrueOrFalse : "true" | "false" ;
 
+/**
+ * sequence intExpr : (MINUS)? INT_LITERAL ;
+ */
 IntExpr:
 	(negative=MINUS)? value=INT
 ;
 
+/**
+ * sequence stringExpr : STRING_LITERAL ;
+ */
 StringExpr:
 	value=STRING
 ;
 
+/**
+ * sequence charExpr : CHAR_LITERAL ;
+ */
 CharExpr:
 	value=CHAR
 ;
 
+/**
+ * sequence operation : 
+		"op" (typeParamsInfo=typeParamsInfo)? 
+	    resType=resultType name=ID LPAREN (params)? RPAREN 
+	    ("throws" exceptions=commaListBoundExceptWild)? SEMI ;
+ * 
+ * We have simplified this rule by removing the rules:
+ * 
+ * 		list commaListBoundExceptWild : tb1=boundExceptWildcard (COMMA tbn=boundExceptWildcard)*;
+ *      list params : p1=param (COMMA pn=param)*; 
+ * 
+ * and using a multi-value assignment instead
+ * 
+ */
 Operation:
 	"op" (typeParamsInfo=TypeParamsInfo)? 
-   resType=ResultType name=ID LPAREN (params=Params)? RPAREN 
-   ("throws" exceptions=CommaListBoundExceptWild)? SEMI
+   resType=ResultType name=ID LPAREN (params+=Param (COMMA params+=Param)*)? RPAREN 
+   ("throws" exceptions+=BoundExceptWildcard (COMMA exceptions+=BoundExceptWildcard)*)? SEMI
 ;
 
+/**
+ * abstract resultType : typeWithMulti | voidContainer ; 
+ */
 ResultType:
-	type=TypeWithMulti | void?=VOIDCONTAINER
+	TypeWithMulti | void?=VoidContainer
 ; 
 
-VOIDCONTAINER: 
+/**
+ * sequence voidContainer : "void" ; 
+ */
+VoidContainer: 
 	"void" ; 
 
-Params:
-	p+=Param (COMMA p+=Param)*
-; 
-
+/**
+ * sequence param : leadingAnnotations=annotations modifiers typeWithMulti name=ID trailingAnnotations=annotations ;
+ */
 Param:
-	leadingAnnotations+=Annotation* modifiers+=OptNegatedModifier* type=TypeWithMulti name=ID trailingAnnotations+=Annotation*
+	leadingAnnotations+=Annotation* modifiers+=OptNegatedModifier* typeWithMulti=TypeWithMulti name=ID trailingAnnotations+=Annotation*
 ;
 
 /*
@@ -224,50 +416,74 @@ Param:
  */
  
 // "transient" means !serializable
-DataTypeDecl:
+
+/**
+ * sequence dataTypeDecl : (transientModifier)? "datatype" name=ID COLON instClassName=stringLiteralOrQualifiedID SEMI ;
+ * 
+ * We have simplified this rule by removing the rule:
+ * 		
+ * 		sequence transientModifier : "transient" ;
+ * 
+ * and used a boolean assignment expression instead
+ */
+// TODO datatypes should accept type parameters
+DataTypeDecl returns ClassifierDeclaration:
 	(transient?="transient")? "datatype" name=ID COLON instanceClassName=StringOrQualifiedID SEMI
-; // TODO datatypes should accept type parameters
+; 
 
-
-EnumDecl:
+/**
+ * sequence enumDecl : "enum" name=ID LCURLY enumLiterals RCURLY ;
+ * 
+ * We have simplified this rule by removing the rule:
+ * 
+ * 		list enumLiterals : enumLiteral* ;
+ * 
+ * and using a multi-value assignment instead
+ * 
+ */
+EnumDecl returns DataTypeDecl:
 	"enum" name=ID LCURLY enumLiterals+=EnumLiteral* RCURLY
 ;
 
+/**
+ * sequence enumLiteral : leadingAnnotations=annotations name=ID (EQUALS val=INT_LITERAL)? trailingAnnotations=annotations SEMI ;
+ */
 EnumLiteral:
 	leadingAnnotations+=Annotation* name=ID (EQUALS val=INT)? trailingAnnotations+=Annotation* SEMI
 ;
 
+/**
+ * sequence mapEntryDecl : "mapentry" name=ID COLON key=typeWithMulti MINUS_GT value=typeWithMulti SEMI ;
+ */
 MapEntryDecl:
 	"mapentry" name=ID COLON key=TypeWithMulti MINUS_GT value=TypeWithMulti SEMI
 ;
 
 
-QID_SEPARATOR : DOT | DOLLAR ;
-
-SEMI: ';';
-DOT_DOT: '..';
-DOT: '.';
-DOLLAR: '$';
-AT: '@';
-LPAREN: '(';
-RPAREN: ')';
-COMMA: ',';
-EQUALS: '=';
-LCURLY: '{';
-RCURLY:  '}';
-LT: '<';
-GT: '>';
-AMP: '&';
-QMARK: '?';
-COLON: ':';
-MINUS_GT: '->';
-LSQUARE: '[';
-RSQUARE: ']';
-STAR: '*';
-PLUS: '+';
-BANG: '!';
-HASH: '#';
-MINUS: '-';
+SEMI: 		';';
+DOT_DOT:	'..';
+DOT: 		'.';
+DOLLAR: 	'$';
+AT: 		'@';
+LPAREN: 	'(';
+RPAREN: 	')';
+COMMA: 		',';
+EQUALS: 	'=';
+LCURLY: 	'{';
+RCURLY:  	'}';
+LT: 		'<';
+GT: 		'>';
+AMP: 		'&';
+QMARK: 		'?';
+COLON: 		':';
+MINUS_GT: 	'->';
+LSQUARE: 	'[';
+RSQUARE: 	']';
+STAR: 		'*';
+PLUS: 		'+';
+BANG: 		'!';
+HASH: 		'#';
+MINUS: 		'-';
 
 
 @Override 
