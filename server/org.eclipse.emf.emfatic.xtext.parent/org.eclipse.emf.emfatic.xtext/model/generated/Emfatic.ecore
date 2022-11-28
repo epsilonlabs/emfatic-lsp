@@ -54,7 +54,7 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="typeParamsInfo" eType="#//TypeParamsInfo"
         containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="superTypes" upperBound="-1"
-        eType="#//BoundExceptWildcard" containment="true"/>
+        eType="#//BoundClassExceptWildcard" containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="instClassName" eType="#//BoundExceptWildcard"
         containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="members" upperBound="-1"
@@ -74,7 +74,12 @@
         containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="BoundExceptWildcard" eSuperTypes="#//TypeArg">
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="bound" eType="#//ClassifierDeclaration"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="typeArgs" upperBound="-1"
+        eType="#//TypeArg" containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="BoundClassExceptWildcard">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="bound" eType="#//ClassDecl"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="typeArgs" upperBound="-1"
         eType="#//TypeArg" containment="true"/>
   </eClassifiers>
@@ -95,7 +100,7 @@
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Attribute" eSuperTypes="#//ClassMember">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="typeWithMulti" eType="#//TypeWithMulti"
+    <eStructuralFeatures xsi:type="ecore:EReference" name="typeWithMulti" eType="#//DataTypeWithMulti"
         containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="defValue" eType="#//Expr"
         containment="true"/>
@@ -112,9 +117,15 @@
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Reference" eSuperTypes="#//ClassMember">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="kind" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="typeWithMulti" eType="#//TypeWithMulti"
+    <eStructuralFeatures xsi:type="ecore:EReference" name="typeWithMulti" eType="#//ClassRefWithMulti"
         containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="oppositeName" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="ClassRefWithMulti">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="type" eType="#//BoundClassExceptWildcard"
+        containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="multiplicity" eType="#//Multiplicity"
+        containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Expr"/>
   <eClassifiers xsi:type="ecore:EClass" name="BoolExpr" eSuperTypes="#//Expr">
@@ -155,6 +166,11 @@
         eType="#//Annotation" containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="DataType" eSuperTypes="#//ClassifierDeclaration"/>
+  <eClassifiers xsi:type="ecore:EClass" name="DataTypeWithMulti">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="type" eType="#//DataType"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="multiplicity" eType="#//Multiplicity"
+        containment="true"/>
+  </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="DataTypeDecl" eSuperTypes="#//DataType">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="transient" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="instanceClassName" eType="#//StringOrQualifiedID"

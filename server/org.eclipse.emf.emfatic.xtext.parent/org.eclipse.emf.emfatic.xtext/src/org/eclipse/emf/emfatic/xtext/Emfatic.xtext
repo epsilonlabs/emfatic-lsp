@@ -151,7 +151,7 @@ ClassDecl:
 	abstract?='abstract'?
 	kind=ClassKind name=ID
 	(typeParamsInfo=TypeParamsInfo)?
-	("extends" superTypes+=BoundExceptWildcard (COMMA superTypes+=BoundExceptWildcard)*)? 
+	("extends" superTypes+=BoundClassExceptWildcard (COMMA superTypes+=BoundClassExceptWildcard)*)? 
     (COLON instClassName=BoundExceptWildcard)? 
     LCURLY members+=ClassMemberDecl* RCURLY
 ;
@@ -215,8 +215,17 @@ TypeBoundsInfo:
  * 
  */
 BoundExceptWildcard:
-	name=QualifiedID (LT typeArgs+=TypeArg (COMMA typeArgs+=TypeArg)* GT)?
-; 
+	bound=[ClassifierDeclaration|QualifiedID] (LT typeArgs+=TypeArg (COMMA typeArgs+=TypeArg)* GT)?
+;
+
+/**
+ * We need to differentiate when referencing Class (class extends), DataTypes
+ * (attribtues) or both (operations)
+ */
+ BoundClassExceptWildcard:
+	bound=[ClassDecl|QualifiedID] (LT typeArgs+=TypeArg (COMMA typeArgs+=TypeArg)* GT)?
+;
+ 
 
 /**
  * abstract typeArg : boundExceptWildcard | wildcard  ;
@@ -267,10 +276,12 @@ ClassMember:
 /**
  * sequence attribute : "attr" typeWithMulti name=ID (EQUALS defaultValueExpr)? SEMI ; 
  * 
- * Originally typeWithMulti is not assigned, in Xtext we need to assign it
+ * Originally typeWithMulti is not assigned, in Xtext we need to assign it. Further,
+ * we introduce the new DataTypeWithMulti, so attributes can only have DataType
+ * types.
  */
 Attribute:
-	"attr" typeWithMulti=TypeWithMulti name=ID (EQUALS defValue=DefaultValueExpr)? SEMI
+	"attr" typeWithMulti=DataTypeWithMulti name=ID (EQUALS defValue=DefaultValueExpr)? SEMI
 ; 
 
 /** 
@@ -279,6 +290,7 @@ Attribute:
 TypeWithMulti:
 	type=BoundExceptWildcard (multiplicity=Multiplicity)?
 ;
+
 
 /**
  * sequence multiplicity : LSQUARE (multiplicityExpr)? RSQUARE ;
@@ -304,8 +316,17 @@ SimpleMultiplicityExpr:
  * sequence reference : referenceKind typeWithMulti (HASH oppositeName=ID)? name=ID SEMI ;
  */
 Reference:
-	kind=ReferenceKind typeWithMulti=TypeWithMulti (HASH oppositeName=ID)? name=ID SEMI
+	kind=ReferenceKind typeWithMulti=ClassRefWithMulti (HASH oppositeName=ID)? name=ID SEMI
 ;
+
+
+/**
+ * This can be used when only EClass can be referenced (e.g. extends, References)
+ */
+ClassRefWithMulti:
+	type=BoundClassExceptWildcard (multiplicity=Multiplicity)?
+;
+
 
 /**
  * token referenceKind : "ref" | "val" ;
@@ -421,8 +442,19 @@ Param:
  
 // "transient" means !serializable
 
+/**
+ * This rule allows filtering of Attribute referenced types (EAttribtues can only use DataTypes as type)
+ */
 DataType:
 	DataTypeDecl | EnumDecl
+;
+
+/**
+ * This can be used when only DataTypes can be referenced (e.g. Attributes)
+ */
+// TODO When datatype accept type parameters, this construct should have a similar one to BoundExceptWildcard
+DataTypeWithMulti:
+	type=[DataType|QualifiedID]  (multiplicity=Multiplicity)?
 ;
 
 /**
