@@ -43,11 +43,12 @@
   <eClassifiers xsi:type="ecore:EClass" name="Declaration">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
   </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="ClassifierDeclaration" eSuperTypes="#//Declaration"/>
   <eClassifiers xsi:type="ecore:EClass" name="SubPackageDecl" eSuperTypes="#//Declaration">
     <eStructuralFeatures xsi:type="ecore:EReference" name="topLevelDecls" upperBound="-1"
         eType="#//TopLevelDecl" containment="true"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="ClassDecl" eSuperTypes="#//Declaration">
+  <eClassifiers xsi:type="ecore:EClass" name="ClassDecl" eSuperTypes="#//ClassifierDeclaration">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="abstract" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="kind" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="typeParamsInfo" eType="#//TypeParamsInfo"
@@ -130,10 +131,6 @@
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="value" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Operation" eSuperTypes="#//ClassMember">
-    <eOperations name="list">
-      <eTypeParameters name="Long"/>
-      <eParameters name="size" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EInt"/>
-    </eOperations>
     <eStructuralFeatures xsi:type="ecore:EReference" name="typeParamsInfo" eType="#//TypeParamsInfo"
         containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="resType" eType="#//ResultType"
@@ -157,12 +154,13 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="trailingAnnotations" upperBound="-1"
         eType="#//Annotation" containment="true"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="DataTypeDecl" eSuperTypes="#//Declaration">
+  <eClassifiers xsi:type="ecore:EClass" name="DataType" eSuperTypes="#//ClassifierDeclaration"/>
+  <eClassifiers xsi:type="ecore:EClass" name="DataTypeDecl" eSuperTypes="#//DataType">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="transient" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="instanceClassName" eType="#//StringOrQualifiedID"
         containment="true"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="EnumDecl" eSuperTypes="#//Declaration">
+  <eClassifiers xsi:type="ecore:EClass" name="EnumDecl" eSuperTypes="#//DataType">
     <eStructuralFeatures xsi:type="ecore:EReference" name="enumLiterals" upperBound="-1"
         eType="#//EnumLiteral" containment="true"/>
   </eClassifiers>

@@ -11,23 +11,7 @@ import java.util.stream.Collectors;
 
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.common.util.URI;
-import org.eclipse.emf.emfatic.xtext.emfatic.Annotation;
-import org.eclipse.emf.emfatic.xtext.emfatic.BoundExceptWildcard;
-import org.eclipse.emf.emfatic.xtext.emfatic.ClassDecl;
-import org.eclipse.emf.emfatic.xtext.emfatic.CompUnit;
-import org.eclipse.emf.emfatic.xtext.emfatic.DataTypeDecl;
-import org.eclipse.emf.emfatic.xtext.emfatic.EnumDecl;
-import org.eclipse.emf.emfatic.xtext.emfatic.Import;
-import org.eclipse.emf.emfatic.xtext.emfatic.KeyEqualsValue;
-import org.eclipse.emf.emfatic.xtext.emfatic.MapEntryDecl;
-import org.eclipse.emf.emfatic.xtext.emfatic.Operation;
-import org.eclipse.emf.emfatic.xtext.emfatic.PackageDecl;
-import org.eclipse.emf.emfatic.xtext.emfatic.Param;
-import org.eclipse.emf.emfatic.xtext.emfatic.ResultType;
-import org.eclipse.emf.emfatic.xtext.emfatic.StringOrQualifiedID;
-import org.eclipse.emf.emfatic.xtext.emfatic.SubPackageDecl;
-import org.eclipse.emf.emfatic.xtext.emfatic.TopLevelDecl;
-import org.eclipse.emf.emfatic.xtext.emfatic.TypeWithMulti;
+import org.eclipse.emf.emfatic.xtext.emfatic.*;
 import org.eclipse.xtext.resource.XtextResourceSet;
 import org.eclipse.xtext.testing.InjectWith;
 import org.eclipse.xtext.testing.extensions.InjectionExtension;
@@ -196,37 +180,73 @@ class EmfaticEcoreTest {
 				.findFirst()
 				.orElseThrow();
 		// Operations
-		List<Operation> ops = eClass.getMembers().stream()
-				.filter(m -> m.getMember() instanceof Operation)
-				.map(m -> (Operation) m.getMember())
-				.collect(Collectors.toList());
-		Assertions.assertEquals(5, ops.size());
-		Operation getFeatureCount = ops.stream()
-				.filter(op -> Objects.equals("getFeatureCount", op.getName()))
-				.findFirst()
-				.orElseThrow();
-		ResultType resultType = getFeatureCount.getResType();
-		Assertions.assertFalse(resultType.isVoid());
-		TypeWithMulti resultTypeMulti = (TypeWithMulti)resultType;
-		Assertions.assertEquals("EInt", resultTypeMulti.getType().getName());
-		Assertions.assertEquals(0, getFeatureCount.getParams().size());
-		Operation getEStructuralFeature = ops.stream()
-				.filter(op -> Objects.equals("getEStructuralFeature", op.getName()))
-				.findFirst()
-				.orElseThrow();
-		resultType = getEStructuralFeature.getResType();
-		Assertions.assertFalse(resultType.isVoid());
-		resultTypeMulti = (TypeWithMulti)resultType;
-		
-		Assertions.assertEquals("EStructuralFeature", resultTypeMulti.getType().getName());
-		Assertions.assertEquals(1, getEStructuralFeature.getParams().size());
-		Param featureID = getEStructuralFeature.getParams().get(0);
-		Assertions.assertEquals("featureID", featureID.getName());
-		Assertions.assertEquals(0, featureID.getLeadingAnnotations().size());
-		Assertions.assertEquals(0, featureID.getTrailingAnnotations().size());
-		Assertions.assertEquals(0, featureID.getModifiers().size());
-		Assertions.assertEquals("EInt", featureID.getTypeWithMulti().getType().getName());
+		long ops = eClass.getMembers().stream()
+		.filter(m -> m.getMember() instanceof Operation)
+		.count();
+		Assertions.assertEquals(5, ops);
 		// Attributes
+		long attrs = eClass.getMembers().stream()
+			.filter(m -> m.getMember() instanceof Attribute)
+			.count();
+		Assertions.assertEquals(2, attrs);
+		// References
+		long refs = eClass.getMembers().stream()
+			.filter(m -> m.getMember() instanceof Reference)
+			.count();
+		Assertions.assertEquals(14, refs);
+		long nonCont = eClass.getMembers().stream()
+				.filter(m -> m.getMember() instanceof Reference)
+				.map(m -> (Reference)m.getMember())
+				.filter(r -> Objects.equals("ref", r.getKind()))
+				.count();
+		Assertions.assertEquals(11, nonCont);
+		long cont = eClass.getMembers().stream()
+				.filter(m -> m.getMember() instanceof Reference)
+				.map(m -> (Reference)m.getMember())
+				.filter(r -> Objects.equals("val", r.getKind()))
+				.count();
+		Assertions.assertEquals(3, cont);
+		
+		
+		// Operations
+//		List<Operation> ops = eClass.getMembers().stream()
+//				.filter(m -> m.getMember() instanceof Operation)
+//				.map(m -> (Operation) m.getMember())
+//				.collect(Collectors.toList());
+//		Assertions.assertEquals(5, ops.size());
+//		// Attributes
+//		List<Attribute> attr = eClass.getMembers().stream()
+//				.filter(m -> m.getMember() instanceof Attribute)
+//				.map(m -> (Attribute) m.getMember())
+//				.collect(Collectors.toList());
+//		Assertions.assertEquals(5, attr.size());
+//		
+//		Operation getFeatureCount = ops.stream()
+//				.filter(op -> Objects.equals("getFeatureCount", op.getName()))
+//				.findFirst()
+//				.orElseThrow();
+//		ResultType resultType = getFeatureCount.getResType();
+//		Assertions.assertFalse(resultType.isVoid());
+//		TypeWithMulti resultTypeMulti = (TypeWithMulti)resultType;
+//		Assertions.assertEquals("EInt", resultTypeMulti.getType().getName());
+//		Assertions.assertEquals(0, getFeatureCount.getParams().size());
+//		Operation getEStructuralFeature = ops.stream()
+//				.filter(op -> Objects.equals("getEStructuralFeature", op.getName()))
+//				.findFirst()
+//				.orElseThrow();
+//		resultType = getEStructuralFeature.getResType();
+//		Assertions.assertFalse(resultType.isVoid());
+//		resultTypeMulti = (TypeWithMulti)resultType;
+//		
+//		Assertions.assertEquals("EStructuralFeature", resultTypeMulti.getType().getName());
+//		Assertions.assertEquals(1, getEStructuralFeature.getParams().size());
+//		Param featureID = getEStructuralFeature.getParams().get(0);
+//		Assertions.assertEquals("featureID", featureID.getName());
+//		Assertions.assertEquals(0, featureID.getLeadingAnnotations().size());
+//		Assertions.assertEquals(0, featureID.getTrailingAnnotations().size());
+//		Assertions.assertEquals(0, featureID.getModifiers().size());
+//		Assertions.assertEquals("EInt", featureID.getTypeWithMulti().getType().getName());
+		
 		
 		
 	}

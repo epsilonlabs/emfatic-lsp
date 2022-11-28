@@ -110,7 +110,11 @@ TopLevelDecl:
 ;
 
 Declaration:
-	(SubPackageDecl | ClassDecl | DataTypeDecl | EnumDecl | MapEntryDecl)
+	(SubPackageDecl | ClassifierDeclaration | MapEntryDecl)
+;
+
+ClassifierDeclaration:
+	ClassDecl | DataType
 ;
 
 /*
@@ -143,7 +147,7 @@ SubPackageDecl:
  * and using a multi-value assignment instead
  * 
  */
-ClassDecl returns ClassifierDeclaration:
+ClassDecl:
 	abstract?='abstract'?
 	kind=ClassKind name=ID
 	(typeParamsInfo=TypeParamsInfo)?
@@ -417,6 +421,10 @@ Param:
  
 // "transient" means !serializable
 
+DataType:
+	DataTypeDecl | EnumDecl
+;
+
 /**
  * sequence dataTypeDecl : (transientModifier)? "datatype" name=ID COLON instClassName=stringLiteralOrQualifiedID SEMI ;
  * 
@@ -427,7 +435,7 @@ Param:
  * and used a boolean assignment expression instead
  */
 // TODO datatypes should accept type parameters
-DataTypeDecl returns ClassifierDeclaration:
+DataTypeDecl:
 	(transient?="transient")? "datatype" name=ID COLON instanceClassName=StringOrQualifiedID SEMI
 ; 
 
@@ -441,7 +449,7 @@ DataTypeDecl returns ClassifierDeclaration:
  * and using a multi-value assignment instead
  * 
  */
-EnumDecl returns DataTypeDecl:
+EnumDecl:
 	"enum" name=ID LCURLY enumLiterals+=EnumLiteral* RCURLY
 ;
 

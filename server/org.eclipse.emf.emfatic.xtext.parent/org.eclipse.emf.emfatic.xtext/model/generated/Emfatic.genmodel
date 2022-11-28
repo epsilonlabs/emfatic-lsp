@@ -38,6 +38,7 @@
     <genClasses ecoreClass="Emfatic.ecore#//Declaration">
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Emfatic.ecore#//Declaration/name"/>
     </genClasses>
+    <genClasses ecoreClass="Emfatic.ecore#//ClassifierDeclaration"/>
     <genClasses ecoreClass="Emfatic.ecore#//SubPackageDecl">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Emfatic.ecore#//SubPackageDecl/topLevelDecls"/>
     </genClasses>
@@ -122,6 +123,7 @@
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Emfatic.ecore#//Param/name"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Emfatic.ecore#//Param/trailingAnnotations"/>
     </genClasses>
+    <genClasses ecoreClass="Emfatic.ecore#//DataType"/>
     <genClasses ecoreClass="Emfatic.ecore#//DataTypeDecl">
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Emfatic.ecore#//DataTypeDecl/transient"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Emfatic.ecore#//DataTypeDecl/instanceClassName"/>
