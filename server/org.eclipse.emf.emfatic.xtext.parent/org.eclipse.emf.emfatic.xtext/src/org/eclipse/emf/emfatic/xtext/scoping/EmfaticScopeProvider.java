@@ -3,6 +3,20 @@
  */
 package org.eclipse.emf.emfatic.xtext.scoping;
 
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
+
+import org.eclipse.emf.ecore.EDataType;
+import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.ecore.EReference;
+import org.eclipse.emf.ecore.EcorePackage;
+import org.eclipse.emf.emfatic.xtext.emfatic.DataType;
+import org.eclipse.emf.emfatic.xtext.emfatic.EmfaticPackage;
+import org.eclipse.xtext.EcoreUtil2;
+import org.eclipse.xtext.scoping.IScope;
+import org.eclipse.xtext.scoping.Scopes;
+import org.eclipse.xtext.scoping.impl.FilteringScope;
 
 /**
  * This class contains custom scoping description.
@@ -12,4 +26,33 @@ package org.eclipse.emf.emfatic.xtext.scoping;
  */
 public class EmfaticScopeProvider extends AbstractEmfaticScopeProvider {
 
+	@Override
+	public IScope getScope(EObject context, EReference reference) {
+		if (reference == EmfaticPackage.Literals.DATA_TYPE_WITH_MULTI__TYPE) {
+			return new FilteringScope(
+					super.getScope(context, reference),
+					(e) -> 
+					Objects.equals(e.getEClass(), EmfaticPackage.Literals.DATA_TYPE_DECL));
+//			return Scopes.scopeFor(
+//					EcoreUtil2.getAllContentsOfType(EcorePackage.eINSTANCE, EDataType.class),
+//					super.getScope(context, reference));
+			
+//			List<EDataType> datatypes = EcoreUtil2.getAllContentsOfType(EcorePackage.eINSTANCE, EDataType.class);
+//			IScope scope = super.getScope(context, reference);
+//			return Scopes.scopeFor(
+//					datatypes.stream()
+//						.map(dt -> {
+//							DataType result = (DataType)EmfaticPackage.eINSTANCE.getEFactoryInstance().create(EmfaticPackage.Literals.DATA_TYPE);
+//							result.setName(dt.getName());
+//							return result;
+//						})
+//						.collect(Collectors.toList()),
+//					scope);
+			
+		}
+		return super.getScope(context, reference);
+	}
+
+	
+	
 }
