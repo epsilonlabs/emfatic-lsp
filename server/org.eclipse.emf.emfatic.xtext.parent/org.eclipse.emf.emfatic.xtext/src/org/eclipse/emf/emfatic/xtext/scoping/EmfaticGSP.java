@@ -1,6 +1,7 @@
 package org.eclipse.emf.emfatic.xtext.scoping;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -33,8 +34,6 @@ import com.google.inject.Inject;
 
 public class EmfaticGSP extends DefaultGlobalScopeProvider {
 	
-	@Inject
-	private IResourceDescription.Manager descriptionManager;
 	
 	@Override
 	protected IScope getScope(
@@ -47,7 +46,7 @@ public class EmfaticGSP extends DefaultGlobalScopeProvider {
 		URI libaryResourceURI = URI.createURI("lib://www.eclipse.org/emf/2002/Ecore");
 		Resource libaryResource = context.getResourceSet().getResource(libaryResourceURI, false);
 		if (libaryResource == null) {
-			System.out.println("LOOOOOOOOAAAAADDDDD");
+			System.out.println("Loading Ecore");
 			libaryResource = ecoreToEmf(context.getResourceSet(), libaryResourceURI);
 			
 		}
@@ -55,6 +54,9 @@ public class EmfaticGSP extends DefaultGlobalScopeProvider {
 		Iterable<IEObjectDescription> libary = resourceDescription.getExportedObjects();
 		return new SimpleScope(super.getScope(context, ignoreCase, type, filter), libary, false);
 	}
+	
+	@Inject
+	private IResourceDescription.Manager descriptionManager;
 
 	/**
 	 * We only add a simple wrappers for the EClasses and EDataTypes that have 
@@ -87,7 +89,7 @@ public class EmfaticGSP extends DefaultGlobalScopeProvider {
 		result.addAll( eClassifiers.stream()
 				.filter(EDataType.class::isInstance)
 				.map(EDataType.class::cast)
-				.map(this::wrapDataType)
+				.flatMap(dt -> this.wrapDataType(dt).stream())
 				.collect(Collectors.toList()));
 		result.addAll( eClassifiers.stream()
 				.filter(EEnum.class::isInstance)
@@ -115,12 +117,49 @@ public class EmfaticGSP extends DefaultGlobalScopeProvider {
 		return tld;
 	}
 	
-	private TopLevelDecl wrapDataType(EDataType type) {
+	/**
+	 * Emfatic not only supports the EMF DataTypes, but also, the equivalent
+	 * Java types (both primitive and wrappers).
+	 * When the Ecore DataType is xxxxObject, we want to generate the equivalent
+	 * wrapped Java, else we generate the primitive.
+	 * 
+	 * TODO The generated list of types is larger than Emfatic. Is this good/bad? 
+	 * 		e.g., we get InvocationTargetException, not sure is a type we want to use,
+	 * 		but... is a valid DataType non the less.
+	 * @param type
+	 * @return
+	 */
+	private List<TopLevelDecl> wrapDataType(EDataType type) {
+		List<TopLevelDecl> result = new ArrayList<>();
 		DataTypeDecl dtd = emfaticInstance(EmfaticPackage.Literals.DATA_TYPE_DECL);
 		dtd.setName(type.getName());
 		TopLevelDecl tld = emfaticInstance(EmfaticPackage.Literals.TOP_LEVEL_DECL);
 		tld.setDeclaration(dtd);
-		return tld;
+		result.add(tld);
+//		System.out.println(
+//				String.format("add(\"%s\", ecore.get%s());", dtd.getName(), dtd.getName()));
+		Class<?> javaType = null; 
+		try {
+			javaType = Class.forName(type.getInstanceClassName());
+		 } catch (ClassNotFoundException e) {
+			 DataTypeDecl javaDtd = emfaticInstance(EmfaticPackage.Literals.DATA_TYPE_DECL);
+			 javaDtd.setName(type.getInstanceClassName());
+			 TopLevelDecl javaTld = emfaticInstance(EmfaticPackage.Literals.TOP_LEVEL_DECL);
+			 javaTld.setDeclaration(javaDtd);
+			 result.add(javaTld);
+//			 System.out.println(
+//					 String.format("add(\"%s\", ecore.get%s());", javaDtd.getName(), dtd.getName()));
+			 return result;	 
+		}
+			
+		DataTypeDecl javaDtd = emfaticInstance(EmfaticPackage.Literals.DATA_TYPE_DECL);
+		javaDtd.setName(javaType.getSimpleName());
+		TopLevelDecl javaTld = emfaticInstance(EmfaticPackage.Literals.TOP_LEVEL_DECL);
+		javaTld.setDeclaration(javaDtd);
+		result.add(javaTld);
+//		System.out.println(
+//				String.format("add(\"%s\", ecore.get%s());", javaDtd.getName(), dtd.getName()));
+		return result;
 	}
 	
 	private TopLevelDecl wrapEnum(EEnum type) {
