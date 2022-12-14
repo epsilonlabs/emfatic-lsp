@@ -112,10 +112,11 @@ TopLevelDecl:
 ;
 
 Declaration:
-	(SubPackageDecl | ClassifierDeclaration | MapEntryDecl)
+	(SubPackageDecl | ClassifierDecl | MapEntryDecl
+	)
 ;
 
-ClassifierDeclaration:
+ClassifierDecl:
 	ClassDecl | DataType
 ;
 
@@ -217,12 +218,12 @@ TypeBoundsInfo:
  * 
  */
 BoundExceptWildcard:
-	bound=[ClassifierDeclaration|QualifiedID] (LT typeArgs+=TypeArg (COMMA typeArgs+=TypeArg)* GT)?
+	bound=[ClassifierDecl|QualifiedID] (LT typeArgs+=TypeArg (COMMA typeArgs+=TypeArg)* GT)?
 ;
 
 /**
  * We need to differentiate when referencing Class (class extends), DataTypes
- * (attribtues) or both (operations)
+ * (attributes) or both (operation's return type)
  */
  BoundClassExceptWildcard:
 	bound=[ClassDecl|QualifiedID] (LT typeArgs+=TypeArg (COMMA typeArgs+=TypeArg)* GT)?

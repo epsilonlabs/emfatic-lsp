@@ -5,6 +5,7 @@ package org.eclipse.emf.emfatic.xtext.scoping;
 
 import java.util.Objects;
 
+import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EReference;
 import org.eclipse.emf.emfatic.xtext.emfatic.EmfaticPackage;
@@ -12,21 +13,46 @@ import org.eclipse.xtext.scoping.IScope;
 import org.eclipse.xtext.scoping.impl.FilteringScope;
 
 /**
- * This class contains custom scoping description.
+ * This class contains custom scoping description in order to filter the EMF
+ * elements provided by the global scope according to the grammar reference
+ * being resolved.
  * 
- * See https://www.eclipse.org/Xtext/documentation/303_runtime_concepts.html#scoping
- * on how and when to use it.
+ * @see EmfaticGSP
  */
 public class EmfaticScopeProvider extends AbstractEmfaticScopeProvider {
 
 	@Override
 	public IScope getScope(EObject context, EReference reference) {
 		if (reference == EmfaticPackage.Literals.DATA_TYPE_WITH_MULTI__TYPE) {
+			// DataTypes
 			return new FilteringScope(
 					super.getScope(context, reference),
-						(e) -> 
-							Objects.equals(e.getEClass(), EmfaticPackage.Literals.DATA_TYPE_DECL));
+					(e) -> isSubType(e.getEClass(), EmfaticPackage.Literals.DATA_TYPE_DECL));
+		}
+		if (reference == EmfaticPackage.Literals.BOUND_CLASS_EXCEPT_WILDCARD__BOUND) {
+			// Classes
+			return new FilteringScope(
+					super.getScope(context, reference),
+					(e) -> isSubType(e.getEClass(), EmfaticPackage.Literals.CLASS_DECL));
+			
+		}
+		if (reference == EmfaticPackage.Literals.BOUND_EXCEPT_WILDCARD__BOUND) {
+			// Classifiers
+			return new FilteringScope(
+					super.getScope(context, reference),
+					(e) -> isSubType(e.getEClass(), EmfaticPackage.Literals.CLASSIFIER_DECL));
+			
 		}
 		return super.getScope(context, reference);
 	}
+	
+	private boolean isSubType(EClass type, EClass superType) {
+		if (Objects.equals(type, superType)) {
+			return true;
+		}
+		return type.getEAllSuperTypes().stream()
+				.anyMatch(sp -> Objects.equals(sp, superType));
+	}
+
+	
 }

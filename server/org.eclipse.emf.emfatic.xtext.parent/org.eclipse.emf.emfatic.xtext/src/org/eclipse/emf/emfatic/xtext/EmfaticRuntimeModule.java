@@ -3,9 +3,12 @@
  */
 package org.eclipse.emf.emfatic.xtext;
 
+import org.eclipse.emf.emfatic.xtext.naming.EmfaticDQNP;
 import org.eclipse.emf.emfatic.xtext.scoping.EmfaticGSP;
+import org.eclipse.emf.emfatic.xtext.scoping.EmfaticRDS;
+import org.eclipse.xtext.naming.IQualifiedNameProvider;
+import org.eclipse.xtext.resource.IDefaultResourceDescriptionStrategy;
 import org.eclipse.xtext.scoping.IGlobalScopeProvider;
-import org.eclipse.xtext.scoping.impl.DefaultGlobalScopeProvider;
 
 /**
  * Use this class to register components to be used at runtime / without the 
@@ -16,6 +19,14 @@ public class EmfaticRuntimeModule extends AbstractEmfaticRuntimeModule {
 	
 	public Class<? extends IGlobalScopeProvider> bindIGlobalScopeProvider() {
 		return EmfaticGSP.class;
+	}
+	
+//	public Class<? extends IQualifiedNameProvider> bindIQualifiedNameProvider() {
+//		return EmfaticDQNP.class;
+//	}
+	
+	public Class<? extends IDefaultResourceDescriptionStrategy> bindIDefaultResourceDescriptionStrategy() {
+		return EmfaticRDS.class;
 	}
 	
 }
