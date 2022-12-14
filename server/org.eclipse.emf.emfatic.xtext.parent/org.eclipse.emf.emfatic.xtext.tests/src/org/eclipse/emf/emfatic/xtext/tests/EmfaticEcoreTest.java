@@ -162,8 +162,7 @@ class EmfaticEcoreTest {
 		EList<BoundClassExceptWildcard> superTypes = cls.getSuperTypes();
 		Assertions.assertEquals(1, superTypes.size());
 		BoundClassExceptWildcard superCls = superTypes.get(0);
-		System.out.println(superCls.getBound().getName());
-		Assertions.assertEquals("EStructuralFeature", "");
+		Assertions.assertEquals("EStructuralFeature", superCls.getBound().getName());
 		Assertions.assertEquals(0, superTypes.get(0).getTypeArgs().size());
 		Assertions.assertNull(cls.getInstClassName());
 		Assertions.assertEquals(2, cls.getMembers().size());

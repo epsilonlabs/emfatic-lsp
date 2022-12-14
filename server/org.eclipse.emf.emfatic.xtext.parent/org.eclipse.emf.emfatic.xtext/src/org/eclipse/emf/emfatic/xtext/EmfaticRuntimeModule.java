@@ -21,10 +21,6 @@ public class EmfaticRuntimeModule extends AbstractEmfaticRuntimeModule {
 		return EmfaticGSP.class;
 	}
 	
-//	public Class<? extends IQualifiedNameProvider> bindIQualifiedNameProvider() {
-//		return EmfaticDQNP.class;
-//	}
-	
 	public Class<? extends IDefaultResourceDescriptionStrategy> bindIDefaultResourceDescriptionStrategy() {
 		return EmfaticRDS.class;
 	}

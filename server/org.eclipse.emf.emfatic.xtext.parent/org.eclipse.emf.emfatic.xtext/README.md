@@ -11,4 +11,7 @@
 - Content assist
   - ~~DataTypes~~
   - ~~Classes~~
-  - Classifiers
+  - ~~Classifiers~~
+- Imports
+  - uri
+  - other package (i.e. other emf)  

@@ -16,6 +16,7 @@ import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EcorePackage;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
+import org.eclipse.emf.ecore.resource.impl.ResourceImpl;
 import org.eclipse.emf.emfatic.xtext.emfatic.ClassDecl;
 import org.eclipse.emf.emfatic.xtext.emfatic.CompUnit;
 import org.eclipse.emf.emfatic.xtext.emfatic.DataTypeDecl;
@@ -34,7 +35,8 @@ import com.google.common.base.Predicate;
 import com.google.inject.Inject;
 
 /**
- * This implementation adds all ECore elements to the GloablScope.
+ * This implementation adds all ECore elements to the GloablScope and also
+ * prevents implicit import from all Emfatic files in the project.
  * 
  * The Element's name and type is used to create an equivalent Emfatic EClasse
  * that can be used for linking and content assist. This is necessary, as Emfatic's
@@ -60,14 +62,22 @@ public class EmfaticGSP extends DefaultGlobalScopeProvider {
 		URI libaryResourceURI = URI.createURI(ECORE_RESOURCE_URI);
 		Resource libaryResource = context.getResourceSet().getResource(libaryResourceURI, false);
 		if (libaryResource == null) {
-			System.out.println("Loading Ecore");
 			libaryResource = ecoreToEmf(context.getResourceSet(), libaryResourceURI);
 		}
 		IResourceDescription resourceDescription = descriptionManager.getResourceDescription(libaryResource);
-		// TODO We need to do a Qualified Name resolver only for GSP?
-		// How can we both resolve un quali and qualified?
 		Iterable<IEObjectDescription> libary = resourceDescription.getExportedObjects();
-		return new SimpleScope(super.getScope(context, ignoreCase, type, filter), libary, false);
+		Predicate<IEObjectDescription> resFilter = new Predicate<IEObjectDescription>() {
+            @Override
+            public boolean apply(IEObjectDescription input) {
+            	// Filter out if not in the same resource
+            	URI inputBase = input.getEObjectURI().trimFragment();
+            	return inputBase.hashCode() == context.getURI().hashCode();
+            }
+        };
+        if (filter != null) {
+        	resFilter = (Predicate<IEObjectDescription>) filter.and(resFilter);
+        }
+		return new SimpleScope(super.getScope(context, ignoreCase, type, resFilter), libary, false);
 	}
 	
 	@Inject
@@ -81,7 +91,8 @@ public class EmfaticGSP extends DefaultGlobalScopeProvider {
 	 * @return
 	 */
 	private Resource ecoreToEmf(ResourceSet resourceSet, URI libaryResourceURI) {
-		Resource libaryResource = resourceSet.createResource(libaryResourceURI);
+		Resource libaryResource = new ResourceImpl(libaryResourceURI);
+		resourceSet.getResources().add(libaryResource);
 		CompUnit compUint = emfaticInstance(EmfaticPackage.Literals.COMP_UNIT);
 		libaryResource.getContents().add(compUint);
 		compUint.setPackage(wrapPackage(EcorePackage.eINSTANCE));
