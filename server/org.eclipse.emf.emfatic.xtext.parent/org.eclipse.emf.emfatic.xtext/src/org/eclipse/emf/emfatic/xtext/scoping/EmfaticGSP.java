@@ -1,5 +1,7 @@
 package org.eclipse.emf.emfatic.xtext.scoping;
 
+import static com.google.common.collect.Iterables.concat;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -13,6 +15,7 @@ import org.eclipse.emf.ecore.EDataType;
 import org.eclipse.emf.ecore.EEnum;
 import org.eclipse.emf.ecore.ENamedElement;
 import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.ecore.EPackage;
 import org.eclipse.emf.ecore.EcorePackage;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
@@ -22,6 +25,7 @@ import org.eclipse.emf.emfatic.xtext.emfatic.CompUnit;
 import org.eclipse.emf.emfatic.xtext.emfatic.DataTypeDecl;
 import org.eclipse.emf.emfatic.xtext.emfatic.EmfaticPackage;
 import org.eclipse.emf.emfatic.xtext.emfatic.EnumDecl;
+import org.eclipse.emf.emfatic.xtext.emfatic.Import;
 import org.eclipse.emf.emfatic.xtext.emfatic.PackageDecl;
 import org.eclipse.emf.emfatic.xtext.emfatic.StringOrQualifiedID;
 import org.eclipse.emf.emfatic.xtext.emfatic.TopLevelDecl;
@@ -59,27 +63,41 @@ public class EmfaticGSP extends DefaultGlobalScopeProvider {
 		Predicate<IEObjectDescription> filter) {
 		// We use the ECore URI, so when generating the emfatic ecore, we know what
 		// comes from the Ecore metamodel
-		URI libaryResourceURI = URI.createURI(ECORE_RESOURCE_URI);
-		Resource libaryResource = context.getResourceSet().getResource(libaryResourceURI, false);
+		URI libraryResourceURI = URI.createURI(ECORE_RESOURCE_URI);
+		Resource libaryResource = context.getResourceSet().getResource(libraryResourceURI, false);
 		if (libaryResource == null) {
-			libaryResource = ecoreToEmf(context.getResourceSet(), libaryResourceURI);
+			System.out.println("Loading Ecore");
+			libaryResource = ecoreToEmf(context.getResourceSet(), libraryResourceURI, EcorePackage.eINSTANCE);
 		}
 		IResourceDescription resourceDescription = descriptionManager.getResourceDescription(libaryResource);
-		Iterable<IEObjectDescription> libary = resourceDescription.getExportedObjects();
-		Predicate<IEObjectDescription> resFilter = new Predicate<IEObjectDescription>() {
-            @Override
-            public boolean apply(IEObjectDescription input) {
-            	// Filter out if not in the same resource
-            	URI inputBase = input.getEObjectURI().trimFragment();
-            	return inputBase.hashCode() == context.getURI().hashCode();
-            }
-        };
-        if (filter != null) {
-        	resFilter = (Predicate<IEObjectDescription>) filter.and(resFilter);
-        }
-		return new SimpleScope(super.getScope(context, ignoreCase, type, resFilter), libary, false);
+		Iterable<IEObjectDescription> library = resourceDescription.getExportedObjects();
+		// Look for all URI import statements and load the resources, if they exist
+		if (context.getContents().size() > 0) {
+			CompUnit compUnit = (CompUnit) context.getContents().get(0);
+			for (Import is : compUnit.getImportStmts()) {
+				if (is.getImportedNamespace() != null) {
+					String uri = is.getImportedNamespace().getLiteral();
+					if (uri != null) {
+						if (uri != EcorePackage.eINSTANCE.getNsURI()) {	// Note that Ecore.ecore is automatically imported
+							libaryResource = context.getResourceSet().getResource(libraryResourceURI, false);
+							if (libaryResource == null) {
+								System.out.println("Loading Metamodel " + uri);
+								EPackage ep = EPackage.Registry.INSTANCE.getEPackage(uri);
+								libaryResource = ecoreToEmf(context.getResourceSet(), URI.createURI(uri), ep);
+								resourceDescription = descriptionManager.getResourceDescription(libaryResource);
+								library = concat(library, resourceDescription.getExportedObjects());
+							}
+						
+						}
+					}
+				}
+			}
+		}
+		return new SimpleScope(super.getScope(context, ignoreCase, type, filter), library, false);
 	}
 	
+
+
 	@Inject
 	private IResourceDescription.Manager descriptionManager;
 
@@ -88,16 +106,23 @@ public class EmfaticGSP extends DefaultGlobalScopeProvider {
 	 * matching names
 	 * @param resourceSet
 	 * @param libaryResourceURI
+	 * @param ep TODO
 	 * @return
 	 */
-	private Resource ecoreToEmf(ResourceSet resourceSet, URI libaryResourceURI) {
+	private Resource ecoreToEmf(ResourceSet resourceSet, URI libaryResourceURI, EPackage ep) {
 		Resource libaryResource = new ResourceImpl(libaryResourceURI);
 		resourceSet.getResources().add(libaryResource);
 		CompUnit compUint = emfaticInstance(EmfaticPackage.Literals.COMP_UNIT);
 		libaryResource.getContents().add(compUint);
-		compUint.setPackage(wrapPackage(EcorePackage.eINSTANCE));
-		compUint.getTopLevelDecls().addAll(wrapClassifiers(EcorePackage.eINSTANCE.getEClassifiers()));
+		compUint.setPackage(wrapPackage(ep));
+		compUint.getTopLevelDecls().addAll(wrapClassifiers(ep.getEClassifiers()));
 		return libaryResource;
+	}
+	
+	private PackageDecl wrapPackage(EPackage ePackage) {
+		PackageDecl pd = emfaticInstance(EmfaticPackage.Literals.PACKAGE_DECL);
+		pd.setName(ePackage.getName());
+		return pd;
 	}
 
 	private Collection<? extends TopLevelDecl> wrapClassifiers(EList<EClassifier> eClassifiers) {
@@ -118,16 +143,6 @@ public class EmfaticGSP extends DefaultGlobalScopeProvider {
 				.collect(Collectors.toList()));
 		return result;
 	}
-
-	
-	
-	private PackageDecl wrapPackage(EcorePackage ePackage) {
-		PackageDecl pd = emfaticInstance(EmfaticPackage.Literals.PACKAGE_DECL);
-		pd.setName(ePackage.getName());
-		return pd;
-	}
-	
-	
 	
 	private TopLevelDecl wrapClass(EClass clazz) {
 		ClassDecl cd = emfaticInstance(EmfaticPackage.Literals.CLASS_DECL);

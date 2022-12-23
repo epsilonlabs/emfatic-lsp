@@ -3,12 +3,11 @@
  */
 package org.eclipse.emf.emfatic.xtext.scoping;
 
-import java.util.Objects;
-
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EReference;
 import org.eclipse.emf.emfatic.xtext.emfatic.EmfaticPackage;
+import org.eclipse.xtext.EcoreUtil2;
 import org.eclipse.xtext.scoping.IScope;
 import org.eclipse.xtext.scoping.impl.FilteringScope;
 
@@ -25,12 +24,14 @@ public class EmfaticScopeProvider extends AbstractEmfaticScopeProvider {
 	public IScope getScope(EObject context, EReference reference) {
 		if (reference == EmfaticPackage.Literals.DATA_TYPE_WITH_MULTI__TYPE) {
 			// DataTypes
+			System.out.println("Get scope for DataTypes");
 			return new FilteringScope(
 					super.getScope(context, reference),
-					(e) -> isSubType(e.getEClass(), EmfaticPackage.Literals.DATA_TYPE_DECL));
+					(e) ->   isSubType(e.getEClass(), EmfaticPackage.Literals.DATA_TYPE_DECL));
 		}
 		if (reference == EmfaticPackage.Literals.BOUND_CLASS_EXCEPT_WILDCARD__BOUND) {
 			// Classes
+			System.out.println("Get scope for Classes");
 			return new FilteringScope(
 					super.getScope(context, reference),
 					(e) -> isSubType(e.getEClass(), EmfaticPackage.Literals.CLASS_DECL));
@@ -38,6 +39,7 @@ public class EmfaticScopeProvider extends AbstractEmfaticScopeProvider {
 		}
 		if (reference == EmfaticPackage.Literals.BOUND_EXCEPT_WILDCARD__BOUND) {
 			// Classifiers
+			System.out.println("Get scope for Classifiers");
 			return new FilteringScope(
 					super.getScope(context, reference),
 					(e) -> isSubType(e.getEClass(), EmfaticPackage.Literals.CLASSIFIER_DECL));
@@ -47,11 +49,12 @@ public class EmfaticScopeProvider extends AbstractEmfaticScopeProvider {
 	}
 	
 	private boolean isSubType(EClass type, EClass superType) {
-		if (Objects.equals(type, superType)) {
-			return true;
-		}
-		return type.getEAllSuperTypes().stream()
-				.anyMatch(sp -> Objects.equals(sp, superType));
+		return EcoreUtil2.isAssignableFrom(superType, type);
+//		if (Objects.equals(type, superType)) {
+//			return true;
+//		}
+//		return type.getEAllSuperTypes().stream()
+//				.anyMatch(sp -> Objects.equals(sp, superType));
 	}
 
 	

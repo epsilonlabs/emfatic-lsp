@@ -5,10 +5,16 @@ package org.eclipse.emf.emfatic.xtext;
 
 import org.eclipse.emf.emfatic.xtext.naming.EmfaticDQNP;
 import org.eclipse.emf.emfatic.xtext.scoping.EmfaticGSP;
+import org.eclipse.emf.emfatic.xtext.scoping.EmfaticINALSP;
 import org.eclipse.emf.emfatic.xtext.scoping.EmfaticRDS;
 import org.eclipse.xtext.naming.IQualifiedNameProvider;
 import org.eclipse.xtext.resource.IDefaultResourceDescriptionStrategy;
 import org.eclipse.xtext.scoping.IGlobalScopeProvider;
+import org.eclipse.xtext.scoping.IScopeProvider;
+import org.eclipse.xtext.scoping.impl.AbstractDeclarativeScopeProvider;
+
+import com.google.inject.Binder;
+import com.google.inject.name.Names;
 
 /**
  * Use this class to register components to be used at runtime / without the 
@@ -23,6 +29,15 @@ public class EmfaticRuntimeModule extends AbstractEmfaticRuntimeModule {
 	
 	public Class<? extends IDefaultResourceDescriptionStrategy> bindIDefaultResourceDescriptionStrategy() {
 		return EmfaticRDS.class;
+	}
+	
+	// contributed by org.eclipse.xtext.xtext.generator.scoping.ImportNamespacesScopingFragment2
+	public void configureIScopeProviderDelegate(Binder binder) {
+		binder.bind(IScopeProvider.class).annotatedWith(Names.named(AbstractDeclarativeScopeProvider.NAMED_DELEGATE)).to(EmfaticINALSP.class);
+	}
+	
+	public Class<? extends IQualifiedNameProvider> bindIQualifiedNameProvider() {
+		return EmfaticDQNP.class;
 	}
 	
 }

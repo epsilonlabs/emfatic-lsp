@@ -95,9 +95,12 @@ KeyEqualsValue:
 
 /**
  * sequence importStmt : "import" (alias=ID EQUALS)? uri=stringLiteralOrQualifiedID SEMI;
+ * 
+ * Changed the uri name for importedNamespace to leverage XText's imported 
+ * namespace facilities
  */
 Import:
-	'import' (alias=ID EQUALS)? uri=StringOrQualifiedID SEMI
+	'import' (alias=ID EQUALS)? importedNamespace=StringOrQualifiedID SEMI
 ;
 
 /**
@@ -112,8 +115,7 @@ TopLevelDecl:
 ;
 
 Declaration:
-	(SubPackageDecl | ClassifierDecl | MapEntryDecl
-	)
+	(SubPackageDecl | ClassifierDecl | MapEntryDecl)
 ;
 
 ClassifierDecl:
