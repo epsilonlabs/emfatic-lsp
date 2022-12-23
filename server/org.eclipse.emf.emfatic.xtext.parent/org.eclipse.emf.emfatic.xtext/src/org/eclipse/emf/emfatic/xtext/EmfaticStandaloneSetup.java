@@ -4,11 +4,15 @@
 package org.eclipse.emf.emfatic.xtext;
 
 
+// TODO: Auto-generated Javadoc
 /**
  * Initialization support for running Xtext languages without Equinox extension registry.
  */
 public class EmfaticStandaloneSetup extends EmfaticStandaloneSetupGenerated {
 
+	/**
+	 * Do setup.
+	 */
 	public static void doSetup() {
 		new EmfaticStandaloneSetup().createInjectorAndDoEMFRegistration();
 	}

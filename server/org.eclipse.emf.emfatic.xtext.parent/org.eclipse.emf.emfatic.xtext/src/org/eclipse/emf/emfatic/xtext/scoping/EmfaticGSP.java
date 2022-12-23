@@ -1,3 +1,12 @@
+/*******************************************************************************
+ * Copyright (c) 2022 The University of York.
+ * This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License 2.0
+ * which is available at https://www.eclipse.org/legal/epl-2.0/
+ * 
+ * Contributors:
+ *     Horacio Hoyos Rodriguez - initial API and implementation
+ ******************************************************************************/
 package org.eclipse.emf.emfatic.xtext.scoping;
 
 import static com.google.common.collect.Iterables.concat;
@@ -39,12 +48,12 @@ import com.google.common.base.Predicate;
 import com.google.inject.Inject;
 
 /**
- * This implementation adds all ECore elements to the GloablScope and also
- * prevents implicit import from all Emfatic files in the project.
+ * This implementation adds all ECore elements to the GloablScope and all
+ * elements from imported packages by URI.
  * 
  * The Element's name and type is used to create an equivalent Emfatic EClasse
  * that can be used for linking and content assist. This is necessary, as Emfatic's
- * syntax does not reference ECore types directly.
+ * AST does not reference ECore types directly.
  *  
  * @author Horacio Hoyos Rodriguez
  * @see EmfaticScopeProvider
@@ -53,6 +62,7 @@ import com.google.inject.Inject;
 public class EmfaticGSP extends DefaultGlobalScopeProvider {
 	
 	
+	/** The Constant ECORE_RESOURCE_URI. */
 	public static final String ECORE_RESOURCE_URI = "lib://www.eclipse.org/emf/2002/Ecore";
 
 	@Override
@@ -66,7 +76,6 @@ public class EmfaticGSP extends DefaultGlobalScopeProvider {
 		URI libraryResourceURI = URI.createURI(ECORE_RESOURCE_URI);
 		Resource libaryResource = context.getResourceSet().getResource(libraryResourceURI, false);
 		if (libaryResource == null) {
-			System.out.println("Loading Ecore");
 			libaryResource = ecoreToEmf(context.getResourceSet(), libraryResourceURI, EcorePackage.eINSTANCE);
 		}
 		IResourceDescription resourceDescription = descriptionManager.getResourceDescription(libaryResource);
@@ -77,11 +86,11 @@ public class EmfaticGSP extends DefaultGlobalScopeProvider {
 			for (Import is : compUnit.getImportStmts()) {
 				if (is.getImportedNamespace() != null) {
 					String uri = is.getImportedNamespace().getLiteral();
-					if (uri != null) {
+					// Don't import if null or is the ECore URI.
+					if (uri != null && !uri.equals(EcorePackage.eINSTANCE.getNsURI())) {
 						if (uri != EcorePackage.eINSTANCE.getNsURI()) {	// Note that Ecore.ecore is automatically imported
 							libaryResource = context.getResourceSet().getResource(libraryResourceURI, false);
 							if (libaryResource == null) {
-								System.out.println("Loading Metamodel " + uri);
 								EPackage ep = EPackage.Registry.INSTANCE.getEPackage(uri);
 								libaryResource = ecoreToEmf(context.getResourceSet(), URI.createURI(uri), ep);
 								resourceDescription = descriptionManager.getResourceDescription(libaryResource);
@@ -98,16 +107,18 @@ public class EmfaticGSP extends DefaultGlobalScopeProvider {
 	
 
 
+	/** The description manager. */
 	@Inject
 	private IResourceDescription.Manager descriptionManager;
 
 	/**
 	 * We only add a simple wrappers for the EClasses and EDataTypes that have 
-	 * matching names
-	 * @param resourceSet
-	 * @param libaryResourceURI
+	 * matching names.
+	 *
+	 * @param resourceSet the resource set
+	 * @param libaryResourceURI the libary resource URI
 	 * @param ep TODO
-	 * @return
+	 * @return the resource
 	 */
 	private Resource ecoreToEmf(ResourceSet resourceSet, URI libaryResourceURI, EPackage ep) {
 		Resource libaryResource = new ResourceImpl(libaryResourceURI);
@@ -119,12 +130,24 @@ public class EmfaticGSP extends DefaultGlobalScopeProvider {
 		return libaryResource;
 	}
 	
+	/**
+	 * Wrap package.
+	 *
+	 * @param ePackage the e package
+	 * @return the package decl
+	 */
 	private PackageDecl wrapPackage(EPackage ePackage) {
 		PackageDecl pd = emfaticInstance(EmfaticPackage.Literals.PACKAGE_DECL);
 		pd.setName(ePackage.getName());
 		return pd;
 	}
 
+	/**
+	 * Wrap classifiers.
+	 *
+	 * @param eClassifiers the e classifiers
+	 * @return the collection<? extends top level decl>
+	 */
 	private Collection<? extends TopLevelDecl> wrapClassifiers(EList<EClassifier> eClassifiers) {
 		List<TopLevelDecl> result = eClassifiers.stream()
 				.filter(EClass.class::isInstance)
@@ -144,6 +167,12 @@ public class EmfaticGSP extends DefaultGlobalScopeProvider {
 		return result;
 	}
 	
+	/**
+	 * Wrap class.
+	 *
+	 * @param clazz the clazz
+	 * @return the top level decl
+	 */
 	private TopLevelDecl wrapClass(EClass clazz) {
 		ClassDecl cd = emfaticInstance(EmfaticPackage.Literals.CLASS_DECL);
 		cd.setName(clazz.getName());
@@ -161,8 +190,9 @@ public class EmfaticGSP extends DefaultGlobalScopeProvider {
 	 * TODO The generated list of types is larger than Emfatic. Is this good/bad? 
 	 * 		e.g., we get InvocationTargetException, not sure is a type we want to use,
 	 * 		but... is a valid DataType non the less.
-	 * @param type
-	 * @return
+	 *
+	 * @param type the type
+	 * @return the list
 	 */
 	private List<TopLevelDecl> wrapDataType(EDataType type) {
 		// All DataTypeDecl shate the same instance class name
@@ -173,8 +203,6 @@ public class EmfaticGSP extends DefaultGlobalScopeProvider {
 		TopLevelDecl tld = emfaticInstance(EmfaticPackage.Literals.TOP_LEVEL_DECL);
 		tld.setDeclaration(dtd);
 		result.add(tld);
-//		System.out.println(
-//				String.format("add(\"%s\", ecore.get%s());", dtd.getName(), dtd.getName()));
 		Class<?> javaType = null; 
 		try {
 			javaType = Class.forName(type.getInstanceClassName());
@@ -185,8 +213,6 @@ public class EmfaticGSP extends DefaultGlobalScopeProvider {
 			 TopLevelDecl javaTld = emfaticInstance(EmfaticPackage.Literals.TOP_LEVEL_DECL);
 			 javaTld.setDeclaration(javaDtd);
 			 result.add(javaTld);
-//			 System.out.println(
-//					 String.format("add(\"%s\", ecore.get%s());", javaDtd.getName(), dtd.getName()));
 			 return result;	 
 		}
 		DataTypeDecl javaDtd = emfaticInstance(EmfaticPackage.Literals.DATA_TYPE_DECL);
@@ -195,11 +221,15 @@ public class EmfaticGSP extends DefaultGlobalScopeProvider {
 		TopLevelDecl javaTld = emfaticInstance(EmfaticPackage.Literals.TOP_LEVEL_DECL);
 		javaTld.setDeclaration(javaDtd);
 		result.add(javaTld);
-//		System.out.println(
-//				String.format("add(\"%s\", ecore.get%s());", javaDtd.getName(), dtd.getName()));
 		return result;
 	}
 	
+	/**
+	 * Wrap enum.
+	 *
+	 * @param type the type
+	 * @return the top level decl
+	 */
 	private TopLevelDecl wrapEnum(EEnum type) {
 		EnumDecl ed = emfaticInstance(EmfaticPackage.Literals.ENUM_DECL);
 		ed.setName(type.getName());
@@ -209,11 +239,24 @@ public class EmfaticGSP extends DefaultGlobalScopeProvider {
 	}
 
 	
+	/**
+	 * Emfatic instance.
+	 *
+	 * @param <T> the generic type
+	 * @param eClass the e class
+	 * @return the t
+	 */
 	@SuppressWarnings("unchecked")
 	private <T extends EObject> T emfaticInstance(EClass eClass) {
 		return (T) EmfaticPackage.eINSTANCE.getEmfaticFactory().create(eClass);
 	}
 	
+	/**
+	 * Creates the instance class name.
+	 *
+	 * @param element the element
+	 * @return the string or qualified ID
+	 */
 	private StringOrQualifiedID createInstanceClassName(ENamedElement element) {
 		StringOrQualifiedID instanceClassName = emfaticInstance(EmfaticPackage.Literals.STRING_OR_QUALIFIED_ID);
 		instanceClassName.setLiteral("http://www.eclipse.org/emf/2002/Ecore#//" + element.getName());

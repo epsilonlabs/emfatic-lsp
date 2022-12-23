@@ -16,6 +16,7 @@ import org.eclipse.xtext.scoping.impl.AbstractDeclarativeScopeProvider;
 import com.google.inject.Binder;
 import com.google.inject.name.Names;
 
+// TODO: Auto-generated Javadoc
 /**
  * Use this class to register components to be used at runtime / without the 
  * Equinox extension registry.
@@ -27,6 +28,11 @@ public class EmfaticRuntimeModule extends AbstractEmfaticRuntimeModule {
 		return EmfaticGSP.class;
 	}
 	
+	/**
+	 * Bind I default resource description strategy.
+	 *
+	 * @return the class<? extends I default resource description strategy>
+	 */
 	public Class<? extends IDefaultResourceDescriptionStrategy> bindIDefaultResourceDescriptionStrategy() {
 		return EmfaticRDS.class;
 	}

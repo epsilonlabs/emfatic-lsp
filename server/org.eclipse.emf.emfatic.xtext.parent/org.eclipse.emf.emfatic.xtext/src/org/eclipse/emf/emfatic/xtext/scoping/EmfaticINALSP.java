@@ -1,9 +1,19 @@
+/*******************************************************************************
+ * Copyright (c) 2022 The University of York.
+ * This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License 2.0
+ * which is available at https://www.eclipse.org/legal/epl-2.0/
+ * 
+ * Contributors:
+ *     Horacio Hoyos Rodriguez - initial API and implementation
+ ******************************************************************************/
 package org.eclipse.emf.emfatic.xtext.scoping;
 
 import static java.util.Collections.singletonList;
 
-import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EPackage;
@@ -12,17 +22,32 @@ import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.emfatic.xtext.emfatic.StringOrQualifiedID;
 import org.eclipse.xtext.naming.QualifiedName;
-import org.eclipse.xtext.resource.ISelectable;
 import org.eclipse.xtext.scoping.IScope;
+import org.eclipse.xtext.scoping.impl.FilteringScope;
 import org.eclipse.xtext.scoping.impl.ImportNormalizer;
 import org.eclipse.xtext.scoping.impl.ImportedNamespaceAwareLocalScopeProvider;
 import org.eclipse.xtext.scoping.impl.MultimapBasedSelectable;
+import org.eclipse.xtext.util.IResourceScopeCache;
 
+import com.google.inject.Inject;
+import com.google.inject.Provider;
+
+
+/**
+ * The Class EmfaticINALSP.
+ */
 public class EmfaticINALSP extends ImportedNamespaceAwareLocalScopeProvider {
 	
-	// Save a list of imported packages
-	List<String> importedPackages = new ArrayList<>();
-
+	/**
+	 * Since our {@code importedNamespace} feature does not return a String,
+	 * we need to process it accordingly. If the {@code importedNamespace} is
+	 * a URI, we use the package's name; if it is a name, we use that.
+	 * 
+	 * Imported packages are cached so we can use the information to filter
+	 * the Global Scope.
+	 * 
+	 * TODO Test nested imports: import a.b
+	 */
 	@Override
 	protected String getImportedNamespace(EObject object) {
 		EStructuralFeature feature = object.eClass().getEStructuralFeature("importedNamespace");
@@ -30,6 +55,9 @@ public class EmfaticINALSP extends ImportedNamespaceAwareLocalScopeProvider {
 			return null;
 		}
 		StringOrQualifiedID value = (StringOrQualifiedID) object.eGet(feature);
+		if (value == null) {
+			return null;
+		}
 		String name =  null;
 		String uri = value.getLiteral();
 		if (uri != null) {
@@ -44,33 +72,9 @@ public class EmfaticINALSP extends ImportedNamespaceAwareLocalScopeProvider {
 		} else {
 			name = value.getId();
 		}
-		importedPackages.add(name);
+		System.out.println("Adding imported namespace " + name);
+		getImportedPackages(object.eResource()).add(name);
 		return name;
-	}
-	
-	
-	protected IScope getLocalElementsScope(
-		IScope parent,
-		final EObject context,
-		final EReference reference) {
-		System.out.println("getLocalElementsScope " + context);
-		IScope result = parent;
-		ISelectable allDescriptions = getAllDescriptions(context.eResource());
-		QualifiedName name = getQualifiedNameOfLocalElement(context);
-		boolean ignoreCase = isIgnoreCase(reference);
-		final List<ImportNormalizer> namespaceResolvers = getImportedNamespaceResolvers(context, ignoreCase);
-		if (!namespaceResolvers.isEmpty()) {
-			if (isRelativeImport() && name!=null && !name.isEmpty()) {
-				ImportNormalizer localNormalizer = doCreateImportNormalizer(name, true, ignoreCase); 
-				result = createImportScope(result, singletonList(localNormalizer), allDescriptions, reference.getEReferenceType(), isIgnoreCase(reference));
-			}
-			result = createImportScope(result, namespaceResolvers, null, reference.getEReferenceType(), isIgnoreCase(reference));
-		}
-		if (name!=null) {
-			ImportNormalizer localNormalizer = doCreateImportNormalizer(name, true, ignoreCase); 
-			result = createImportScope(result, singletonList(localNormalizer), allDescriptions, reference.getEReferenceType(), isIgnoreCase(reference));
-		}
-		return result;
 	}
 	
 	/**
@@ -84,58 +88,53 @@ public class EmfaticINALSP extends ImportedNamespaceAwareLocalScopeProvider {
 				ignoreCase));
 	}
 	
+	/**
+	 * Create an {@ ImportScope} for the global scope that uses a {@code FilteringScope}
+	 * to remove from the scope all elements that do not belong to a package
+	 * that is explicitly imported.
+	 * TODO Probable need a qualified name resolver for the filter
+	 */
 	@Override
 	protected IScope getResourceScope(Resource res, EReference reference) {
-		EObject context = res.getContents().get(0);
+		getImportedPackages(res).add("ecore");
 		IScope globalScope = getGlobalScope(res, reference);
 		List<ImportNormalizer> normalizers = getImplicitImports(isIgnoreCase(reference));
 		if (!normalizers.isEmpty()) {
 			globalScope = createImportScope(
-					globalScope,
+					new FilteringScope(globalScope, eod -> getImportedPackages(res).contains(eod.getUserData("namespace"))),
 					normalizers,
 					new MultimapBasedSelectable(globalScope.getAllElements()),
 					reference.getEReferenceType(),
 					isIgnoreCase(reference));
 		}
-		//return getResourceScope(globalScope, context, reference);
 		return globalScope;
 	}
 	
-//	protected IScope getResourceScope(Resource res, EReference reference) {
-//		System.out.println("getResourceScope");
-//		System.out.println(res);
-//		System.out.println(reference);
-//		EObject context = res.getContents().get(0);
-//		IScope globalScope = getGlobalScope(res, reference);
-//		
-//		Predicate<IEObjectDescription> resFilter = new Predicate<IEObjectDescription>() {
-//		      @Override
-//		      public boolean apply(IEObjectDescription input) {
-//		      	// Filter out if not in the same resource
-//		      	URI inputBase = input.getEObjectURI().trimFragment();
-//		      	boolean result = inputBase.hashCode() == res.getURI().hashCode();
-//		      	if (result) {
-//		      		System.out.println("Filtering other resoruce " + context);
-//		      	}
-//				//return result;
-//		      	//return inputBase.hashCode() == context.getURI().hashCode();
-//		      	return true;
-//		      }
-//		  };
-//		
-//		IScope filteredScope = SelectableBasedScope.createScope(
-//				IScope.NULLSCOPE,
-//				new ScopeBasedSelectable(globalScope),
-//				resFilter,
-//				reference.getEReferenceType(),
-//				isIgnoreCase(reference));
-//		
-//		
-//		List<ImportNormalizer> normalizers = getImplicitImports(isIgnoreCase(reference));
-//		if (!normalizers.isEmpty()) {
-//			globalScope = createImportScope(globalScope, normalizers, null, reference.getEReferenceType(), isIgnoreCase(reference));
-//		}
-//		return getResourceScope(filteredScope, context, reference);
-//	}
+	/** The cache. */
+	@Inject
+	private IResourceScopeCache cache = IResourceScopeCache.NullImpl.INSTANCE;
 	
+	/**
+	 * Gets the imported packages.
+	 *
+	 * @param res the res
+	 * @return the imported packages
+	 */
+	private Set<String> getImportedPackages(Resource res) {
+		return cache.get("importedPackages", res, new Provider<Set<String>>() {
+			@Override
+			public Set<String> get() {
+				return internalgetImportedPackages();
+			}
+		});
+	}
+	
+	/**
+	 * Internal get imported packages.
+	 *
+	 * @return the sets the
+	 */
+	private Set<String> internalgetImportedPackages() {
+		return new HashSet<>();
+	}
 }
