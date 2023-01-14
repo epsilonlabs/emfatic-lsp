@@ -30,9 +30,6 @@ import org.eclipse.xtext.util.IAcceptor;
  * 
  */
 public class EmfaticRDS extends DefaultResourceDescriptionStrategy {
-	
-	/** The Constant LOG. */
-	private final static Logger LOG = Logger.getLogger(EmfaticRDS.class);
 
 	@Override
 	public boolean createEObjectDescriptions(EObject eObject, IAcceptor<IEObjectDescription> acceptor) {
@@ -52,5 +49,7 @@ public class EmfaticRDS extends DefaultResourceDescriptionStrategy {
 		}
 		return true;
 	}
+	
+	private final static Logger LOG = Logger.getLogger(EmfaticRDS.class);
 
 }

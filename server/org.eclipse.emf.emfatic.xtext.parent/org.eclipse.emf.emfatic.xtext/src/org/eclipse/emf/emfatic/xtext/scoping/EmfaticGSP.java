@@ -16,6 +16,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.apache.log4j.Logger;
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EClass;
@@ -86,18 +87,21 @@ public class EmfaticGSP extends DefaultGlobalScopeProvider {
 			for (Import is : compUnit.getImportStmts()) {
 				if (is.getImportedNamespace() != null) {
 					String uri = is.getImportedNamespace().getLiteral();
-					// Don't import if null or is the ECore URI.
+					// Don't import if null or is the ECore URI (Ecore is automatically imported).
 					if (uri != null && !uri.equals(EcorePackage.eINSTANCE.getNsURI())) {
-						if (uri != EcorePackage.eINSTANCE.getNsURI()) {	// Note that Ecore.ecore is automatically imported
-							libaryResource = context.getResourceSet().getResource(libraryResourceURI, false);
-							if (libaryResource == null) {
-								EPackage ep = EPackage.Registry.INSTANCE.getEPackage(uri);
-								libaryResource = ecoreToEmf(context.getResourceSet(), URI.createURI(uri), ep);
-								resourceDescription = descriptionManager.getResourceDescription(libaryResource);
-								library = concat(library, resourceDescription.getExportedObjects());
+						LOG.warn("Loading metamodel with uri " + uri);
+						libraryResourceURI = toLibURI(URI.createURI(uri));
+						libaryResource = context.getResourceSet().getResource(libraryResourceURI, false);
+						if (libaryResource == null) {
+							EPackage ep = EPackage.Registry.INSTANCE.getEPackage(uri);
+							if (ep == null) {
+								LOG.warn("The package for URI " + uri + " was not found. Check that it has been registered.");
+								continue;
 							}
-						
+							libaryResource = ecoreToEmf(context.getResourceSet(), libraryResourceURI, ep);
 						}
+						resourceDescription = descriptionManager.getResourceDescription(libaryResource);
+						library = concat(library, resourceDescription.getExportedObjects());
 					}
 				}
 			}
@@ -105,19 +109,19 @@ public class EmfaticGSP extends DefaultGlobalScopeProvider {
 		return new SimpleScope(super.getScope(context, ignoreCase, type, filter), library, false);
 	}
 	
-
-
+	private static final Logger LOG = Logger.getLogger(EmfaticGSP.class);
+	
 	/** The description manager. */
 	@Inject
 	private IResourceDescription.Manager descriptionManager;
-
+	
 	/**
 	 * We only add a simple wrappers for the EClasses and EDataTypes that have 
 	 * matching names.
 	 *
 	 * @param resourceSet the resource set
 	 * @param libaryResourceURI the libary resource URI
-	 * @param ep TODO
+	 * @param ep the EPackate to load
 	 * @return the resource
 	 */
 	private Resource ecoreToEmf(ResourceSet resourceSet, URI libaryResourceURI, EPackage ep) {
@@ -125,20 +129,20 @@ public class EmfaticGSP extends DefaultGlobalScopeProvider {
 		resourceSet.getResources().add(libaryResource);
 		CompUnit compUint = emfaticInstance(EmfaticPackage.Literals.COMP_UNIT);
 		libaryResource.getContents().add(compUint);
-		compUint.setPackage(wrapPackage(ep));
+		compUint.setPackage(wrapPackage(ep.getName()));
 		compUint.getTopLevelDecls().addAll(wrapClassifiers(ep.getEClassifiers()));
 		return libaryResource;
 	}
 	
 	/**
 	 * Wrap package.
+	 * @param name 
 	 *
-	 * @param ePackage the e package
 	 * @return the package decl
 	 */
-	private PackageDecl wrapPackage(EPackage ePackage) {
+	private PackageDecl wrapPackage(String name) {
 		PackageDecl pd = emfaticInstance(EmfaticPackage.Literals.PACKAGE_DECL);
-		pd.setName(ePackage.getName());
+		pd.setName(name);
 		return pd;
 	}
 
@@ -261,6 +265,17 @@ public class EmfaticGSP extends DefaultGlobalScopeProvider {
 		StringOrQualifiedID instanceClassName = emfaticInstance(EmfaticPackage.Literals.STRING_OR_QUALIFIED_ID);
 		instanceClassName.setLiteral("http://www.eclipse.org/emf/2002/Ecore#//" + element.getName());
 		return instanceClassName;
+	}
+	
+	// Replace the URI scheme by "lib" to differentiate them from loaded resoruces.
+	private URI toLibURI(URI uri) {
+		return URI.createHierarchicalURI(
+				"lib",
+				uri.authority(),
+				uri.device(),
+				uri.segments(),
+				uri.query(),
+				uri.fragment());
 	}
 
 }

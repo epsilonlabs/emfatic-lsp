@@ -11,15 +11,16 @@ package org.eclipse.emf.emfatic.xtext.scoping;
 
 import static java.util.Collections.singletonList;
 
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
+import java.util.Optional;
 
+import org.apache.log4j.Logger;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EPackage;
 import org.eclipse.emf.ecore.EReference;
-import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.emf.ecore.resource.Resource;
+import org.eclipse.emf.emfatic.xtext.emfatic.EmfaticPackage;
+import org.eclipse.emf.emfatic.xtext.emfatic.Import;
 import org.eclipse.emf.emfatic.xtext.emfatic.StringOrQualifiedID;
 import org.eclipse.xtext.naming.QualifiedName;
 import org.eclipse.xtext.scoping.IScope;
@@ -43,6 +44,12 @@ public class EmfaticINALSP extends ImportedNamespaceAwareLocalScopeProvider {
 	 * we need to process it accordingly. If the {@code importedNamespace} is
 	 * a URI, we use the package's name; if it is a name, we use that.
 	 * 
+	 * Imported metamodels by URI are loaded in the {@link EmfaticGSP}. If the
+	 * EPackage for the URI exists, we use the package name as the imported
+	 * namespace. If not we use the {@code Imoprt#id} as the namespace. 
+	 * 
+	 * If in either case an alias is provided, that is used instead.
+	 * 
 	 * Imported packages are cached so we can use the information to filter
 	 * the Global Scope.
 	 * 
@@ -50,20 +57,19 @@ public class EmfaticINALSP extends ImportedNamespaceAwareLocalScopeProvider {
 	 */
 	@Override
 	protected String getImportedNamespace(EObject object) {
-		EStructuralFeature feature = object.eClass().getEStructuralFeature("importedNamespace");
-		if (feature == null) {
+		// We know we only support imports within Import statements
+		if (!object.eClass().equals(EmfaticPackage.Literals.IMPORT)) {
 			return null;
 		}
-		StringOrQualifiedID value = (StringOrQualifiedID) object.eGet(feature);
+		Import imprt = (Import) object;
+		StringOrQualifiedID value = imprt.getImportedNamespace();
 		if (value == null) {
 			return null;
 		}
+		Optional<String> alias = Optional.ofNullable(imprt.getAlias());
 		String name =  null;
 		String uri = value.getLiteral();
 		if (uri != null) {
-			// Imported metamodels by URI are loaded in the EmfaticGSP
-			// If the EPackage for the URI exists, we add use the package
-			// name as the imported namespace
 			EPackage ep = EPackage.Registry.INSTANCE.getEPackage(uri);
 			if (ep == null) {
 				return null;
@@ -72,16 +78,18 @@ public class EmfaticINALSP extends ImportedNamespaceAwareLocalScopeProvider {
 		} else {
 			name = value.getId();
 		}
-		System.out.println("Adding imported namespace " + name);
-		getImportedPackages(object.eResource()).add(name);
-		return name;
+		getNamespaceAliases(object.eResource()).addAlias(name, alias.orElse(name));
+		if(LOG.isDebugEnabled()) {
+			LOG.debug("Added alias " +  alias.orElse(name) + " for EPackage " + name);
+		}
+		return alias.orElse(name);
 	}
 	
 	/**
 	 * Add ECore as an implicit import
+	 * @param res 
 	 */
-	@Override
-	protected List<ImportNormalizer> getImplicitImports(boolean ignoreCase) {
+	protected List<ImportNormalizer> getImplicitImports(boolean ignoreCase, Resource res) {
 		return singletonList(new ImportNormalizer(
 				QualifiedName.create("ecore"), 
 				true, 
@@ -92,16 +100,18 @@ public class EmfaticINALSP extends ImportedNamespaceAwareLocalScopeProvider {
 	 * Create an {@ ImportScope} for the global scope that uses a {@code FilteringScope}
 	 * to remove from the scope all elements that do not belong to a package
 	 * that is explicitly imported.
-	 * TODO Probable need a qualified name resolver for the filter
 	 */
 	@Override
-	protected IScope getResourceScope(Resource res, EReference reference) {
-		getImportedPackages(res).add("ecore");
+	protected IScope getResourceScope(Resource res, EReference reference) { 
+		getNamespaceAliases(res).addAlias("ecore", "ecore");
 		IScope globalScope = getGlobalScope(res, reference);
-		List<ImportNormalizer> normalizers = getImplicitImports(isIgnoreCase(reference));
+		List<ImportNormalizer> normalizers = getImplicitImports(isIgnoreCase(reference), res);
 		if (!normalizers.isEmpty()) {
 			globalScope = createImportScope(
-					new FilteringScope(globalScope, eod -> getImportedPackages(res).contains(eod.getUserData("namespace"))),
+					new FilteringScope(
+							new EmfaticAliasingScope(globalScope, this.getNamespaceAliases(res)),
+							eod -> 
+								getNamespaceAliases(res).hasOriginal(eod.getUserData("namespace"))),
 					normalizers,
 					new MultimapBasedSelectable(globalScope.getAllElements()),
 					reference.getEReferenceType(),
@@ -109,6 +119,8 @@ public class EmfaticINALSP extends ImportedNamespaceAwareLocalScopeProvider {
 		}
 		return globalScope;
 	}
+	
+	private static final Logger LOG = Logger.getLogger(EmfaticINALSP.class);
 	
 	/** The cache. */
 	@Inject
@@ -120,11 +132,11 @@ public class EmfaticINALSP extends ImportedNamespaceAwareLocalScopeProvider {
 	 * @param res the res
 	 * @return the imported packages
 	 */
-	private Set<String> getImportedPackages(Resource res) {
-		return cache.get("importedPackages", res, new Provider<Set<String>>() {
+	private Aliases getNamespaceAliases(Resource res) {
+		return cache.get("importedPackages", res, new Provider<Aliases>() {
 			@Override
-			public Set<String> get() {
-				return internalgetImportedPackages();
+			public Aliases get() {
+				return internalNamespaceAliases();
 			}
 		});
 	}
@@ -134,7 +146,7 @@ public class EmfaticINALSP extends ImportedNamespaceAwareLocalScopeProvider {
 	 *
 	 * @return the sets the
 	 */
-	private Set<String> internalgetImportedPackages() {
-		return new HashSet<>();
+	private Aliases internalNamespaceAliases() {
+		return new Aliases();
 	}
 }

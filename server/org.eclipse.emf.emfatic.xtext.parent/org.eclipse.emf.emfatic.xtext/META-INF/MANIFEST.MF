@@ -26,4 +26,5 @@ Export-Package: org.eclipse.emf.emfatic.xtext.services,
  org.eclipse.emf.emfatic.xtext.generator,
  org.eclipse.emf.emfatic.xtext.emfatic.impl,
  org.eclipse.emf.emfatic.xtext.scoping
-Import-Package: org.apache.log4j
+Import-Package: org.apache.log4j;version="1.2.19",
+ org.osgi.framework
