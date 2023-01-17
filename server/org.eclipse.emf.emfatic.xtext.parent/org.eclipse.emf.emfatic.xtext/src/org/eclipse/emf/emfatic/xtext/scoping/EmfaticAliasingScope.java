@@ -1,11 +1,14 @@
 package org.eclipse.emf.emfatic.xtext.scoping;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.xtext.naming.QualifiedName;
+import org.eclipse.xtext.resource.EObjectDescription;
 import org.eclipse.xtext.resource.IEObjectDescription;
 import org.eclipse.xtext.resource.impl.AliasedEObjectDescription;
 import org.eclipse.xtext.scoping.IScope;
@@ -28,14 +31,14 @@ public class EmfaticAliasingScope implements IScope {
 		this.imports = imports;
 	}
 	
-	public IEObjectDescription getSingleElement(QualifiedName name) {
-		QualifiedName alias = originalName(name);
-		return delegate.getSingleElement(alias);
+	public IEObjectDescription getSingleElement(QualifiedName alias) {
+		QualifiedName orginal = originalName(alias);
+		return delegate.getSingleElement(orginal);
 	}
 	
-	public Iterable<IEObjectDescription> getElements(QualifiedName name) {
-		QualifiedName alias = originalName(name);
-		return delegate.getElements(alias);
+	public Iterable<IEObjectDescription> getElements(QualifiedName alias) {
+		QualifiedName orginal = originalName(alias);
+		return delegate.getElements(orginal);
 	}
 	
 	public IEObjectDescription getSingleElement(EObject object) {
@@ -54,10 +57,16 @@ public class EmfaticAliasingScope implements IScope {
 			if (this.imports.hasOriginal(namespace)) {
 				QualifiedName alias = QualifiedName.create(imports.getAlias(namespace))
 						.append(fqn.skipFirst(1));
+				Map<String, String> data = new HashMap<>();
+				for (String k : eod.getUserDataKeys()) {
+					data.put(k, eod.getUserData(k));
+				}
+				IEObjectDescription newEod = EObjectDescription.create(alias, eod.getEObjectOrProxy(), data);
 				if (LOG.isDebugEnabled()) {
 					LOG.debug("Adding AliasedEObjectDescription with name " + alias + " for " + eod.getName());
 				}
-				result.add(new AliasedEObjectDescription(alias, eod));
+				//result.add(new AliasedEObjectDescription(alias, eod));
+				result.add(newEod);
 			} else {
 				result.add(eod);
 			}
@@ -78,6 +87,11 @@ public class EmfaticAliasingScope implements IScope {
 			real = QualifiedName.create(imports.getOrginal(namespace))
 					.append(name.skipFirst(1));
 			LOG.debug("Getting real name for " + name + " result: " + real);
+		} else if(this.imports.hasOriginal(namespace)) {
+			// Elements are not allowed to be found by original name, so 
+			// we alias it so it wont be found
+			real = QualifiedName.create(imports.getAlias(namespace))
+					.append(name.skipFirst(1));
 		}
 		return real;
 	}
