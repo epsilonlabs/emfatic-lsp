@@ -1,0 +1,10 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Logging
+Bundle-SymbolicName: org.eclipse.emf.emfatic.xtext.logging;singleton:=true
+Bundle-Version: 1.0.0.qualifier
+Fragment-Host: org.apache.log4j;bundle-version="1.2.19"
+Import-Package: org.eclipse.core.runtime;version="3.7.0",
+ org.osgi.framework;version="1.10.0"
+Automatic-Module-Name: org.eclipse.emf.emfatic.xtext.logging
+Bundle-RequiredExecutionEnvironment: JavaSE-17

@@ -23,6 +23,7 @@
 	<modules>
 		<module>org.eclipse.emf.emfatic.xtext</module>
 		<module>org.eclipse.emf.emfatic.xtext.ide</module>
+		<module>org.eclipse.emf.emfatic.xtext.logging</module>
 		<module>org.eclipse.emf.emfatic.xtext.ui</module>
 		<module>org.eclipse.emf.emfatic.xtext.target</module>
 		<module>org.eclipse.emf.emfatic.xtext.tests</module>
