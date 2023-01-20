@@ -3,7 +3,7 @@
  */
 package org.eclipse.emf.emfatic.xtext;
 
-import org.eclipse.emf.emfatic.xtext.naming.EmfaticDQNP;
+import org.eclipse.emf.emfatic.xtext.naming.EmfaticQNP;
 import org.eclipse.emf.emfatic.xtext.scoping.EmfaticGSP;
 import org.eclipse.emf.emfatic.xtext.scoping.EmfaticINALSP;
 import org.eclipse.emf.emfatic.xtext.scoping.EmfaticRDS;
@@ -43,7 +43,7 @@ public class EmfaticRuntimeModule extends AbstractEmfaticRuntimeModule {
 	}
 	
 	public Class<? extends IQualifiedNameProvider> bindIQualifiedNameProvider() {
-		return EmfaticDQNP.class;
+		return EmfaticQNP.class;
 	}
 	
 }

@@ -3,6 +3,8 @@ package org.eclipse.emf.emfatic.xtext.scoping;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.eclipse.xtext.naming.QualifiedName;
+
 public class Aliases {
 	
 	
@@ -27,6 +29,10 @@ public class Aliases {
 		return this.alias2orig.get(alias);
 	}
 	
+	public boolean hasImportedNamespace(QualifiedName name) {
+		return alias2orig.keySet().stream()
+				.anyMatch(ns -> name.startsWith(QualifiedName.create(ns)));
+	}
 	
 	
 	private final Map<String, String> orig2alias = new HashMap<>();

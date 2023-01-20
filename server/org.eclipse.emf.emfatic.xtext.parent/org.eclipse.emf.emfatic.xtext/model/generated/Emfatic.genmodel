@@ -29,7 +29,7 @@
     </genClasses>
     <genClasses ecoreClass="Emfatic.ecore#//Import">
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Emfatic.ecore#//Import/alias"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Emfatic.ecore#//Import/importedNamespace"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Emfatic.ecore#//Import/uri"/>
     </genClasses>
     <genClasses ecoreClass="Emfatic.ecore#//TopLevelDecl">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Emfatic.ecore#//TopLevelDecl/annotations"/>

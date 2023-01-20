@@ -63,9 +63,8 @@ public class EmfaticAliasingScope implements IScope {
 				}
 				IEObjectDescription newEod = EObjectDescription.create(alias, eod.getEObjectOrProxy(), data);
 				if (LOG.isDebugEnabled()) {
-					LOG.debug("Adding AliasedEObjectDescription with name " + alias + " for " + eod.getName());
+					LOG.debug("Adding EObjectDescription with name " + alias + " for " + eod.getName());
 				}
-				//result.add(new AliasedEObjectDescription(alias, eod));
 				result.add(newEod);
 			} else {
 				result.add(eod);

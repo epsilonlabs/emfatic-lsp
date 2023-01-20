@@ -62,7 +62,7 @@ public class EmfaticINALSP extends ImportedNamespaceAwareLocalScopeProvider {
 			return null;
 		}
 		Import imprt = (Import) object;
-		StringOrQualifiedID value = imprt.getImportedNamespace();
+		StringOrQualifiedID value = imprt.getUri();
 		if (value == null) {
 			return null;
 		}
@@ -111,7 +111,7 @@ public class EmfaticINALSP extends ImportedNamespaceAwareLocalScopeProvider {
 					new FilteringScope(
 							new EmfaticAliasingScope(globalScope, this.getNamespaceAliases(res)),
 							eod -> 
-								getNamespaceAliases(res).hasOriginal(eod.getUserData("namespace"))),
+								getNamespaceAliases(res).hasOriginal(eod.getUserData(EmfaticRDS.USERDATA_NAMESPACE_KEY))),
 					normalizers,
 					new MultimapBasedSelectable(globalScope.getAllElements()),
 					reference.getEReferenceType(),
@@ -122,7 +122,6 @@ public class EmfaticINALSP extends ImportedNamespaceAwareLocalScopeProvider {
 	
 	private static final Logger LOG = Logger.getLogger(EmfaticINALSP.class);
 	
-	/** The cache. */
 	@Inject
 	private IResourceScopeCache cache = IResourceScopeCache.NullImpl.INSTANCE;
 	

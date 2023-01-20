@@ -32,7 +32,7 @@ import com.google.inject.Inject;
  * @author Horacio Hoyos Rodriguez
  *
  */
-public class EmfaticDQNP extends IQualifiedNameProvider.AbstractImpl {
+public class EmfaticQNP extends IQualifiedNameProvider.AbstractImpl {
 
 	/**
 	 * Delegates to {@link #computeFullyQualifiedName(EObject)} and caches the

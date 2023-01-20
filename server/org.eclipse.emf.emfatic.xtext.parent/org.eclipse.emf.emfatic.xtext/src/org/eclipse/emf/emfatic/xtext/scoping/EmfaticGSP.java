@@ -13,7 +13,10 @@ import static com.google.common.collect.Iterables.concat;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.log4j.Logger;
@@ -39,11 +42,18 @@ import org.eclipse.emf.emfatic.xtext.emfatic.Import;
 import org.eclipse.emf.emfatic.xtext.emfatic.PackageDecl;
 import org.eclipse.emf.emfatic.xtext.emfatic.StringOrQualifiedID;
 import org.eclipse.emf.emfatic.xtext.emfatic.TopLevelDecl;
+import org.eclipse.xtext.EcoreUtil2;
+import org.eclipse.xtext.resource.ClasspathUriResolutionException;
+import org.eclipse.xtext.resource.IClasspathUriResolver;
 import org.eclipse.xtext.resource.IEObjectDescription;
 import org.eclipse.xtext.resource.IResourceDescription;
+import org.eclipse.xtext.resource.IResourceServiceProvider;
+import org.eclipse.xtext.resource.XtextResourceSet;
 import org.eclipse.xtext.scoping.IScope;
 import org.eclipse.xtext.scoping.impl.DefaultGlobalScopeProvider;
+import org.eclipse.xtext.scoping.impl.ImportUriGlobalScopeProvider;
 import org.eclipse.xtext.scoping.impl.SimpleScope;
+import org.eclipse.xtext.util.IAcceptor;
 
 import com.google.common.base.Predicate;
 import com.google.inject.Inject;
@@ -72,52 +82,145 @@ public class EmfaticGSP extends DefaultGlobalScopeProvider {
 		boolean ignoreCase, 
 		EClass type, 
 		Predicate<IEObjectDescription> filter) {
-		// We use the ECore URI, so when generating the emfatic ecore, we know what
-		// comes from the Ecore metamodel
-		URI libraryResourceURI = URI.createURI(ECORE_RESOURCE_URI);
-		Resource libaryResource = context.getResourceSet().getResource(libraryResourceURI, false);
-		if (libaryResource == null) {
-			libaryResource = ecoreToEmf(context.getResourceSet(), libraryResourceURI, EcorePackage.eINSTANCE);
-		}
-		IResourceDescription resourceDescription = descriptionManager.getResourceDescription(libaryResource);
-		Iterable<IEObjectDescription> library = resourceDescription.getExportedObjects();
+		Iterable<IEObjectDescription> descriptions = ecoreDescriptors(context);
 		// Look for all URI import statements and load the resources, if they exist
 		if (context.getContents().size() > 0) {
-			CompUnit compUnit = (CompUnit) context.getContents().get(0);
-			for (Import is : compUnit.getImportStmts()) {
-				if (is.getImportedNamespace() != null) {
-					String uri = is.getImportedNamespace().getLiteral();
-					// Don't import if null or is the ECore URI (Ecore is automatically imported).
-					if (uri != null && !uri.equals(EcorePackage.eINSTANCE.getNsURI())) {
-						LOG.warn("Loading metamodel with uri " + uri);
-						libraryResourceURI = toLibURI(URI.createURI(uri));
-						libaryResource = context.getResourceSet().getResource(libraryResourceURI, false);
-						if (libaryResource == null) {
-							EPackage ep = EPackage.Registry.INSTANCE.getEPackage(uri);
-							if (ep == null) {
-								LOG.warn("The package for URI " + uri + " was not found. Check that it has been registered.");
-								continue;
-							}
-							libaryResource = ecoreToEmf(context.getResourceSet(), libraryResourceURI, ep);
-						}
-						resourceDescription = descriptionManager.getResourceDescription(libaryResource);
-						library = concat(library, resourceDescription.getExportedObjects());
+			List<URI> collectedURIs = getImportedUris(context);
+			Resource libaryResource;
+			for (URI uri : collectedURIs) {
+				libaryResource = null;
+				LOG.warn("Looking for metamodel with uri " + uri);
+				Resource metamodelResource = EcoreUtil2.getResource(context, uri.toString());
+				if (metamodelResource != null) {
+					LOG.debug("Found Metamodel with uri: " + uri);
+					if (this.serviceProvider.canHandle(uri)) {
+						libaryResource = metamodelResource;
+					} else {
+						libaryResource = translateEcore(metamodelResource, context.getResourceSet());
+					}
+					if (libaryResource != null) {
+						descriptions = concat(
+								descriptions,
+								descriptionManager.getResourceDescription(libaryResource).getExportedObjects());
 					}
 				}
 			}
 		}
-		return new SimpleScope(super.getScope(context, ignoreCase, type, filter), library, false);
+		return new SimpleScope(super.getScope(context, ignoreCase, type, filter), descriptions, false);
 	}
 	
 	private static final Logger LOG = Logger.getLogger(EmfaticGSP.class);
 	
-	/** The description manager. */
 	@Inject
 	private IResourceDescription.Manager descriptionManager;
+	@Inject
+	private IResourceServiceProvider serviceProvider;
+	
 	
 	/**
-	 * We only add a simple wrappers for the EClasses and EDataTypes that have 
-	 * matching names.
+	 * The default acceptor for import URIs.
+	 * 
+	 * It normalizes potentially given class-path URIs.
+	 * 
+	 * @see ImportUriGlobalScopeProvider#createURICollector(Resource, Set)
+	 */
+	private class URICollector implements IAcceptor<String> {
+		
+		private final IClasspathUriResolver uriResolver;
+		private final Object uriContext;
+		private final Set<URI> result;
+
+		public URICollector(ResourceSet resourceSet) {
+			this.result = new HashSet<>();
+			if (resourceSet instanceof XtextResourceSet) {
+				uriResolver = ((XtextResourceSet) resourceSet).getClasspathUriResolver();
+				uriContext = ((XtextResourceSet) resourceSet).getClasspathURIContext();
+			} else {
+				uriResolver = null;
+				uriContext = null;
+			}
+		}
+		
+		@Override
+		public void accept(String uriAsString) {
+			if (uriAsString == null) {
+				return;
+			}
+			try {
+				URI importUri = resolve(uriAsString);
+				if (importUri != null) {
+					result.add(importUri);
+				}
+			} catch(IllegalArgumentException e) {
+				// ignore, invalid uri given
+			}
+		}
+		
+		public List<URI> collectedURIs() {
+			return new ArrayList<>(this.result);
+		}
+
+		private URI resolve(String uriAsString) throws IllegalArgumentException {
+			URI uri = URI.createURI(uriAsString);
+			if (uriResolver != null) {
+				try {
+					return uriResolver.resolve(uriContext, uri);
+				} catch(ClasspathUriResolutionException e) {
+					return uri;
+				}
+			}
+			return uri;
+		}
+	}
+	
+	/**
+	 * Translate ECore metamodel to Emfatic AST.
+	 * @param resource	the metamodel
+	 * @param resourceSet		the context ResourceSet
+	 * @return
+	 */
+	private Resource translateEcore(Resource resource, ResourceSet resourceSet) {
+		LOG.debug("Translating Metamodel with uri: " + resource.getURI() + " to Emfatic");
+		Resource result = null;
+		if (resource.getContents().isEmpty()) {
+			return result;
+		}
+		if (resource.getContents().size() > 1) {
+			LOG.warn("Imported metamodel has multiple root packages, only the first one will be translated");
+		}
+		EObject root = resource.getContents().get(0);
+		if (root instanceof EPackage) {
+			EPackage ep = (EPackage) root;
+			URI libraryResourceURI = toLibURI(resource.getURI());
+			result = resourceSet.getResource(libraryResourceURI, false);
+			if (result == null) {
+				result = ecoreToEmf(resourceSet, libraryResourceURI, ep);
+			}
+		}
+		return result;
+		
+	}
+	
+	/**
+	 * Create <code>IEObjectDescriptions</code> for ECore package contents.
+	 *  
+	 * We use our ECORE_RESOURCE_URI, so when generating the emfatic ecore, we know what comes from the 
+	 * Ecore metamodel.
+	 */
+	private Iterable<IEObjectDescription> ecoreDescriptors(final Resource resoruce) {
+		URI libraryResourceURI = URI.createURI(ECORE_RESOURCE_URI);
+		Resource ecoreResource = resoruce.getResourceSet().getResource(libraryResourceURI, false);
+		if (ecoreResource == null) {
+			ecoreResource = ecoreToEmf(
+					resoruce.getResourceSet(),
+					libraryResourceURI,
+					EcorePackage.eINSTANCE);
+		}
+		return descriptionManager.getResourceDescription(ecoreResource).getExportedObjects();
+	}
+	
+	/**
+	 * We only add a simple wrappers for the EClasses and EDataTypes that have matching names.
 	 *
 	 * @param resourceSet the resource set
 	 * @param libaryResourceURI the libary resource URI
@@ -129,8 +232,8 @@ public class EmfaticGSP extends DefaultGlobalScopeProvider {
 		resourceSet.getResources().add(libaryResource);
 		CompUnit compUint = emfaticInstance(EmfaticPackage.Literals.COMP_UNIT);
 		libaryResource.getContents().add(compUint);
-		compUint.setPackage(wrapPackage(ep.getName()));
-		compUint.getTopLevelDecls().addAll(wrapClassifiers(ep.getEClassifiers()));
+		compUint.setPackage(translatePackage(ep.getName()));
+		compUint.getTopLevelDecls().addAll(transalteClassifiers(ep.getEClassifiers()));
 		return libaryResource;
 	}
 	
@@ -140,7 +243,7 @@ public class EmfaticGSP extends DefaultGlobalScopeProvider {
 	 *
 	 * @return the package decl
 	 */
-	private PackageDecl wrapPackage(String name) {
+	private PackageDecl translatePackage(String name) {
 		PackageDecl pd = emfaticInstance(EmfaticPackage.Literals.PACKAGE_DECL);
 		pd.setName(name);
 		return pd;
@@ -151,22 +254,23 @@ public class EmfaticGSP extends DefaultGlobalScopeProvider {
 	 *
 	 * @param eClassifiers the e classifiers
 	 * @return the collection<? extends top level decl>
+	 * TODO generics
 	 */
-	private Collection<? extends TopLevelDecl> wrapClassifiers(EList<EClassifier> eClassifiers) {
+	private Collection<? extends TopLevelDecl> transalteClassifiers(EList<EClassifier> eClassifiers) {
 		List<TopLevelDecl> result = eClassifiers.stream()
 				.filter(EClass.class::isInstance)
 				.map(EClass.class::cast)
-				.map(this::wrapClass)
+				.map(this::translateClass)
 				.collect(Collectors.toList());
 		result.addAll( eClassifiers.stream()
 				.filter(EDataType.class::isInstance)
 				.map(EDataType.class::cast)
-				.flatMap(dt -> this.wrapDataType(dt).stream())
+				.flatMap(dt -> this.translateDataType(dt).stream())
 				.collect(Collectors.toList()));
 		result.addAll( eClassifiers.stream()
 				.filter(EEnum.class::isInstance)
 				.map(EEnum.class::cast)
-				.map(this::wrapEnum)
+				.map(this::translateEnum)
 				.collect(Collectors.toList()));
 		return result;
 	}
@@ -176,8 +280,9 @@ public class EmfaticGSP extends DefaultGlobalScopeProvider {
 	 *
 	 * @param clazz the clazz
 	 * @return the top level decl
+	 * TODO generics
 	 */
-	private TopLevelDecl wrapClass(EClass clazz) {
+	private TopLevelDecl translateClass(EClass clazz) {
 		ClassDecl cd = emfaticInstance(EmfaticPackage.Literals.CLASS_DECL);
 		cd.setName(clazz.getName());
 		TopLevelDecl tld = emfaticInstance(EmfaticPackage.Literals.TOP_LEVEL_DECL);
@@ -197,8 +302,9 @@ public class EmfaticGSP extends DefaultGlobalScopeProvider {
 	 *
 	 * @param type the type
 	 * @return the list
+	 * TODO generics
 	 */
-	private List<TopLevelDecl> wrapDataType(EDataType type) {
+	private List<TopLevelDecl> translateDataType(EDataType type) {
 		// All DataTypeDecl shate the same instance class name
 		List<TopLevelDecl> result = new ArrayList<>();
 		DataTypeDecl dtd = emfaticInstance(EmfaticPackage.Literals.DATA_TYPE_DECL);
@@ -234,7 +340,7 @@ public class EmfaticGSP extends DefaultGlobalScopeProvider {
 	 * @param type the type
 	 * @return the top level decl
 	 */
-	private TopLevelDecl wrapEnum(EEnum type) {
+	private TopLevelDecl translateEnum(EEnum type) {
 		EnumDecl ed = emfaticInstance(EmfaticPackage.Literals.ENUM_DECL);
 		ed.setName(type.getName());
 		TopLevelDecl tld = emfaticInstance(EmfaticPackage.Literals.TOP_LEVEL_DECL);
@@ -276,6 +382,41 @@ public class EmfaticGSP extends DefaultGlobalScopeProvider {
 				uri.segments(),
 				uri.query(),
 				uri.fragment());
+	}
+	
+	/**
+	 * Get all the imported URIs and filter invalid and non "ecore" and "lspemf" URIs.
+	 * @param context
+	 * @return
+	 */
+	private List<URI> getImportedUris(final Resource context) {
+		CompUnit compUnit = (CompUnit) context.getContents().get(0);
+		URICollector collector = new URICollector(context.getResourceSet());
+		for (Import is : compUnit.getImportStmts()) {
+			if (is.getUri() != null) {
+				String uri = is.getUri().getLiteral();
+				// Don't import if null or is the ECore URI (Ecore is automatically imported).
+				if (uri != null && !uri.equals(EcorePackage.eINSTANCE.getNsURI())) {
+					collector.accept(uri);
+				}
+			}
+		}
+		List<URI> collectedURIs = collector.collectedURIs();
+		Iterator<URI> uriIter = collectedURIs.iterator();
+		// TODO Extrac this so the validation can reuse
+		while(uriIter.hasNext()) {
+			URI next = uriIter.next();
+			if (!EcoreUtil2.isValidUri(context, next)) {
+				uriIter.remove();
+			}
+			if (next.isPlatform() || next.isFile()) {
+				String ext = next.fileExtension();
+				if (ext != "ecore" || !serviceProvider.canHandle(next)) {
+					uriIter.remove();
+				}
+			}
+		}
+		return collectedURIs;
 	}
 
 }

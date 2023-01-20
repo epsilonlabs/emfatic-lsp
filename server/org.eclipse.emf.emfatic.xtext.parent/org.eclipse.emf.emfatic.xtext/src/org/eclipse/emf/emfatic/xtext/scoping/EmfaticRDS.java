@@ -31,6 +31,8 @@ import org.eclipse.xtext.util.IAcceptor;
  */
 public class EmfaticRDS extends DefaultResourceDescriptionStrategy {
 
+	public static final String USERDATA_NAMESPACE_KEY = "namespace";
+
 	@Override
 	public boolean createEObjectDescriptions(EObject eObject, IAcceptor<IEObjectDescription> acceptor) {
 		if (getQualifiedNameProvider() == null) {
@@ -40,7 +42,7 @@ public class EmfaticRDS extends DefaultResourceDescriptionStrategy {
 			QualifiedName qualifiedName = getQualifiedNameProvider().getFullyQualifiedName(eObject);
 			if (qualifiedName != null) {
 				HashMap<String, String> userData = new HashMap<>();
-				userData.put("namespace", qualifiedName.getFirstSegment());
+				userData.put(USERDATA_NAMESPACE_KEY, qualifiedName.getFirstSegment());
 				acceptor.accept(EObjectDescription.create(qualifiedName, eObject, userData));
 			}
 		} catch (Exception exc) {
