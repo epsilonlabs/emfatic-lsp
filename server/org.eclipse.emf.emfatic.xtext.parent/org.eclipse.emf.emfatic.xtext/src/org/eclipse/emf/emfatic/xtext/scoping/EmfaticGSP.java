@@ -13,10 +13,8 @@ import static com.google.common.collect.Iterables.concat;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.apache.log4j.Logger;
@@ -33,6 +31,7 @@ import org.eclipse.emf.ecore.EcorePackage;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.resource.impl.ResourceImpl;
+import org.eclipse.emf.emfatic.xtext.common.ImportUriChecker;
 import org.eclipse.emf.emfatic.xtext.emfatic.ClassDecl;
 import org.eclipse.emf.emfatic.xtext.emfatic.CompUnit;
 import org.eclipse.emf.emfatic.xtext.emfatic.DataTypeDecl;
@@ -43,17 +42,12 @@ import org.eclipse.emf.emfatic.xtext.emfatic.PackageDecl;
 import org.eclipse.emf.emfatic.xtext.emfatic.StringOrQualifiedID;
 import org.eclipse.emf.emfatic.xtext.emfatic.TopLevelDecl;
 import org.eclipse.xtext.EcoreUtil2;
-import org.eclipse.xtext.resource.ClasspathUriResolutionException;
-import org.eclipse.xtext.resource.IClasspathUriResolver;
+import org.eclipse.xtext.resource.FileExtensionProvider;
 import org.eclipse.xtext.resource.IEObjectDescription;
 import org.eclipse.xtext.resource.IResourceDescription;
-import org.eclipse.xtext.resource.IResourceServiceProvider;
-import org.eclipse.xtext.resource.XtextResourceSet;
 import org.eclipse.xtext.scoping.IScope;
 import org.eclipse.xtext.scoping.impl.DefaultGlobalScopeProvider;
-import org.eclipse.xtext.scoping.impl.ImportUriGlobalScopeProvider;
 import org.eclipse.xtext.scoping.impl.SimpleScope;
-import org.eclipse.xtext.util.IAcceptor;
 
 import com.google.common.base.Predicate;
 import com.google.inject.Inject;
@@ -72,6 +66,7 @@ public class EmfaticGSP extends DefaultGlobalScopeProvider {
 	
 	public static final String ECORE_RESOURCE_URI = "lib://www.eclipse.org/emf/2002/Ecore";
 
+
 	@Override
 	protected IScope getScope(
 		final Resource context, 
@@ -81,15 +76,16 @@ public class EmfaticGSP extends DefaultGlobalScopeProvider {
 		Iterable<IEObjectDescription> descriptions = ecoreDescriptors(context);
 		// Look for all URI import statements and load the resources, if they exist
 		if (context.getContents().size() > 0) {
-			List<URI> collectedURIs = getImportedUris(context);
+			ImportUriChecker checker = new ImportUriChecker(context, this.fileExtensionProvider);
+			List<URI> importedURIs = getImportedUris(context, checker);
 			Resource libaryResource;
-			for (URI uri : collectedURIs) {
+			for (URI uri : importedURIs) {
 				libaryResource = null;
 				LOG.info("Looking for metamodel with uri " + uri);
 				Resource metamodelResource = EcoreUtil2.getResource(context, uri.toString());
 				if (metamodelResource != null) {
 					LOG.debug("Found Metamodel with uri: " + uri);
-					if (this.serviceProvider.canHandle(uri)) {
+					if (checker.canHandle(uri)) {
 						libaryResource = metamodelResource;
 					} else {
 						libaryResource = translateEcore(metamodelResource, context.getResourceSet());
@@ -106,69 +102,12 @@ public class EmfaticGSP extends DefaultGlobalScopeProvider {
 	}
 	
 	private static final Logger LOG = Logger.getLogger(EmfaticGSP.class);
-	private static final String ECORE_FILE_EXTENSION = "ecore";
 	
 	@Inject
 	private IResourceDescription.Manager descriptionManager;
+	
 	@Inject
-	private IResourceServiceProvider serviceProvider;
-	
-	
-	/**
-	 * The default acceptor for import URIs.
-	 * 
-	 * It normalizes potentially given class-path URIs.
-	 * 
-	 * @see ImportUriGlobalScopeProvider#createURICollector(Resource, Set)
-	 */
-	private class URICollector implements IAcceptor<String> {
-		
-		private final IClasspathUriResolver uriResolver;
-		private final Object uriContext;
-		private final Set<URI> result;
-
-		public URICollector(ResourceSet resourceSet) {
-			this.result = new HashSet<>();
-			if (resourceSet instanceof XtextResourceSet) {
-				uriResolver = ((XtextResourceSet) resourceSet).getClasspathUriResolver();
-				uriContext = ((XtextResourceSet) resourceSet).getClasspathURIContext();
-			} else {
-				uriResolver = null;
-				uriContext = null;
-			}
-		}
-		
-		@Override
-		public void accept(String uriAsString) {
-			if (uriAsString == null) {
-				return;
-			}
-			try {
-				URI importUri = resolve(uriAsString);
-				if (importUri != null) {
-					result.add(importUri);
-				}
-			} catch(IllegalArgumentException e) {
-				// ignore, invalid uri given
-			}
-		}
-		
-		public List<URI> collectedURIs() {
-			return new ArrayList<>(this.result);
-		}
-
-		private URI resolve(String uriAsString) throws IllegalArgumentException {
-			URI uri = URI.createURI(uriAsString);
-			if (uriResolver != null) {
-				try {
-					return uriResolver.resolve(uriContext, uri);
-				} catch(ClasspathUriResolutionException e) {
-					return uri;
-				}
-			}
-			return uri;
-		}
-	}
+	private FileExtensionProvider fileExtensionProvider;
 	
 	/**
 	 * Translate ECore metamodel to Emfatic AST.
@@ -385,36 +324,28 @@ public class EmfaticGSP extends DefaultGlobalScopeProvider {
 	/**
 	 * Get all the imported URIs and filter invalid and non "ecore" and "lspemf" URIs.
 	 * @param context
+	 * @param checker TODO
 	 * @return
 	 */
-	private List<URI> getImportedUris(final Resource context) {
+	private List<URI> getImportedUris(final Resource context, ImportUriChecker checker) {
 		CompUnit compUnit = (CompUnit) context.getContents().get(0);
-		URICollector collector = new URICollector(context.getResourceSet());
-		for (Import is : compUnit.getImportStmts()) {
-			if (is.getUri() != null) {
-				String uri = is.getUri().getLiteral();
-				// Don't import if null or is the ECore URI (Ecore is automatically imported).
-				if (uri != null && !uri.equals(EcorePackage.eINSTANCE.getNsURI())) {
-					collector.accept(uri);
+		List<URI> result = new ArrayList<>();
+		for (Import stmt : compUnit.getImportStmts()) {
+			Optional<URI> optUri;
+			try {
+				optUri = checker.resolveURI(stmt);
+			} catch (IllegalArgumentException e) {
+				LOG.error("Invalid imported uri " + stmt.getUri().getLiteral());
+				continue;
+			}
+			optUri.ifPresent(uri -> {
+				if(checker.isValidResoruce(uri) || checker.resourceExists(uri)) {
+					result.add(uri);
 				}
-			}
+			});
+			
 		}
-		List<URI> collectedURIs = collector.collectedURIs();
-		Iterator<URI> uriIter = collectedURIs.iterator();
-		// TODO Extrac this so the validation can reuse
-		while(uriIter.hasNext()) {
-			URI next = uriIter.next();
-			if (!EcoreUtil2.isValidUri(context, next)) {
-				uriIter.remove();
-			}
-			if (next.isPlatform() || next.isFile()) {
-				String ext = next.fileExtension();
-				if (ext != ECORE_FILE_EXTENSION || !serviceProvider.canHandle(next)) {
-					uriIter.remove();
-				}
-			}
-		}
-		return collectedURIs;
+		return result;
 	}
 	
 }

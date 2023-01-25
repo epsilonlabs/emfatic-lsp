@@ -19,9 +19,11 @@ import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EPackage;
 import org.eclipse.emf.ecore.EReference;
 import org.eclipse.emf.ecore.resource.Resource;
+import org.eclipse.emf.emfatic.xtext.emfatic.CompUnit;
 import org.eclipse.emf.emfatic.xtext.emfatic.EmfaticPackage;
 import org.eclipse.emf.emfatic.xtext.emfatic.Import;
 import org.eclipse.emf.emfatic.xtext.emfatic.StringOrQualifiedID;
+import org.eclipse.xtext.EcoreUtil2;
 import org.eclipse.xtext.naming.QualifiedName;
 import org.eclipse.xtext.scoping.IScope;
 import org.eclipse.xtext.scoping.impl.FilteringScope;
@@ -71,11 +73,27 @@ public class EmfaticINALSP extends ImportedNamespaceAwareLocalScopeProvider {
 		String name =  null;
 		String uri = value.getLiteral();
 		if (uri != null) {
-			EPackage ep = EPackage.Registry.INSTANCE.getEPackage(uri);
-			if (ep == null) {
+			Resource metamodelResource = EcoreUtil2.getResource(object.eResource(), uri.toString());
+			if (metamodelResource == null) {
+				LOG.error("Metamodel with uri " + uri + " should have been loaded by the GSP.");
 				return null;
 			}
-			name = ep.getName();
+			if (metamodelResource.getContents().isEmpty()) {
+				LOG.warn("Metamodel with uri " + uri + " is empty. Check the URI and target file.");
+				return null;
+			}
+			EObject root = metamodelResource.getContents().get(0);
+			if (root == null) {
+				return null;
+			}
+			if (root instanceof EPackage) {
+				name = ((EPackage) root).getName();	
+			} else if (root instanceof CompUnit) {
+				name = ((CompUnit) root).getPackage().getName();
+			} else {
+				LOG.error("Metamodel with uri " + uri + " does not have an EPackage or CompUnit at the root.");
+				return null;
+			}
 		} else {
 			name = value.getId();
 		}
