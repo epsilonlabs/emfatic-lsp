@@ -3,6 +3,9 @@
  */
 package org.eclipse.emf.emfatic.xtext.validation;
 
+import org.eclipse.emf.emfatic.xtext.emfatic.EmfaticPackage;
+import org.eclipse.emf.emfatic.xtext.emfatic.Import;
+import org.eclipse.xtext.validation.Check;
 
 /**
  * This class contains custom validation rules. 
@@ -22,4 +25,16 @@ public class EmfaticValidator extends AbstractEmfaticValidator {
 //		}
 //	}
 	
+	
+	@Check
+	public void checkEcoreMetamodelImported(Import imprt) {
+		String literalURI = imprt.getUri().getLiteral();
+		if (literalURI != null && literalURI.equals("http://www.eclipse.org/emf/2002/Ecore")) {
+			warning(
+					"Ecore metemodel is imported by default.",
+					EmfaticPackage.Literals.IMPORT__URI,
+					IssueCodes.ECORE_METAMODEL_IMPORTED,
+					"");
+		}
+	}
 }

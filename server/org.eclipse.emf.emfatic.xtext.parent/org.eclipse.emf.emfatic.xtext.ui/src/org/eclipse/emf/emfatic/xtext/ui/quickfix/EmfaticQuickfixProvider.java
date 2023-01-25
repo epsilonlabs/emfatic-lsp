@@ -3,7 +3,15 @@
  */
 package org.eclipse.emf.emfatic.xtext.ui.quickfix;
 
+import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.emfatic.xtext.emfatic.CompUnit;
+import org.eclipse.emf.emfatic.xtext.emfatic.Import;
+import org.eclipse.emf.emfatic.xtext.validation.IssueCodes;
+import org.eclipse.xtext.ui.editor.model.edit.IModificationContext;
 import org.eclipse.xtext.ui.editor.quickfix.DefaultQuickfixProvider;
+import org.eclipse.xtext.ui.editor.quickfix.Fix;
+import org.eclipse.xtext.ui.editor.quickfix.IssueResolutionAcceptor;
+import org.eclipse.xtext.validation.Issue;
 
 /**
  * Custom quickfixes.
@@ -22,5 +30,18 @@ public class EmfaticQuickfixProvider extends DefaultQuickfixProvider {
 //			}
 //		});
 //	}
+	
+	@Fix(IssueCodes.ECORE_METAMODEL_IMPORTED)
+	public void removeImport(final Issue issue, IssueResolutionAcceptor acceptor) {
+		acceptor.accept(
+				issue,
+				"Remove import", "Remove Ecore import.", "upcase.png",
+				(EObject element, IModificationContext context) -> {
+						Import i = (Import) element;
+						CompUnit unit = (CompUnit) i.eContainer();
+						unit.getImportStmts().remove(i);
+					}
+				);
+	}
 
 }
