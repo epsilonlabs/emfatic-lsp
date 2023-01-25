@@ -31,30 +31,40 @@ public class EmfaticAliasingScope implements IScope {
 		this.imports = imports;
 	}
 	
+	@Override
 	public IEObjectDescription getSingleElement(QualifiedName alias) {
 		QualifiedName orginal = originalName(alias);
 		return delegate.getSingleElement(orginal);
 	}
 	
+	@Override
 	public Iterable<IEObjectDescription> getElements(QualifiedName alias) {
 		QualifiedName orginal = originalName(alias);
 		return delegate.getElements(orginal);
 	}
 	
+	@Override
 	public IEObjectDescription getSingleElement(EObject object) {
 		return delegate.getSingleElement(object);
 	}
 	
+	@Override
 	public Iterable<IEObjectDescription> getElements(EObject object) {
 		return delegate.getElements(object);
 	}
 	
+	/**
+	 * Gets all elements from the delegate, and if the EObject has an aliased namespace, 
+	 * it's description is replaces by an aliased one.
+	 */
+	@Override
 	public Iterable<IEObjectDescription> getAllElements() {
 		List<IEObjectDescription> result = new ArrayList<>();
 		delegate.getAllElements().forEach(eod -> {
 			QualifiedName fqn = eod.getName();
 			String namespace = fqn.getFirstSegment();
-			if (this.imports.hasOriginal(namespace)) {
+			if (this.imports.isAliased(namespace)) {
+			//if (this.imports.hasOriginal(namespace)) {	
 				QualifiedName alias = QualifiedName.create(imports.getAlias(namespace))
 						.append(fqn.skipFirst(1));
 				Map<String, String> data = new HashMap<>();

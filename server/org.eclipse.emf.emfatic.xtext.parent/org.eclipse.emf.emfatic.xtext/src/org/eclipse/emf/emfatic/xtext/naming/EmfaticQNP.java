@@ -26,8 +26,8 @@ import com.google.inject.Inject;
 
 /**
  * The Emfatic {@code IQualifiedNameProvider} only provides qualified names for
- * the elements that can be cross-referenced: Packages, SubPackages, Classifiers
- * and MapEntries.
+ * the elements that can be cross-referenced: Packages, SubPackages and Classifiers (Classes, 
+ * DataTypes, Enums and MapEntries>.
  * 
  * @author Horacio Hoyos Rodriguez
  *
@@ -45,7 +45,7 @@ public class EmfaticQNP extends IQualifiedNameProvider.AbstractImpl {
 	
 	
 	/**
-	 * Declarations (SubPackages, Classifiers and MapEntries) are qualified by the package.
+	 * Declarations are qualified by the package.
 	 *
 	 * @param ele the ele
 	 * @return the qualified name
@@ -68,7 +68,7 @@ public class EmfaticQNP extends IQualifiedNameProvider.AbstractImpl {
 	
 	
 	/**
-	 * The CompUnit is qualified by its Package.
+	 * The CompUnit name is the name of its package
 	 * 
 	 * @param ele the {@link CompUnit}
 	 * @return the name of the CompUnit package

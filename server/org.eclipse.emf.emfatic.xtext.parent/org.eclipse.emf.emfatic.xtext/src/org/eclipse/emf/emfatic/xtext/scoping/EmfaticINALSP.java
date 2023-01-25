@@ -26,6 +26,7 @@ import org.eclipse.xtext.naming.QualifiedName;
 import org.eclipse.xtext.scoping.IScope;
 import org.eclipse.xtext.scoping.impl.FilteringScope;
 import org.eclipse.xtext.scoping.impl.ImportNormalizer;
+import org.eclipse.xtext.scoping.impl.ImportScope;
 import org.eclipse.xtext.scoping.impl.ImportedNamespaceAwareLocalScopeProvider;
 import org.eclipse.xtext.scoping.impl.MultimapBasedSelectable;
 import org.eclipse.xtext.util.IResourceScopeCache;
@@ -35,23 +36,23 @@ import com.google.inject.Provider;
 
 
 /**
- * The Class EmfaticINALSP.
+ * The Class EmfaticINALSP is responsible for capturing alias information and for creating 
+ * {@link ImportScope}s that filter out Emfatic resources in the project not explicitly
+ * imported and for creating the {@link EmfaticAliasingScope} that will handle aliases.
  */
 public class EmfaticINALSP extends ImportedNamespaceAwareLocalScopeProvider {
 	
 	/**
 	 * Since our {@code importedNamespace} feature does not return a String,
-	 * we need to process it accordingly. If the {@code importedNamespace} is
+	 * we need to process it accordingly. If the {@code uri} is
 	 * a URI, we use the package's name; if it is a name, we use that.
 	 * 
 	 * Imported metamodels by URI are loaded in the {@link EmfaticGSP}. If the
 	 * EPackage for the URI exists, we use the package name as the imported
-	 * namespace. If not we use the {@code Imoprt#id} as the namespace. 
-	 * 
-	 * If in either case an alias is provided, that is used instead.
+	 * namespace. If not we use the {@code Import#id} as the namespace. 
 	 * 
 	 * Imported packages are cached so we can use the information to filter
-	 * the Global Scope.
+	 * the Global Scope. Alias names are stored so they can be later used for scoping.
 	 * 
 	 * TODO Test nested imports: import a.b
 	 */

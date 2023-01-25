@@ -59,12 +59,10 @@ import com.google.common.base.Predicate;
 import com.google.inject.Inject;
 
 /**
- * This implementation adds all ECore elements to the GloablScope and all
- * elements from imported packages by URI.
+ * This implementation adds all ECore elements and all
+ * elements from imported packages by URI to the GloablScope.
  * 
- * The Element's name and type is used to create an equivalent Emfatic EClasse
- * that can be used for linking and content assist. This is necessary, as Emfatic's
- * AST does not reference ECore types directly.
+ * When importing non Emfatic resources, its elements are translated into 
  *  
  * @author Horacio Hoyos Rodriguez
  * @see EmfaticScopeProvider
@@ -72,8 +70,6 @@ import com.google.inject.Inject;
  */
 public class EmfaticGSP extends DefaultGlobalScopeProvider {
 	
-	
-	/** The Constant ECORE_RESOURCE_URI. */
 	public static final String ECORE_RESOURCE_URI = "lib://www.eclipse.org/emf/2002/Ecore";
 
 	@Override
@@ -89,7 +85,7 @@ public class EmfaticGSP extends DefaultGlobalScopeProvider {
 			Resource libaryResource;
 			for (URI uri : collectedURIs) {
 				libaryResource = null;
-				LOG.warn("Looking for metamodel with uri " + uri);
+				LOG.info("Looking for metamodel with uri " + uri);
 				Resource metamodelResource = EcoreUtil2.getResource(context, uri.toString());
 				if (metamodelResource != null) {
 					LOG.debug("Found Metamodel with uri: " + uri);
@@ -110,6 +106,7 @@ public class EmfaticGSP extends DefaultGlobalScopeProvider {
 	}
 	
 	private static final Logger LOG = Logger.getLogger(EmfaticGSP.class);
+	private static final String ECORE_FILE_EXTENSION = "ecore";
 	
 	@Inject
 	private IResourceDescription.Manager descriptionManager;
@@ -177,7 +174,8 @@ public class EmfaticGSP extends DefaultGlobalScopeProvider {
 	 * Translate ECore metamodel to Emfatic AST.
 	 * @param resource	the metamodel
 	 * @param resourceSet		the context ResourceSet
-	 * @return
+	 * @return a Resource with the equivalent Emfatic elements
+	 * TODO Support generics?
 	 */
 	private Resource translateEcore(Resource resource, ResourceSet resourceSet) {
 		LOG.debug("Translating Metamodel with uri: " + resource.getURI() + " to Emfatic");
@@ -411,12 +409,12 @@ public class EmfaticGSP extends DefaultGlobalScopeProvider {
 			}
 			if (next.isPlatform() || next.isFile()) {
 				String ext = next.fileExtension();
-				if (ext != "ecore" || !serviceProvider.canHandle(next)) {
+				if (ext != ECORE_FILE_EXTENSION || !serviceProvider.canHandle(next)) {
 					uriIter.remove();
 				}
 			}
 		}
 		return collectedURIs;
 	}
-
+	
 }
