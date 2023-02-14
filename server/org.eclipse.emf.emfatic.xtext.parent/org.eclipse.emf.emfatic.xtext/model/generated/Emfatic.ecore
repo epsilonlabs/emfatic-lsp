@@ -22,8 +22,8 @@
   <eClassifiers xsi:type="ecore:EClass" name="Annotation">
     <eStructuralFeatures xsi:type="ecore:EReference" name="source" eType="#//StringOrQualifiedID"
         containment="true"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="kv" upperBound="-1" eType="#//KeyEqualsValue"
-        containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="keyValues" upperBound="-1"
+        eType="#//KeyEqualsValue" containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="KeyEqualsValue">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="key" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>

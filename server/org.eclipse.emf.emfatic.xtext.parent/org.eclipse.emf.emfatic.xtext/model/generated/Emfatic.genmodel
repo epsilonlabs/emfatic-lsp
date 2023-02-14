@@ -21,7 +21,7 @@
     </genClasses>
     <genClasses ecoreClass="Emfatic.ecore#//Annotation">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Emfatic.ecore#//Annotation/source"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Emfatic.ecore#//Annotation/kv"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Emfatic.ecore#//Annotation/keyValues"/>
     </genClasses>
     <genClasses ecoreClass="Emfatic.ecore#//KeyEqualsValue">
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Emfatic.ecore#//KeyEqualsValue/key"/>

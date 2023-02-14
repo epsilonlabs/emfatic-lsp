@@ -15,15 +15,16 @@ Require-Bundle: org.antlr.runtime;bundle-version="[3.2.0,3.2.1)",
  org.eclipse.xtext.xbase.lib;bundle-version="2.14.0",
  org.eclipse.xtext.util;bundle-version="2.28.0"
 Bundle-RequiredExecutionEnvironment: JavaSE-11
-Export-Package: org.eclipse.emf.emfatic.xtext.services,
+Export-Package: org.eclipse.emf.emfatic.xtext,
+ org.eclipse.emf.emfatic.xtext.annotations,
  org.eclipse.emf.emfatic.xtext.emfatic,
- org.eclipse.emf.emfatic.xtext.emfatic.util,
- org.eclipse.emf.emfatic.xtext.validation,
- org.eclipse.emf.emfatic.xtext.parser.antlr,
- org.eclipse.emf.emfatic.xtext.serializer,
- org.eclipse.emf.emfatic.xtext.parser.antlr.internal,
- org.eclipse.emf.emfatic.xtext,
- org.eclipse.emf.emfatic.xtext.generator,
  org.eclipse.emf.emfatic.xtext.emfatic.impl,
- org.eclipse.emf.emfatic.xtext.scoping
+ org.eclipse.emf.emfatic.xtext.emfatic.util,
+ org.eclipse.emf.emfatic.xtext.generator,
+ org.eclipse.emf.emfatic.xtext.parser.antlr,
+ org.eclipse.emf.emfatic.xtext.parser.antlr.internal,
+ org.eclipse.emf.emfatic.xtext.scoping,
+ org.eclipse.emf.emfatic.xtext.serializer,
+ org.eclipse.emf.emfatic.xtext.services,
+ org.eclipse.emf.emfatic.xtext.validation
 Import-Package: org.apache.log4j;version="1.2.19"
