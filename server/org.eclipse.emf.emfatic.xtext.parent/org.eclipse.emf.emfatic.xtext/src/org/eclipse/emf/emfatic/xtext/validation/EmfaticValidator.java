@@ -3,38 +3,106 @@
  */
 package org.eclipse.emf.emfatic.xtext.validation;
 
+import java.util.Optional;
+
+import org.eclipse.emf.common.util.URI;
+import org.eclipse.emf.ecore.EcorePackage;
+import org.eclipse.emf.ecore.resource.Resource;
+import org.eclipse.emf.ecore.util.EcoreValidator;
+import org.eclipse.emf.emfatic.xtext.common.ImportUriChecker;
+import org.eclipse.emf.emfatic.xtext.emfatic.ClassDecl;
 import org.eclipse.emf.emfatic.xtext.emfatic.EmfaticPackage;
 import org.eclipse.emf.emfatic.xtext.emfatic.Import;
+import org.eclipse.xtext.EcoreUtil2;
+import org.eclipse.xtext.resource.FileExtensionProvider;
 import org.eclipse.xtext.validation.Check;
 
+import com.google.common.base.Objects;
+import com.google.inject.Inject;
+
 /**
- * This class contains custom validation rules. 
- *
- * See https://www.eclipse.org/Xtext/documentation/303_runtime_concepts.html#validation
+ * The validaiton of Emfatic models is composed of Emfatic and Ecore constraints.
+ * 
+ *  For Emfatic we want to
+ *  <ul>
+ *  	<i> Ecore metamodel is not imported
+ *  	<i> Validate that imports exist
+ *  </ul>
+ *  <p>
+ *  TODO For Ecore we should use the {@link EcoreValidator} and translate those errors to Xtext ones
+ *  TODO Foe Ecore we should create the emfatic-2-ecore mapper first
  */
 public class EmfaticValidator extends AbstractEmfaticValidator {
-	
-//	public static final String INVALID_NAME = "invalidName";
-//
-//	@Check
-//	public void checkGreetingStartsWithCapital(Greeting greeting) {
-//		if (!Character.isUpperCase(greeting.getName().charAt(0))) {
-//			warning("Name should start with a capital",
-//					EmfaticPackage.Literals.GREETING__NAME,
-//					INVALID_NAME);
-//		}
-//	}
-	
 	
 	@Check
 	public void checkEcoreMetamodelImported(Import imprt) {
 		String literalURI = imprt.getUri().getLiteral();
-		if (literalURI != null && literalURI.equals("http://www.eclipse.org/emf/2002/Ecore")) {
+		if (literalURI != null && 
+				Objects.equal(literalURI, EcorePackage.eINSTANCE.getNsURI())) {
 			warning(
 					"Ecore metemodel is imported by default.",
 					EmfaticPackage.Literals.IMPORT__URI,
-					IssueCodes.ECORE_METAMODEL_IMPORTED,
+					IssueCodes.INVALID_METAMODEL_IMPORTED,
 					"");
 		}
 	}
+	
+	@Check
+	public void checkImportedUriIsValid(Import imprt) {
+		ImportUriChecker checker = new ImportUriChecker(imprt.eResource(), this.fileExtensionProvider);
+		Optional<URI> optUri = checker.resolveURI(imprt);
+		try {
+			optUri = checker.resolveURI(imprt);
+		} catch (Exception e) {
+			error(
+				"Invalid uri " + checker.uriString(imprt),
+				EmfaticPackage.Literals.IMPORT__URI,
+				IssueCodes.INVALID_METAMODEL_IMPORTED,
+				""); 
+		}
+		if (optUri.isPresent()) {
+			URI uri = optUri.get();
+			if (!checker.isValidResoruce(uri)) {
+				error(
+					"Invalid uri file extension. Can only import *.ecore and " 
+							+ checker.validExtensions()
+							+ " models.",
+					EmfaticPackage.Literals.IMPORT__URI,
+					IssueCodes.INVALID_METAMODEL_IMPORTED,
+					""); 
+			} else if (!checker.resourceExists(uri)) {
+				error(
+						"Unable to load metamodel with uri " + uri.toString() + ". Resource was not found.",
+						EmfaticPackage.Literals.IMPORT__URI,
+						IssueCodes.INVALID_METAMODEL_IMPORTED,
+						"");
+			} else {
+				Resource metamodelResource = EcoreUtil2.getResource(imprt.eResource(), uri.toString());
+				if (metamodelResource != null && metamodelResource.getContents().isEmpty()) {
+					warning(
+							"Metamodel with uri " + uri + " is empty. Check the URI and/or target file.",
+							EmfaticPackage.Literals.IMPORT__URI,
+							IssueCodes.INVALID_METAMODEL_IMPORTED,
+							"");
+				}
+			}
+		}
+	}
+	
+	@Check
+	public void checkSelfInheritance(ClassDecl classDecl) {
+		if(classDecl.getSuperTypes().stream()
+			.map(bc -> bc.getBound())
+			.anyMatch(cd -> classDecl.equals(cd))) {
+			error(
+				"Cycle detected: the type " + classDecl.getName() + " cannot extend itself",
+				EmfaticPackage.Literals.CLASS_DECL__SUPER_TYPES,
+				IssueCodes.EXTEND_CYCLE_DETECTED,
+				""); 
+		}
+	}
+	
+	@Inject
+	private FileExtensionProvider fileExtensionProvider;
+	
 }

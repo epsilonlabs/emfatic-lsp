@@ -3,6 +3,9 @@
  */
 package org.eclipse.emf.emfatic.xtext;
 
+import org.eclipse.emf.emfatic.xtext.annotations.AnnotationMap;
+import org.eclipse.emf.emfatic.xtext.annotations.DefaultAnnotationMap;
+import org.eclipse.emf.emfatic.xtext.linking.EmfaticLinker;
 import org.eclipse.emf.emfatic.xtext.naming.EmfaticQNP;
 import org.eclipse.emf.emfatic.xtext.scoping.EmfaticGSP;
 import org.eclipse.emf.emfatic.xtext.scoping.EmfaticINALSP;
@@ -16,7 +19,6 @@ import org.eclipse.xtext.scoping.impl.AbstractDeclarativeScopeProvider;
 import com.google.inject.Binder;
 import com.google.inject.name.Names;
 
-// TODO: Auto-generated Javadoc
 /**
  * Use this class to register components to be used at runtime / without the 
  * Equinox extension registry.
@@ -46,4 +48,12 @@ public class EmfaticRuntimeModule extends AbstractEmfaticRuntimeModule {
 		return EmfaticQNP.class;
 	}
 	
+	
+	public Class<? extends org.eclipse.xtext.linking.ILinker> bindILinker() {
+		return EmfaticLinker.class;
+	}
+	
+	public void configureAnnotationsProvider(Binder binder) {
+		binder.bind(AnnotationMap.class).to(DefaultAnnotationMap.class);
+	}
 }

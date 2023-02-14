@@ -80,7 +80,7 @@ StringOrQualifiedID:
  * and using multi-value assignment instead
  */
 Annotation:
-	AT source=StringOrQualifiedID (LPAREN kv+=KeyEqualsValue (COMMA kv+=KeyEqualsValue)* RPAREN)?
+	AT source=StringOrQualifiedID (LPAREN keyValues+=KeyEqualsValue (COMMA keyValues+=KeyEqualsValue)* RPAREN)?
 ;
 
 /**

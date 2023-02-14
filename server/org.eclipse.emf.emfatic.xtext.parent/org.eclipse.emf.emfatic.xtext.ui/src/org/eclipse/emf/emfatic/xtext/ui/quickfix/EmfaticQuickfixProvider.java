@@ -31,11 +31,24 @@ public class EmfaticQuickfixProvider extends DefaultQuickfixProvider {
 //		});
 //	}
 	
-	@Fix(IssueCodes.ECORE_METAMODEL_IMPORTED)
+	@Fix(IssueCodes.INVALID_METAMODEL_IMPORTED)
 	public void removeImport(final Issue issue, IssueResolutionAcceptor acceptor) {
 		acceptor.accept(
 				issue,
-				"Remove import", "Remove Ecore import.", "upcase.png",
+				"Remove import", "Remove invalid metamodel.", "upcase.png",
+				(EObject element, IModificationContext context) -> {
+						Import i = (Import) element;
+						CompUnit unit = (CompUnit) i.eContainer();
+						unit.getImportStmts().remove(i);
+					}
+				);
+	}
+	
+	@Fix(IssueCodes.EXTEND_CYCLE_DETECTED)
+	public void removeSuperClass(final Issue issue, IssueResolutionAcceptor acceptor) {
+		acceptor.accept(
+				issue,
+				"Remove class", "Remove cycle class.", "upcase.png",
 				(EObject element, IModificationContext context) -> {
 						Import i = (Import) element;
 						CompUnit unit = (CompUnit) i.eContainer();
