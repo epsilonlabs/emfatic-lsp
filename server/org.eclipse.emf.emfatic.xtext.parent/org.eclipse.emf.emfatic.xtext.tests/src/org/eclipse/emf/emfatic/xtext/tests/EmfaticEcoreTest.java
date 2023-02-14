@@ -45,7 +45,7 @@ class EmfaticEcoreTest {
 		StringOrQualifiedID source = namespace.getSource();
 		Assertions.assertNull(source.getLiteral());
 		Assertions.assertEquals("namespace", source.getId());
-		EList<KeyEqualsValue> values = namespace.getKv();
+		EList<KeyEqualsValue> values = namespace.getKeyValues();
 		Assertions.assertEquals(2, values.size());
 		KeyEqualsValue keyVal = values.get(0);
 		Assertions.assertEquals("uri", keyVal.getKey());
@@ -149,7 +149,7 @@ class EmfaticEcoreTest {
 		StringOrQualifiedID source = annot.getSource();
 		Assertions.assertNull(source.getLiteral());
 		Assertions.assertEquals("Ecore", source.getId());
-		EList<KeyEqualsValue> values = annot.getKv();
+		EList<KeyEqualsValue> values = annot.getKeyValues();
 		Assertions.assertEquals(1, values.size());
 		KeyEqualsValue keyVal = values.get(0);
 		Assertions.assertEquals("constraints", keyVal.getKey());
