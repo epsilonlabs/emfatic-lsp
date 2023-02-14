@@ -13,5 +13,6 @@ Require-Bundle: org.eclipse.emf.emfatic.xtext,
  org.aopalliance;bundle-version="1.0.0",
  io.github.classgraph;bundle-version="4.8.138"
 Bundle-RequiredExecutionEnvironment: JavaSE-11
-Export-Package: org.eclipse.emf.emfatic.xtext.ide.contentassist.antlr.internal,
- org.eclipse.emf.emfatic.xtext.ide.contentassist.antlr
+Export-Package: org.eclipse.emf.emfatic.xtext.ide.contentassist,
+ org.eclipse.emf.emfatic.xtext.ide.contentassist.antlr,
+ org.eclipse.emf.emfatic.xtext.ide.contentassist.antlr.internal
