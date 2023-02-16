@@ -5,10 +5,10 @@ import org.eclipse.emf.emfatic.xtext.emfatic.EmfaticPackage;
 
 import com.google.common.base.Objects;
 
-public class EmfaticMapAnnotation implements EmfaticAnnotation {
+public class EmfaticMapAnnotation extends BaseAnnotation implements EmfaticAnnotation {
 
 	@Override
-	public String URI() {
+	public String source() {
 		return EMFATIC_MAP_URI;
 	}
 
@@ -20,6 +20,10 @@ public class EmfaticMapAnnotation implements EmfaticAnnotation {
 	@Override
 	public boolean isValidKey(String name, EClass target) {
 		return Objects.equal(EmfaticPackage.Literals.PACKAGE_DECL, target);
+	}
+	
+	@Override
+	protected void createKeys() {
 	}
 	
 	private static final String EMFATIC_MAP_LABEL = "EmfaticAnnotationMap";

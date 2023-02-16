@@ -3,12 +3,17 @@ package org.eclipse.emf.emfatic.xtext.annotations;
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.emfatic.xtext.emfatic.EmfaticPackage;
 
-import com.google.common.base.Objects;
-
-public class GenModelAnnotation implements EmfaticAnnotation {
+/**
+ * Provides the valid GenModel annotations.
+ * 
+ * Taken from <a href="https://dentrassi.de/my-projects/emf-genmodel-annotations/#sample_gen_pattern_1">EMF GenModel Annotations<a>
+ * @author Horacio Hoyos Rodriguez
+ *
+ */
+public class GenModelAnnotation extends BaseAnnotation implements EmfaticAnnotation {
 
 	@Override
-	public String URI() {
+	public String source() {
 		return GEN_MODEL_URI;
 	}
 
@@ -17,36 +22,25 @@ public class GenModelAnnotation implements EmfaticAnnotation {
 		return GEN_MODEL_LABEL;
 	}
 
-	@Override
-	public boolean isValidKey(String name, EClass target) {
-		String namelc = name.toLowerCase();
-		switch(namelc) {
-		case "documentation":
-			return true;
-		case "copyright":
-			return true;
-		case "get":
-		case "suppressedGetVisibility":
-		case "suppressedSetVisibility":
-		case "suppressedIsSetVisibility":
-		case "suppressedUnsetVisibility":
-			return isFeature(target);
-		case "body":
-			return Objects.equal(target, EmfaticPackage.Literals.OPERATION);
-		case "create":
-		case "convert":
-			return Objects.equal(target, EmfaticPackage.Literals.DATA_TYPE);
-			
-		}
-		return false;
-	}
-	
 	private static final String GEN_MODEL_LABEL = "GenModel";
 	private static final String GEN_MODEL_URI = "http://www.eclipse.org/emf/2002/GenModel";
 	
-	private boolean isFeature(EClass target) {
-		return Objects.equal(target, EmfaticPackage.Literals.ATTRIBUTE)
-				|| Objects.equal(target, EmfaticPackage.Literals.REFERENCE);
+	protected void createKeys() {
+		if (this.keyMap.isEmpty()) {
+			addKey(new DetailsKey("documentation"));
+			addKey(new DetailsKey("copyright"));
+			EClass[] targets = new EClass[] {
+					EmfaticPackage.Literals.ATTRIBUTE, 
+					EmfaticPackage.Literals.REFERENCE};
+			addKey(new DetailsKey("get", targets));
+			addKey(new DetailsKey("suppressedGetVisibility", targets));
+			addKey(new DetailsKey("suppressedSetVisibility", targets));
+			addKey(new DetailsKey("suppressedIsSetVisibility", targets));
+			addKey(new DetailsKey("suppressedUnsetVisibility", targets));
+			targets = new EClass[] {EmfaticPackage.Literals.DATA_TYPE};
+			addKey(new DetailsKey("create", targets));
+			addKey(new DetailsKey("convert", targets));
+		}
 	}
 
 }

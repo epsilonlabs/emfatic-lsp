@@ -28,18 +28,17 @@ public class EmfaticIdeCPP extends IdeContentProposalProvider {
 		IIdeContentProposalAcceptor acceptor) {
 		AbstractRule calledRule = ruleCall.getRule();
 		String eClassName = calledRule.getName();
+		
 		System.out.println("=== _createProposals ");
-		System.out.println(calledRule);
+		System.out.println(eClassName);
 		System.out.println(context.getCurrentModel());
-		EmfaticContent sw = new EmfaticContent(calledRule, getProposalCreator(), context);
+		System.out.println("=====");
+		
+		EmfaticContent sw = new EmfaticContent(calledRule, getProposalCreator(), context, annotations);
 		sw.doSwitch(context.getCurrentModel()).forEach(a -> 
 			acceptor.accept(a, 0));
 		
 	}
 	
-	
-	
-	
-	
-	
+
 }

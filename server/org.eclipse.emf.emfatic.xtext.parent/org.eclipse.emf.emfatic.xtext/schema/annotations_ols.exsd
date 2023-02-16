@@ -3,10 +3,10 @@
 <schema targetNamespace="org.eclipse.emf.emfatic.xtext" xmlns="http://www.w3.org/2001/XMLSchema">
 <annotation>
       <appinfo>
-         <meta.schema plugin="org.eclipse.emf.emfatic.xtext" id="annotations" name="Annotations Provider"/>
+         <meta.schema plugin="org.eclipse.emf.emfatic.xtext" id="org.eclipse.emf.emfatic.xtext.annotations" name="Emfatic  Annotations"/>
       </appinfo>
       <documentation>
-         [Enter description of this extension point.]
+         This extension point is used to register a Emfatic Annotations implementation. The implementatin provided will be used in the Emfatic Editor to provide additional content assist information and validation.
       </documentation>
    </annotation>
 
@@ -48,11 +48,16 @@
    </element>
 
    <element name="provider">
+      <annotation>
+         <documentation>
+            Add a new Emfatic annotation provider
+         </documentation>
+      </annotation>
       <complexType>
-         <attribute name="implementation" type="string" use="required">
+         <attribute name="class" type="string" use="required">
             <annotation>
                <documentation>
-                  An implementation of the Emfatic Annotation interface.
+                  Provide additional Emfatic Annotation Map implementation to make the custom annotation label and valid keys available for validation and content assist.
                </documentation>
                <appinfo>
                   <meta.attribute kind="java" basedOn=":org.eclipse.emf.emfatic.xtext.annotations.EmfaticAnnotation"/>
@@ -67,7 +72,7 @@
          <meta.section type="since"/>
       </appinfo>
       <documentation>
-         [Enter the first release in which this extension point appears.]
+         1.0
       </documentation>
    </annotation>
 

@@ -1,5 +1,8 @@
 package org.eclipse.emf.emfatic.xtext.annotations;
 
+import java.util.Collections;
+import java.util.List;
+
 import org.eclipse.emf.ecore.EClass;
 
 public class DefaultEmfaticAnnotation implements EmfaticAnnotation {
@@ -13,7 +16,7 @@ public class DefaultEmfaticAnnotation implements EmfaticAnnotation {
 	}
 
 	@Override
-	public String URI() {
+	public String source() {
 		return this.uri;
 	}
 
@@ -25,6 +28,11 @@ public class DefaultEmfaticAnnotation implements EmfaticAnnotation {
 	@Override
 	public boolean isValidKey(String name, EClass target) {
 		return true;
+	}
+
+	@Override
+	public List<String> keysFor(EClass eClass) {
+		return Collections.emptyList();
 	}
 
 }

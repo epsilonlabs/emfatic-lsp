@@ -5,10 +5,10 @@ import org.eclipse.emf.emfatic.xtext.emfatic.EmfaticPackage;
 
 import com.google.common.base.Objects;
 
-public class EcoreAnnotation implements EmfaticAnnotation {
+public class EcoreAnnotation extends BaseAnnotation implements EmfaticAnnotation {
 
 	@Override
-	public String URI() {
+	public String source() {
 		return ECORE_URI;
 	}
 
@@ -29,8 +29,19 @@ public class EcoreAnnotation implements EmfaticAnnotation {
 		return false;
 	}
 	
+	protected void createKeys() {
+		if (this.keyMap.isEmpty()) {
+			addKey(new DetailsKey("constraints"));
+			EClass[] targets = new EClass[] {EmfaticPackage.Literals.PACKAGE_DECL};
+			addKey(new DetailsKey("settingDelegates",targets));
+			addKey(new DetailsKey("invocationDelegates",targets));
+			addKey(new DetailsKey("validationDelegates",targets));
+		}
+	}
+	
 	private static final String ECORE_LABEL = "Ecore";
 	private static final String ECORE_URI = "http://www.eclipse.org/emf/2002/Ecore";
+	
 
 
 }

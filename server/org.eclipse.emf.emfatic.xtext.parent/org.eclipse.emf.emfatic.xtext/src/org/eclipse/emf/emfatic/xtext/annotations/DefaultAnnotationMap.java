@@ -1,11 +1,19 @@
 package org.eclipse.emf.emfatic.xtext.annotations;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.apache.log4j.Logger;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IConfigurationElement;
+import org.eclipse.core.runtime.IExtensionRegistry;
+import org.eclipse.core.runtime.Platform;
+import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.emfatic.xtext.emfatic.Annotation;
 import org.eclipse.emf.emfatic.xtext.emfatic.KeyEqualsValue;
@@ -47,14 +55,19 @@ public class DefaultAnnotationMap implements AnnotationMap {
 	
 	@Override
 	public void addAnnotation(EmfaticAnnotation annt) {
-		String label = annt.label();
-		Map<String, EmfaticAnnotation> annotations2 = getMap();
-		if (annotations2.containsKey(label)) {
+		// TODO We should support content assist for full uri labels! 
+		String label = annt.label().toLowerCase(); //labels are case insensitive
+		Map<String, EmfaticAnnotation> annotations = getMap();
+		if (annotations.containsKey(label)) {
 			LOG.error("Annoation label " + label + "is already in use. Annotation will be replaced");
-		} else {
-			LOG.info("Adding annotation with label " + label + " and uri " + annt.URI());
+		} else if(this.defaultAnnotations.containsKey(label)) {
+			LOG.warn("Annoation label " + label + "is already in use by a provided Annotation. Annotation will be ignored");
+			return;
 		}
-		annotations2.put(label, annt);
+		else {
+			LOG.info("Adding annotation with label " + label + " and uri " + annt.source());
+		}
+		annotations.put(label, annt);
 	}
 	
 	
@@ -66,15 +79,32 @@ public class DefaultAnnotationMap implements AnnotationMap {
 	@Override
 	public void setResource(Resource resource) {
 		this.resource = resource;
-		addAnnotation(new EcoreAnnotation());
-		addAnnotation(new EmfaticMapAnnotation());
-		addAnnotation(new GenModelAnnotation());
-		addAnnotation(new MetaDataAnnotation());
+		addProvidedAnnotations();
 	}
 	
 	@Override
 	public List<String> labels() {
-		return new ArrayList<>(getMap().keySet());
+		
+		List<String> result = Stream.concat(
+					getMap().values().stream(),
+					this.defaultAnnotations.values().stream())
+				.map(v -> v.label())
+				.collect(Collectors.toList());
+		// Always return labels in same order
+		Collections.sort(result);
+		return result;
+	}
+	
+	@Override
+	public List<String> keysFor(String label, EClass eClass) {
+		String mapLabel = label.toLowerCase();
+		EmfaticAnnotation emftcAnn = getMap().getOrDefault(
+				mapLabel,
+				this.defaultAnnotations.get(mapLabel));
+		if (emftcAnn == null) {
+			return Collections.emptyList();
+		}
+		return emftcAnn.keysFor(eClass);
 	}
 
 
@@ -84,6 +114,8 @@ public class DefaultAnnotationMap implements AnnotationMap {
 	private IResourceScopeCache cache = IResourceScopeCache.NullImpl.INSTANCE;
 	
 	private Resource resource;
+	
+	Map<String, EmfaticAnnotation> defaultAnnotations = new HashMap<>();
 	
 	private Map<String, EmfaticAnnotation> getMap() {
 		if (this.resource == null) {
@@ -96,9 +128,45 @@ public class DefaultAnnotationMap implements AnnotationMap {
 			}
 		});
 	}
-
-
-
 	
+	private void addProvidedAnnotations() {
+		// This should be loaded once, so we probably need a separate map, we only want to cache
+		// the EmfaticAnnotationMap ones since this are the ones that can change on edit.
+		addProvidedAnnotation(new EcoreAnnotation());
+		addProvidedAnnotation(new EmfaticMapAnnotation());
+		addProvidedAnnotation(new GenModelAnnotation());
+		addProvidedAnnotation(new MetaDataAnnotation());
+		IExtensionRegistry reg = Platform.getExtensionRegistry();
+	    IConfigurationElement[] elements = reg.getConfigurationElementsFor(AnnotationMap.EMFATIC_ANNOTATION_EXTENSION_POINT);
+	    for(IConfigurationElement element: elements) {
+	    	System.out.println(element.getAttribute("implementation"));
+	    	Object executable = null;
+			try {
+				executable = element.createExecutableExtension("implementation");
+			} catch (CoreException e) {
+				LOG.error("Unable to instantiate Annotation provider from " + element.getAttribute("class"));
+			}
+			if (executable != null && executable instanceof EmfaticAnnotation) {
+				addProvidedAnnotation((EmfaticAnnotation) executable);
+			}
+	    }
+	}
+
+	private void addProvidedAnnotation(EmfaticAnnotation annt) {
+		String label = annt.label().toLowerCase(); //labels are case insensitive
+		if (defaultAnnotations.containsKey(label)) {
+			LOG.error("Annoation label " + label + "is already in use. Annotation will be replaced");
+		} else {
+			LOG.info("Adding annotation with label " + label + " and uri " + annt.source() + " via label");
+		}
+		defaultAnnotations.put(label, annt);
+//		label = annt.source();
+//		if (defaultAnnotations.containsKey(label)) {
+//			LOG.error("Annoation source " + label + "is already in use. Annotation will be replaced");
+//		} else {
+//			LOG.info("Adding annotation with label " + label + " and uri " + annt.source()  + " via uri");
+//		}
+		defaultAnnotations.put(label, annt);
+	}
 
 }
