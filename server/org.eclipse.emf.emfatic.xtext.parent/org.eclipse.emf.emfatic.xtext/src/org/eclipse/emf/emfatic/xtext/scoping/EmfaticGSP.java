@@ -170,7 +170,7 @@ public class EmfaticGSP extends DefaultGlobalScopeProvider {
 		CompUnit compUint = emfaticInstance(EmfaticPackage.Literals.COMP_UNIT);
 		libaryResource.getContents().add(compUint);
 		compUint.setPackage(translatePackage(ep.getName()));
-		compUint.getTopLevelDecls().addAll(transalteClassifiers(ep.getEClassifiers()));
+		compUint.getDeclarations().addAll(transalteClassifiers(ep.getEClassifiers()));
 		return libaryResource;
 	}
 	
@@ -330,7 +330,7 @@ public class EmfaticGSP extends DefaultGlobalScopeProvider {
 	private List<URI> getImportedUris(final Resource context, ImportUriChecker checker) {
 		CompUnit compUnit = (CompUnit) context.getContents().get(0);
 		List<URI> result = new ArrayList<>();
-		for (Import stmt : compUnit.getImportStmts()) {
+		for (Import stmt : compUnit.getImports()) {
 			Optional<URI> optUri;
 			try {
 				optUri = checker.resolveURI(stmt);

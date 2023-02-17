@@ -5,9 +5,9 @@
   <eClassifiers xsi:type="ecore:EClass" name="CompUnit">
     <eStructuralFeatures xsi:type="ecore:EReference" name="package" eType="#//PackageDecl"
         containment="true"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="importStmts" upperBound="-1"
+    <eStructuralFeatures xsi:type="ecore:EReference" name="imports" upperBound="-1"
         eType="#//Import" containment="true"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="topLevelDecls" upperBound="-1"
+    <eStructuralFeatures xsi:type="ecore:EReference" name="declarations" upperBound="-1"
         eType="#//TopLevelDecl" containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="PackageDecl">
@@ -22,10 +22,10 @@
   <eClassifiers xsi:type="ecore:EClass" name="Annotation">
     <eStructuralFeatures xsi:type="ecore:EReference" name="source" eType="#//StringOrQualifiedID"
         containment="true"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="keyValues" upperBound="-1"
-        eType="#//KeyEqualsValue" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="details" upperBound="-1"
+        eType="#//MapEntry" containment="true"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="KeyEqualsValue">
+  <eClassifiers xsi:type="ecore:EClass" name="MapEntry">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="key" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="value" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
   </eClassifiers>
@@ -45,7 +45,7 @@
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="ClassifierDecl" eSuperTypes="#//Declaration"/>
   <eClassifiers xsi:type="ecore:EClass" name="SubPackageDecl" eSuperTypes="#//Declaration">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="topLevelDecls" upperBound="-1"
+    <eStructuralFeatures xsi:type="ecore:EReference" name="declarations" upperBound="-1"
         eType="#//TopLevelDecl" containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="ClassDecl" eSuperTypes="#//ClassifierDecl">
@@ -55,7 +55,7 @@
         containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="superTypes" upperBound="-1"
         eType="#//BoundClassExceptWildcard" containment="true"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="instClassName" eType="#//BoundExceptWildcard"
+    <eStructuralFeatures xsi:type="ecore:EReference" name="instClassName" eType="#//BoundClassifierExceptWildcard"
         containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="members" upperBound="-1"
         eType="#//ClassMemberDecl" containment="true"/>
@@ -70,10 +70,10 @@
         containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="TypeBoundsInfo">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="tb" upperBound="-1" eType="#//BoundExceptWildcard"
+    <eStructuralFeatures xsi:type="ecore:EReference" name="tb" upperBound="-1" eType="#//BoundClassifierExceptWildcard"
         containment="true"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="BoundExceptWildcard" eSuperTypes="#//TypeArg">
+  <eClassifiers xsi:type="ecore:EClass" name="BoundClassifierExceptWildcard" eSuperTypes="#//TypeArg">
     <eStructuralFeatures xsi:type="ecore:EReference" name="bound" eType="#//ClassifierDecl"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="typeArgs" upperBound="-1"
         eType="#//TypeArg" containment="true"/>
@@ -85,7 +85,7 @@
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="TypeArg"/>
   <eClassifiers xsi:type="ecore:EClass" name="Wildcard" eSuperTypes="#//TypeArg">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="extends" eType="#//BoundExceptWildcard"
+    <eStructuralFeatures xsi:type="ecore:EReference" name="extends" eType="#//BoundClassifierExceptWildcard"
         containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="ClassMemberDecl">
@@ -106,7 +106,7 @@
         containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="TypeWithMulti" eSuperTypes="#//ResultType">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="type" eType="#//BoundExceptWildcard"
+    <eStructuralFeatures xsi:type="ecore:EReference" name="type" eType="#//BoundClassifierExceptWildcard"
         containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="multiplicity" eType="#//Multiplicity"
         containment="true"/>
@@ -149,7 +149,7 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="params" upperBound="-1"
         eType="#//Param" containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="exceptions" upperBound="-1"
-        eType="#//BoundExceptWildcard" containment="true"/>
+        eType="#//BoundClassifierExceptWildcard" containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="ResultType">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="void" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"/>

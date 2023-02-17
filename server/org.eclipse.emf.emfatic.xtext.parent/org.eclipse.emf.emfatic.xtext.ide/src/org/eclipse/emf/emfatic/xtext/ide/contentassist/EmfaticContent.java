@@ -1,3 +1,12 @@
+/*******************************************************************************
+ * Copyright (c) 2023 The University of York.
+ * This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License 2.0
+ * which is available at https://www.eclipse.org/legal/epl-2.0/
+ * 
+ * Contributors:
+ *     Horacio Hoyos Rodriguez - initial API and implementation
+ ******************************************************************************/
 package org.eclipse.emf.emfatic.xtext.ide.contentassist;
 
 import java.util.ArrayList;
@@ -8,7 +17,6 @@ import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.emfatic.xtext.annotations.AnnotationMap;
 import org.eclipse.emf.emfatic.xtext.emfatic.Annotation;
 import org.eclipse.emf.emfatic.xtext.emfatic.Declaration;
-import org.eclipse.emf.emfatic.xtext.emfatic.KeyEqualsValue;
 import org.eclipse.emf.emfatic.xtext.emfatic.StringOrQualifiedID;
 import org.eclipse.emf.emfatic.xtext.emfatic.TopLevelDecl;
 import org.eclipse.emf.emfatic.xtext.emfatic.util.EmfaticSwitch;

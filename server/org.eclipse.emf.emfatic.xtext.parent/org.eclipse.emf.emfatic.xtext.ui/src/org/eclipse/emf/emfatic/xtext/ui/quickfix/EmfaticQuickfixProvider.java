@@ -39,7 +39,7 @@ public class EmfaticQuickfixProvider extends DefaultQuickfixProvider {
 				(EObject element, IModificationContext context) -> {
 						Import i = (Import) element;
 						CompUnit unit = (CompUnit) i.eContainer();
-						unit.getImportStmts().remove(i);
+						unit.getImports().remove(i);
 					}
 				);
 	}
@@ -52,7 +52,7 @@ public class EmfaticQuickfixProvider extends DefaultQuickfixProvider {
 				(EObject element, IModificationContext context) -> {
 						Import i = (Import) element;
 						CompUnit unit = (CompUnit) i.eContainer();
-						unit.getImportStmts().remove(i);
+						unit.getImports().remove(i);
 					}
 				);
 	}
