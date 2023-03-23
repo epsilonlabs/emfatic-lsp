@@ -1,6 +1,5 @@
 package org.eclipse.emf.emfatic.xtext.annotations;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -136,20 +135,23 @@ public class DefaultAnnotationMap implements AnnotationMap {
 		addProvidedAnnotation(new EmfaticMapAnnotation());
 		addProvidedAnnotation(new GenModelAnnotation());
 		addProvidedAnnotation(new MetaDataAnnotation());
-		IExtensionRegistry reg = Platform.getExtensionRegistry();
-	    IConfigurationElement[] elements = reg.getConfigurationElementsFor(AnnotationMap.EMFATIC_ANNOTATION_EXTENSION_POINT);
-	    for(IConfigurationElement element: elements) {
-	    	System.out.println(element.getAttribute("implementation"));
-	    	Object executable = null;
-			try {
-				executable = element.createExecutableExtension("implementation");
-			} catch (CoreException e) {
-				LOG.error("Unable to instantiate Annotation provider from " + element.getAttribute("class"));
+		if (Platform.isRunning()) {
+			IExtensionRegistry reg = Platform.getExtensionRegistry();
+			IConfigurationElement[] elements = reg.getConfigurationElementsFor(AnnotationMap.EMFATIC_ANNOTATION_EXTENSION_POINT);
+			for (IConfigurationElement element : elements) {
+				System.out.println(element.getAttribute("implementation"));
+				Object executable = null;
+				try {
+					executable = element.createExecutableExtension("implementation");
+				}
+				catch (CoreException e) {
+					LOG.error("Unable to instantiate Annotation provider from " + element.getAttribute("class"));
+				}
+				if (executable != null && executable instanceof EmfaticAnnotation) {
+					addProvidedAnnotation((EmfaticAnnotation) executable);
+				}
 			}
-			if (executable != null && executable instanceof EmfaticAnnotation) {
-				addProvidedAnnotation((EmfaticAnnotation) executable);
-			}
-	    }
+		}
 	}
 
 	private void addProvidedAnnotation(EmfaticAnnotation annt) {
