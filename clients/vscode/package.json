@@ -1,0 +1,44 @@
+{
+  "name": "emfatic",
+  "displayName": "Emfatic",
+  "description": "LSP client for the Emfatic language",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.76.0"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "contributes": {
+    "languages": [
+      {
+        "id": "emfatic",
+        "aliases": [
+          "Emfatic",
+          "emfatic"
+        ],
+        "extensions": [
+          ".emf"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "emfatic",
+        "scopeName": "source.emfatic",
+        "path": "./syntaxes/emfatic.tmLanguage"
+      }
+    ]
+  },
+  "devDependencies": {
+    "@types/node": "^18.15.5",
+    "@types/vscode": "^1.76.0",
+    "typescript": "^5.0.2",
+    "vscode-test": "^1.6.1"
+  },
+  "dependencies": {
+    "vscode-languageclient": "^8.1.0"
+  },
+  "main": "out/extension"
+}
