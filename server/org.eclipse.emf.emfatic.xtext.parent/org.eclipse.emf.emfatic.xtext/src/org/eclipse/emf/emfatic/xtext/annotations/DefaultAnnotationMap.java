@@ -67,21 +67,15 @@ public class DefaultAnnotationMap implements AnnotationMap {
 		String label = annt.label().toLowerCase(); //labels are case insensitive
 		Map<String, EmfaticAnnotation> annotations = getMap();
 		if (annotations.containsKey(label)) {
-			LOG.error("Annoation label " + label + "is already in use. Annotation will be replaced");
+			LOG.warn("Annoation label " + label + " is already in use. Annotation will be replaced");
 		} else if(this.defaultAnnotations.containsKey(label)) {
-			LOG.warn("Annoation label " + label + "is already in use by a provided Annotation. Annotation will be ignored");
+			LOG.warn("Annoation label " + label + " is already in use by a provided Annotation. Annotation will be ignored");
 			return;
 		}
 		else {
 			LOG.info("Adding annotation with label " + label + " and uri " + annt.source());
 		}
 		annotations.put(label, annt);
-	}
-	
-	
-	@Override
-	public EmfaticAnnotation removeAnnotation(String label) {
-		return getMap().remove(label);
 	}
 	
 	@Override
@@ -92,7 +86,6 @@ public class DefaultAnnotationMap implements AnnotationMap {
 	
 	@Override
 	public List<String> labels() {
-		
 		List<String> result = Stream.concat(
 					getMap().values().stream(),
 					this.defaultAnnotations.values().stream())
@@ -101,6 +94,18 @@ public class DefaultAnnotationMap implements AnnotationMap {
 		// Always return labels in same order
 		Collections.sort(result);
 		return result;
+	}
+	
+	@Override
+	public boolean isValidKey(String label, String name, EClass target) {
+		String mapLabel = label.toLowerCase();
+		EmfaticAnnotation emftcAnn = getMap().getOrDefault(
+				mapLabel,
+				this.defaultAnnotations.get(mapLabel));
+		if (emftcAnn == null) {
+			return false;
+		}
+		return emftcAnn.isValidKey(name, target);
 	}
 	
 	@Override
@@ -145,6 +150,10 @@ public class DefaultAnnotationMap implements AnnotationMap {
 		addProvidedAnnotation(new GenModelAnnotation());
 		addProvidedAnnotation(new MetaDataAnnotation());
 		IExtensionRegistry reg = Platform.getExtensionRegistry();
+		if (reg == null) {
+			// Running in standalone? 
+			return;
+		}
 	    IConfigurationElement[] elements = reg.getConfigurationElementsFor(AnnotationMap.EMFATIC_ANNOTATION_EXTENSION_POINT);
 	    for(IConfigurationElement element: elements) {
 	    	System.out.println(element.getAttribute("implementation"));

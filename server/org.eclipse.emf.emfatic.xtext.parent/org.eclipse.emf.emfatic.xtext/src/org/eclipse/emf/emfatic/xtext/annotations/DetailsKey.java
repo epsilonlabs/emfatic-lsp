@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Predicate;
 
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.emfatic.xtext.emfatic.EmfaticPackage;
@@ -53,7 +54,9 @@ public class DetailsKey {
 		if (this.targets.isEmpty()) {
 			return true;
 		}
-		return this.targets.stream().anyMatch(t -> Objects.equals(t, eClass));		
+		return this.targets.stream()
+				.anyMatch(this.strictMatch(eClass)
+						.or(this.subClass(eClass)));		
 	}
 	
 	public String name() {
@@ -62,5 +65,14 @@ public class DetailsKey {
 	
 	private final String name;
 	private final List<EClass> targets;
+	
+	private Predicate<EClass> strictMatch(EClass eClass) {
+		return t -> Objects.equals(t, eClass);
+	}
+	
+	private Predicate<EClass> subClass(EClass eClass) {
+		return t -> eClass.getEAllSuperTypes().stream()
+				.anyMatch(this.strictMatch(t));
+	}
 
 }

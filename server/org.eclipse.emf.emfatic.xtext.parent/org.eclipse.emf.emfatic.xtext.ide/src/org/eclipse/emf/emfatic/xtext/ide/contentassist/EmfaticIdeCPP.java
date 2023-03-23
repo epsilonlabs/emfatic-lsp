@@ -23,7 +23,7 @@ import com.google.inject.Inject;
 public class EmfaticIdeCPP extends IdeContentProposalProvider {
 	
 	@Inject
-	private AnnotationMap annotations;
+	private AnnotationMap annotationMap;
 
 	@Override
 	public void createProposals(Collection<ContentAssistContext> contexts, IIdeContentProposalAcceptor acceptor) {
@@ -43,7 +43,7 @@ public class EmfaticIdeCPP extends IdeContentProposalProvider {
 		System.out.println(context.getCurrentModel());
 		System.out.println("=====");
 		
-		EmfaticContent sw = new EmfaticContent(calledRule, getProposalCreator(), context, annotations);
+		EmfaticContent sw = new EmfaticContent(calledRule, getProposalCreator(), context, annotationMap);
 		sw.doSwitch(context.getCurrentModel()).forEach(a -> 
 			acceptor.accept(a, 0));
 		

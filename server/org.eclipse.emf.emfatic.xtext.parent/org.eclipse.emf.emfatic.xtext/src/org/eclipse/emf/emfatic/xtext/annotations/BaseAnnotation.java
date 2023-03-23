@@ -16,6 +16,11 @@ import java.util.stream.Collectors;
 
 import org.eclipse.emf.ecore.EClass;
 
+/**
+ * Base annotation that can be used to quickly provide additional annotations to Emfatic editor.
+ * @author horacio
+ *
+ */
 public abstract class BaseAnnotation implements EmfaticAnnotation {
 	
 	public BaseAnnotation() {
@@ -24,6 +29,7 @@ public abstract class BaseAnnotation implements EmfaticAnnotation {
 
 	@Override
 	public boolean isValidKey(String name, EClass target) {
+		createKeys();
 		if (this.keyMap.containsKey(name)) {
 			return this.keyMap.get(name).appliesTo(target);
 		}
@@ -39,22 +45,27 @@ public abstract class BaseAnnotation implements EmfaticAnnotation {
 				.collect(Collectors.toList());
 	}
 
-//	@Override
-//	public List<String> keys() {
-//		createKeys();
-//		return this.keyMap.keySet().stream()
-//				.sorted()
-//				.collect(Collectors.toList());
-//	}
-
-	
-	
 	protected final Map<String, DetailsKey> keyMap = new HashMap<>();
 	
-	protected abstract void createKeys();
+	/**
+	 * Extending classes must implement this method to populate the valid keys. We recommend using
+	 * the {@link #addKey(DetailsKey)} method via:
+	 * <code>
+	 * 	addKey(new DetailsKey("someKey", [... target EClasses ...]));
+	 * </code>
+	 * where the target EClasses can be omitted to apply to key to all possible EClasses.
+	 */
+	protected abstract void doCreateKeys();
 	
 	protected void addKey(DetailsKey key) {
 		this.keyMap.put(key.name(), key);
+	}
+	
+	private void createKeys() {
+		if (this.keyMap.isEmpty()) {
+			this.doCreateKeys();
+		}
+		
 	}
 
 }

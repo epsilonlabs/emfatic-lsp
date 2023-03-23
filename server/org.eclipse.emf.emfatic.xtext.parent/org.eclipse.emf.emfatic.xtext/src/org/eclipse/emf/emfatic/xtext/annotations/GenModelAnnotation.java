@@ -30,26 +30,24 @@ public class GenModelAnnotation extends BaseAnnotation implements EmfaticAnnotat
 	public String label() {
 		return GEN_MODEL_LABEL;
 	}
-
+	
+	protected void doCreateKeys() {
+		addKey(new DetailsKey("documentation"));
+		addKey(new DetailsKey("copyright"));
+		EClass[] targets = new EClass[] {
+				EmfaticPackage.Literals.ATTRIBUTE, 
+				EmfaticPackage.Literals.REFERENCE};
+		addKey(new DetailsKey("get", targets));
+		addKey(new DetailsKey("suppressedGetVisibility", targets));
+		addKey(new DetailsKey("suppressedSetVisibility", targets));
+		addKey(new DetailsKey("suppressedIsSetVisibility", targets));
+		addKey(new DetailsKey("suppressedUnsetVisibility", targets));
+		targets = new EClass[] {EmfaticPackage.Literals.DATA_TYPE_DECL};
+		addKey(new DetailsKey("create", targets));
+		addKey(new DetailsKey("convert", targets));
+	}
+	
 	private static final String GEN_MODEL_LABEL = "GenModel";
 	private static final String GEN_MODEL_URI = "http://www.eclipse.org/emf/2002/GenModel";
-	
-	protected void createKeys() {
-		if (this.keyMap.isEmpty()) {
-			addKey(new DetailsKey("documentation"));
-			addKey(new DetailsKey("copyright"));
-			EClass[] targets = new EClass[] {
-					EmfaticPackage.Literals.ATTRIBUTE, 
-					EmfaticPackage.Literals.REFERENCE};
-			addKey(new DetailsKey("get", targets));
-			addKey(new DetailsKey("suppressedGetVisibility", targets));
-			addKey(new DetailsKey("suppressedSetVisibility", targets));
-			addKey(new DetailsKey("suppressedIsSetVisibility", targets));
-			addKey(new DetailsKey("suppressedUnsetVisibility", targets));
-			targets = new EClass[] {EmfaticPackage.Literals.DATA_TYPE};
-			addKey(new DetailsKey("create", targets));
-			addKey(new DetailsKey("convert", targets));
-		}
-	}
 
 }

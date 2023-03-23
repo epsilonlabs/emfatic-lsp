@@ -32,7 +32,7 @@ public class EmfaticMapAnnotation extends BaseAnnotation implements EmfaticAnnot
 	}
 	
 	@Override
-	protected void createKeys() {
+	protected void doCreateKeys() {
 	}
 	
 	private static final String EMFATIC_MAP_LABEL = "EmfaticAnnotationMap";
