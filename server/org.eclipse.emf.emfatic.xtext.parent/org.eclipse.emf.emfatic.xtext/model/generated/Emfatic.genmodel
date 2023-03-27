@@ -8,8 +8,8 @@
       fileExtensions="emf" ecorePackage="Emfatic.ecore#/">
     <genClasses ecoreClass="Emfatic.ecore#//CompUnit">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Emfatic.ecore#//CompUnit/package"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Emfatic.ecore#//CompUnit/importStmts"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Emfatic.ecore#//CompUnit/topLevelDecls"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Emfatic.ecore#//CompUnit/imports"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Emfatic.ecore#//CompUnit/declarations"/>
     </genClasses>
     <genClasses ecoreClass="Emfatic.ecore#//PackageDecl">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Emfatic.ecore#//PackageDecl/annotations"/>
@@ -21,11 +21,11 @@
     </genClasses>
     <genClasses ecoreClass="Emfatic.ecore#//Annotation">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Emfatic.ecore#//Annotation/source"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Emfatic.ecore#//Annotation/keyValues"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Emfatic.ecore#//Annotation/details"/>
     </genClasses>
-    <genClasses ecoreClass="Emfatic.ecore#//KeyEqualsValue">
-      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Emfatic.ecore#//KeyEqualsValue/key"/>
-      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Emfatic.ecore#//KeyEqualsValue/value"/>
+    <genClasses ecoreClass="Emfatic.ecore#//MapEntry">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Emfatic.ecore#//MapEntry/key"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Emfatic.ecore#//MapEntry/value"/>
     </genClasses>
     <genClasses ecoreClass="Emfatic.ecore#//Import">
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Emfatic.ecore#//Import/alias"/>
@@ -40,7 +40,7 @@
     </genClasses>
     <genClasses ecoreClass="Emfatic.ecore#//ClassifierDecl"/>
     <genClasses ecoreClass="Emfatic.ecore#//SubPackageDecl">
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Emfatic.ecore#//SubPackageDecl/topLevelDecls"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Emfatic.ecore#//SubPackageDecl/declarations"/>
     </genClasses>
     <genClasses ecoreClass="Emfatic.ecore#//ClassDecl">
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Emfatic.ecore#//ClassDecl/abstract"/>
@@ -60,9 +60,9 @@
     <genClasses ecoreClass="Emfatic.ecore#//TypeBoundsInfo">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Emfatic.ecore#//TypeBoundsInfo/tb"/>
     </genClasses>
-    <genClasses ecoreClass="Emfatic.ecore#//BoundExceptWildcard">
-      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference Emfatic.ecore#//BoundExceptWildcard/bound"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Emfatic.ecore#//BoundExceptWildcard/typeArgs"/>
+    <genClasses ecoreClass="Emfatic.ecore#//BoundClassifierExceptWildcard">
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference Emfatic.ecore#//BoundClassifierExceptWildcard/bound"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Emfatic.ecore#//BoundClassifierExceptWildcard/typeArgs"/>
     </genClasses>
     <genClasses ecoreClass="Emfatic.ecore#//BoundClassExceptWildcard">
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference Emfatic.ecore#//BoundClassExceptWildcard/bound"/>

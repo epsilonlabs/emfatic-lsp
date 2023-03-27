@@ -45,14 +45,14 @@ class EmfaticEcoreTest {
 		StringOrQualifiedID source = namespace.getSource();
 		Assertions.assertNull(source.getLiteral());
 		Assertions.assertEquals("namespace", source.getId());
-		EList<KeyEqualsValue> values = namespace.getKeyValues();
-		Assertions.assertEquals(2, values.size());
-		KeyEqualsValue keyVal = values.get(0);
-		Assertions.assertEquals("uri", keyVal.getKey());
-		Assertions.assertEquals("http://www.eclipse.org/emf/2002/Ecore", keyVal.getValue());
-		keyVal = values.get(1);
-		Assertions.assertEquals("prefix", keyVal.getKey());
-		Assertions.assertEquals("ecore", keyVal.getValue());
+		EList<MapEntry> details = namespace.getDetails();
+		Assertions.assertEquals(2, details.size());
+		MapEntry entry = details.get(0);
+		Assertions.assertEquals("uri", entry.getKey());
+		Assertions.assertEquals("http://www.eclipse.org/emf/2002/Ecore", entry.getValue());
+		entry = details.get(1);
+		Assertions.assertEquals("prefix", entry.getKey());
+		Assertions.assertEquals("ecore", entry.getValue());
 	}
 	
 	@Test
@@ -60,7 +60,7 @@ class EmfaticEcoreTest {
 		InputStream complete = getClass().getResourceAsStream("/ecore.emf");
 		URI uri = URI.createURI(getClass().getResource("/ecore.emf").toURI().toString());
 		CompUnit compUnit = parseHelper.parse(complete, uri, null, resourceSetProvider.get());
-		EList<Import> imports = compUnit.getImportStmts();
+		EList<Import> imports = compUnit.getImports();
 		Assertions.assertEquals(0, imports.size());
 	}
 	
@@ -69,7 +69,7 @@ class EmfaticEcoreTest {
 		InputStream complete = getClass().getResourceAsStream("/ecore.emf");
 		URI uri = URI.createURI(getClass().getResource("/ecore.emf").toURI().toString());
 		CompUnit compUnit = parseHelper.parse(complete, uri, null, resourceSetProvider.get());
-		EList<TopLevelDecl> topLevelDecls = compUnit.getTopLevelDecls();
+		EList<TopLevelDecl> topLevelDecls = compUnit.getDeclarations();
 		Assertions.assertEquals(52, topLevelDecls.size());
 	}
 	
@@ -78,7 +78,7 @@ class EmfaticEcoreTest {
 		InputStream complete = getClass().getResourceAsStream("/ecore.emf");
 		URI uri = URI.createURI(getClass().getResource("/ecore.emf").toURI().toString());
 		CompUnit compUnit = parseHelper.parse(complete, uri, null, resourceSetProvider.get());
-		EList<TopLevelDecl> topLevelDecls = compUnit.getTopLevelDecls();
+		EList<TopLevelDecl> topLevelDecls = compUnit.getDeclarations();
 		List<TopLevelDecl> subPacakges = topLevelDecls.stream()
 			.filter(tld -> tld.getDeclaration() instanceof SubPackageDecl)
 			.collect(Collectors.toList());
@@ -90,7 +90,7 @@ class EmfaticEcoreTest {
 		InputStream complete = getClass().getResourceAsStream("/ecore.emf");
 		URI uri = URI.createURI(getClass().getResource("/ecore.emf").toURI().toString());
 		CompUnit compUnit = parseHelper.parse(complete, uri, null, resourceSetProvider.get());
-		EList<TopLevelDecl> topLevelDecls = compUnit.getTopLevelDecls();
+		EList<TopLevelDecl> topLevelDecls = compUnit.getDeclarations();
 		List<TopLevelDecl> classes = topLevelDecls.stream()
 				.filter(tld -> tld.getDeclaration() instanceof ClassDecl)
 				.collect(Collectors.toList());
@@ -102,7 +102,7 @@ class EmfaticEcoreTest {
 		InputStream complete = getClass().getResourceAsStream("/ecore.emf");
 		URI uri = URI.createURI(getClass().getResource("/ecore.emf").toURI().toString());
 		CompUnit compUnit = parseHelper.parse(complete, uri, null, resourceSetProvider.get());
-		EList<TopLevelDecl> topLevelDecls = compUnit.getTopLevelDecls();
+		EList<TopLevelDecl> topLevelDecls = compUnit.getDeclarations();
 		List<TopLevelDecl> datatypes = topLevelDecls.stream()
 				.filter(tld -> tld.getDeclaration() instanceof DataTypeDecl)
 				.collect(Collectors.toList());
@@ -114,7 +114,7 @@ class EmfaticEcoreTest {
 		InputStream complete = getClass().getResourceAsStream("/ecore.emf");
 		URI uri = URI.createURI(getClass().getResource("/ecore.emf").toURI().toString());
 		CompUnit compUnit = parseHelper.parse(complete, uri, null, resourceSetProvider.get());
-		EList<TopLevelDecl> topLevelDecls = compUnit.getTopLevelDecls();
+		EList<TopLevelDecl> topLevelDecls = compUnit.getDeclarations();
 		List<TopLevelDecl> enums = topLevelDecls.stream()
 			.filter(tld -> tld.getDeclaration() instanceof EnumDecl)
 			.collect(Collectors.toList());
@@ -126,7 +126,7 @@ class EmfaticEcoreTest {
 		InputStream complete = getClass().getResourceAsStream("/ecore.emf");
 		URI uri = URI.createURI(getClass().getResource("/ecore.emf").toURI().toString());
 		CompUnit compUnit = parseHelper.parse(complete, uri, null, resourceSetProvider.get());
-		EList<TopLevelDecl> topLevelDecls = compUnit.getTopLevelDecls();
+		EList<TopLevelDecl> topLevelDecls = compUnit.getDeclarations();
 		List<TopLevelDecl> mapentries = topLevelDecls.stream()
 			.filter(tld -> tld.getDeclaration() instanceof MapEntryDecl)
 			.collect(Collectors.toList());
@@ -138,7 +138,7 @@ class EmfaticEcoreTest {
 		InputStream complete = getClass().getResourceAsStream("/ecore.emf");
 		URI uri = URI.createURI(getClass().getResource("/ecore.emf").toURI().toString());
 		CompUnit compUnit = parseHelper.parse(complete, uri, null, resourceSetProvider.get());
-		TopLevelDecl declaration = compUnit.getTopLevelDecls().stream()
+		TopLevelDecl declaration = compUnit.getDeclarations().stream()
 				.filter(tld -> tld.getDeclaration() instanceof ClassDecl
 						&& Objects.equals("EAttribute", ((ClassDecl)tld.getDeclaration()).getName()))
 				.findFirst()
@@ -149,11 +149,11 @@ class EmfaticEcoreTest {
 		StringOrQualifiedID source = annot.getSource();
 		Assertions.assertNull(source.getLiteral());
 		Assertions.assertEquals("Ecore", source.getId());
-		EList<KeyEqualsValue> values = annot.getKeyValues();
-		Assertions.assertEquals(1, values.size());
-		KeyEqualsValue keyVal = values.get(0);
-		Assertions.assertEquals("constraints", keyVal.getKey());
-		Assertions.assertEquals("ConsistentTransient", keyVal.getValue());
+		EList<MapEntry> details = annot.getDetails();
+		Assertions.assertEquals(1, details.size());
+		MapEntry entry = details.get(0);
+		Assertions.assertEquals("constraints", entry.getKey());
+		Assertions.assertEquals("ConsistentTransient", entry.getValue());
 		// Class
 		ClassDecl cls = (ClassDecl) declaration.getDeclaration();
 		Assertions.assertFalse(cls.isAbstract());
@@ -174,7 +174,7 @@ class EmfaticEcoreTest {
 		InputStream complete = getClass().getResourceAsStream("/ecore.emf");
 		URI uri = URI.createURI(getClass().getResource("/ecore.emf").toURI().toString());
 		CompUnit compUnit = parseHelper.parse(complete, uri, null, resourceSetProvider.get());
-		ClassDecl eClass = compUnit.getTopLevelDecls().stream()
+		ClassDecl eClass = compUnit.getDeclarations().stream()
 				.filter(tld -> tld.getDeclaration() instanceof ClassDecl
 						&& Objects.equals("EClass", ((ClassDecl)tld.getDeclaration()).getName()))
 				.map(tld -> (ClassDecl) tld.getDeclaration())

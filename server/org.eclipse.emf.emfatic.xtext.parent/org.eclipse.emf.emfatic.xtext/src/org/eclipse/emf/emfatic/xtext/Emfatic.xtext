@@ -24,8 +24,8 @@ import "http://www.eclipse.org/emf/2002/Ecore" as ecore
  */
 CompUnit:
 	package=PackageDecl
-	importStmts+=Import*
-	topLevelDecls+=TopLevelDecl*
+	imports+=Import*
+	declarations+=TopLevelDecl*
 ;
 	
 /**
@@ -80,7 +80,7 @@ StringOrQualifiedID:
  * and using multi-value assignment instead
  */
 Annotation:
-	AT source=StringOrQualifiedID (LPAREN keyValues+=KeyEqualsValue (COMMA keyValues+=KeyEqualsValue)* RPAREN)?
+	AT source=StringOrQualifiedID (LPAREN details+=MapEntry (COMMA details+=MapEntry)* RPAREN)?
 ;
 
 /**
@@ -89,7 +89,7 @@ Annotation:
  * For this case, we are not concerned with differentiating between String literas
  * and QualifiedIDs.
  */
-KeyEqualsValue: 
+MapEntry: 
 	key=(STRING | QualifiedID) EQUALS value=(STRING | QualifiedID)
 ;
 
@@ -130,7 +130,7 @@ ClassifierDecl:
  * and using a multi-value assignment instead
  */
 SubPackageDecl:
-	'package' name=ID LCURLY topLevelDecls+=TopLevelDecl* RCURLY
+	'package' name=ID LCURLY declarations+=TopLevelDecl* RCURLY
 ;
 
 /*
@@ -155,7 +155,7 @@ ClassDecl:
 	kind=ClassKind name=ID
 	(typeParamsInfo=TypeParamsInfo)?
 	("extends" superTypes+=BoundClassExceptWildcard (COMMA superTypes+=BoundClassExceptWildcard)*)? 
-    (COLON instClassName=BoundExceptWildcard)? 
+    (COLON instClassName=BoundClassifierExceptWildcard)? 
     LCURLY members+=ClassMemberDecl* RCURLY
 ;
 
@@ -201,7 +201,7 @@ TypeParam:
  * and using a multi-value assignment instead
  */
 TypeBoundsInfo:
-	"extends" tb+=BoundExceptWildcard (AMP tb+=BoundExceptWildcard)*
+	"extends" tb+=BoundClassifierExceptWildcard (AMP tb+=BoundClassifierExceptWildcard)*
 ;
 
 /**
@@ -217,7 +217,7 @@ TypeBoundsInfo:
  * and using a multi-value assignment instead
  * 
  */
-BoundExceptWildcard:
+BoundClassifierExceptWildcard:
 	bound=[ClassifierDecl|QualifiedID] (LT typeArgs+=TypeArg (COMMA typeArgs+=TypeArg)* GT)?
 ;
 
@@ -225,7 +225,7 @@ BoundExceptWildcard:
  * We need to differentiate when referencing Class (class extends), DataTypes
  * (attributes) or both (operation's return type)
  */
- BoundClassExceptWildcard:
+BoundClassExceptWildcard:
 	bound=[ClassDecl|QualifiedID] (LT typeArgs+=TypeArg (COMMA typeArgs+=TypeArg)* GT)?
 ;
  
@@ -234,14 +234,14 @@ BoundExceptWildcard:
  * abstract typeArg : boundExceptWildcard | wildcard  ;
  */
 TypeArg:
-	BoundExceptWildcard | Wildcard
+	BoundClassifierExceptWildcard | Wildcard
 ;
 
 /**
  * sequence wildcard : QMARK ( extendsOrSuper boundExceptWildcard )? ; 
  */
 Wildcard:
-	{Wildcard} QMARK ( ExtendsOrSuper extends=BoundExceptWildcard )?
+	{Wildcard} QMARK ( ExtendsOrSuper extends=BoundClassifierExceptWildcard )?
 ; 
 
 /**
@@ -291,7 +291,7 @@ Attribute:
  * sequence typeWithMulti : name=boundExceptWildcard (multiplicity)? ;
  */
 TypeWithMulti:
-	type=BoundExceptWildcard (multiplicity=Multiplicity)?
+	type=BoundClassifierExceptWildcard (multiplicity=Multiplicity)?
 ;
 
 
@@ -416,7 +416,7 @@ CharExpr:
 Operation:
 	"op" (typeParamsInfo=TypeParamsInfo)? 
    resType=ResultType name=ID LPAREN (params+=Param (COMMA params+=Param)*)? RPAREN 
-   ("throws" exceptions+=BoundExceptWildcard (COMMA exceptions+=BoundExceptWildcard)*)? SEMI
+   ("throws" exceptions+=BoundClassifierExceptWildcard (COMMA exceptions+=BoundClassifierExceptWildcard)*)? SEMI
 ;
 
 /**

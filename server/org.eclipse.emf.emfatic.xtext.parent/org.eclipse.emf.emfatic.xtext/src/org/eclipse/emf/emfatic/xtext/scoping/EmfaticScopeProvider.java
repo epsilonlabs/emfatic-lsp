@@ -35,7 +35,7 @@ public class EmfaticScopeProvider extends AbstractEmfaticScopeProvider {
 					(e) -> isSubType(e.getEClass(), EmfaticPackage.Literals.CLASS_DECL));
 			
 		}
-		if (reference == EmfaticPackage.Literals.BOUND_EXCEPT_WILDCARD__BOUND) {
+		if (reference == EmfaticPackage.Literals.BOUND_CLASSIFIER_EXCEPT_WILDCARD__BOUND) {
 			// Classifiers
 			return new FilteringScope(
 					super.getScope(context, reference),

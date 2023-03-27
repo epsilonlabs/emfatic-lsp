@@ -3,16 +3,30 @@
  */
 package org.eclipse.emf.emfatic.xtext.validation;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.eclipse.emf.common.util.URI;
+import org.eclipse.emf.ecore.EClass;
+import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EcorePackage;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.util.EcoreValidator;
+import org.eclipse.emf.emfatic.xtext.annotations.AnnotationMap;
 import org.eclipse.emf.emfatic.xtext.common.ImportUriChecker;
+import org.eclipse.emf.emfatic.xtext.emfatic.Annotation;
 import org.eclipse.emf.emfatic.xtext.emfatic.ClassDecl;
+import org.eclipse.emf.emfatic.xtext.emfatic.ClassMember;
+import org.eclipse.emf.emfatic.xtext.emfatic.ClassMemberDecl;
+import org.eclipse.emf.emfatic.xtext.emfatic.Declaration;
 import org.eclipse.emf.emfatic.xtext.emfatic.EmfaticPackage;
+import org.eclipse.emf.emfatic.xtext.emfatic.EnumLiteral;
 import org.eclipse.emf.emfatic.xtext.emfatic.Import;
+import org.eclipse.emf.emfatic.xtext.emfatic.MapEntry;
+import org.eclipse.emf.emfatic.xtext.emfatic.PackageDecl;
+import org.eclipse.emf.emfatic.xtext.emfatic.Param;
+import org.eclipse.emf.emfatic.xtext.emfatic.StringOrQualifiedID;
+import org.eclipse.emf.emfatic.xtext.emfatic.TopLevelDecl;
 import org.eclipse.xtext.EcoreUtil2;
 import org.eclipse.xtext.resource.FileExtensionProvider;
 import org.eclipse.xtext.validation.Check;
@@ -102,7 +116,50 @@ public class EmfaticValidator extends AbstractEmfaticValidator {
 		}
 	}
 	
+	@Check
+	public void checkValidAnnotationKeys(Annotation annt) {
+		EObject anntOwner = annt.eContainer();
+		EClass target = null;
+		if (anntOwner instanceof PackageDecl) {
+			target = anntOwner.eClass();
+		} else if (anntOwner instanceof TopLevelDecl) {
+			TopLevelDecl tpLvlDclrtn = (TopLevelDecl) anntOwner;
+			Declaration declaration = tpLvlDclrtn.getDeclaration();
+			if (declaration != null) {
+				target = declaration.eClass();
+			}
+		} else if (anntOwner instanceof ClassMemberDecl) {
+			ClassMemberDecl declaration = (ClassMemberDecl) anntOwner;
+			ClassMember member = declaration.getMember();
+			if (member != null) {
+				target = member.eClass();
+			}
+		} else if (anntOwner instanceof Param) {
+			target = anntOwner.eClass();
+		} else if (anntOwner instanceof EnumLiteral) {
+			target = anntOwner.eClass();
+		}
+		// TODO We should support content assist for full uri labels! 
+		StringOrQualifiedID source = annt.getSource();
+		if (source.getId() != null && target != null) {
+			List<String> validKeys = this.annotationMap.keysFor(source.getId(), target);
+			for (MapEntry entry : annt.getDetails()) {
+				if (!validKeys.contains(entry.getKey())) {
+					warning(
+							"The key " + entry.getKey() + " should not be used for " + target.getName() + " types.",
+							EmfaticPackage.Literals.ANNOTATION__DETAILS,
+							IssueCodes.INVALID_KEY_USED,
+							"");
+				}
+			}
+		}
+	}
+	
 	@Inject
 	private FileExtensionProvider fileExtensionProvider;
+	
+	@Inject
+	private AnnotationMap annotationMap;
+
 	
 }
