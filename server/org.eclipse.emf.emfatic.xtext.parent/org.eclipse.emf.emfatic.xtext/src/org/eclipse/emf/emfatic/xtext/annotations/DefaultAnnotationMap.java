@@ -142,9 +142,11 @@ public class DefaultAnnotationMap implements AnnotationMap {
 		});
 	}
 	
+	/**
+	 * Add annotations provided by default by Emfatic and by plugins that contribute to the 
+	 * EMFATIC_ANNOTATION_EXTENSION_POINT
+	 */
 	private void addProvidedAnnotations() {
-		// This should be loaded once, so we probably need a separate map, we only want to cache
-		// the EmfaticAnnotationMap ones since this are the ones that can change on edit.
 		addProvidedAnnotation(new EcoreAnnotation());
 		addProvidedAnnotation(new EmfaticMapAnnotation());
 		addProvidedAnnotation(new GenModelAnnotation());
@@ -175,13 +177,6 @@ public class DefaultAnnotationMap implements AnnotationMap {
 		} else {
 			LOG.info("Adding annotation with label " + label + " and uri " + annt.source() + " via label");
 		}
-		defaultAnnotations.put(label, annt);
-//		label = annt.source();
-//		if (defaultAnnotations.containsKey(label)) {
-//			LOG.error("Annoation source " + label + "is already in use. Annotation will be replaced");
-//		} else {
-//			LOG.info("Adding annotation with label " + label + " and uri " + annt.source()  + " via uri");
-//		}
 		defaultAnnotations.put(label, annt);
 	}
 
