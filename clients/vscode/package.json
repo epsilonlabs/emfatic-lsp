@@ -3,6 +3,10 @@
   "displayName": "Emfatic",
   "description": "LSP client for the Emfatic language",
   "version": "0.0.1",
+  "scripts": {
+    "build": "tsc -p .",
+    "start": "npm run build -- -w"
+  },
   "engines": {
     "vscode": "^1.76.0"
   },
