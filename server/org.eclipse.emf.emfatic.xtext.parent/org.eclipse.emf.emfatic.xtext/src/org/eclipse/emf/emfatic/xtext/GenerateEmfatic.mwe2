@@ -32,7 +32,7 @@ Workflow {
 		}
 		language = StandardLanguage {
 			name = "org.eclipse.emf.emfatic.xtext.Emfatic"
-			fileExtensions = "emf"
+			fileExtensions = "lspemf"
 
 			serializer = {
 				generateStub = false

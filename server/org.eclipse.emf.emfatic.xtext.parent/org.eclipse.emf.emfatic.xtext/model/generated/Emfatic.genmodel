@@ -5,7 +5,7 @@
     updateClasspath="false" rootExtendsClass="org.eclipse.emf.ecore.impl.MinimalEObjectImpl$Container"
     complianceLevel="8.0" copyrightFields="false" runtimeVersion="2.20">
   <genPackages prefix="Emfatic" basePackage="org.eclipse.emf.emfatic.xtext" disposableProviderFactory="true"
-      fileExtensions="emf" ecorePackage="Emfatic.ecore#/">
+      fileExtensions="lspemf" ecorePackage="Emfatic.ecore#/">
     <genClasses ecoreClass="Emfatic.ecore#//CompUnit">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Emfatic.ecore#//CompUnit/package"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Emfatic.ecore#//CompUnit/imports"/>
