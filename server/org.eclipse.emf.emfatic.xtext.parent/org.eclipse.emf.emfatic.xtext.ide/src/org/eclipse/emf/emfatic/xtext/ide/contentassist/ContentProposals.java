@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 
+import org.apache.log4j.Logger;
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.emfatic.xtext.annotations.AnnotationMap;
@@ -32,9 +33,9 @@ import org.eclipse.xtext.ide.editor.contentassist.ContentAssistEntry;
 import org.eclipse.xtext.ide.editor.contentassist.IdeContentProposalCreator;
 import org.eclipse.xtext.util.TextRegion;
 
-public class EmfaticContent extends EmfaticSwitch<Collection<ContentAssistEntry>> {
+public class ContentProposals extends EmfaticSwitch<Collection<ContentAssistEntry>> {
 	
-	public EmfaticContent(
+	public ContentProposals(
 		AbstractRule rule,
 		IdeContentProposalCreator proposalCreator,
 		ContentAssistContext context,
@@ -46,10 +47,12 @@ public class EmfaticContent extends EmfaticSwitch<Collection<ContentAssistEntry>
 		this.annotationMap = annotations;
 	}
 
+
 	@Override
 	public Collection<ContentAssistEntry> caseAnnotation(Annotation object) {
 		Collection<ContentAssistEntry> result = new ArrayList<>();
-		if ("StringOrQualifiedID".equals(rule.getName())) {
+		if ("QualifiedID".equals(rule.getName())) {
+			LOG.debug("Creating labels for QualifiedID@Annotation");
 			for (String label : this.annotationMap.labels()) {
 				result.add(createProposal(label));
 			}
@@ -88,7 +91,8 @@ public class EmfaticContent extends EmfaticSwitch<Collection<ContentAssistEntry>
 	}
 
 	private ContentAssistEntry createProposal(String label) {
-		return proposalCreator.createProposal(label, context,
+		LOG.debug("Creating proposal for " + label + " given the prefix " + this.context.getPrefix());
+		ContentAssistEntry proposal = proposalCreator.createProposal(label, context,
 				(ContentAssistEntry it) -> {
 					if ("STRING".equals(rule.getName())) {
 						it.getEditPositions()
@@ -100,6 +104,10 @@ public class EmfaticContent extends EmfaticSwitch<Collection<ContentAssistEntry>
 					}
 					//it.setDescription(rule.getName());
 				});
+		if (proposal == null) {
+			LOG.warn("ProposaL for label " + label + " was rejected by the proposalCreator.");
+		}
+		return proposal;
 	}
 
 	@Override
@@ -107,6 +115,7 @@ public class EmfaticContent extends EmfaticSwitch<Collection<ContentAssistEntry>
 		return Collections.emptyList();
 	}
 
+	private static final Logger LOG = Logger.getLogger(ContentProposals.class);
 
 	// TODO Decide if this should be changeable so we can reuse the switch
 	private final AbstractRule rule;

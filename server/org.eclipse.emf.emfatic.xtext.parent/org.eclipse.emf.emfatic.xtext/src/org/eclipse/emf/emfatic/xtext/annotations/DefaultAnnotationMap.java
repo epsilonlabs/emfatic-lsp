@@ -13,6 +13,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -29,6 +30,7 @@ import org.eclipse.emf.emfatic.xtext.emfatic.StringOrQualifiedID;
 import org.eclipse.xtext.util.IResourceScopeCache;
 
 import com.google.common.base.Objects;
+import com.google.common.collect.Streams;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
 import com.google.inject.Singleton;
@@ -49,12 +51,12 @@ public class DefaultAnnotationMap implements AnnotationMap {
 		if (source == null) {
 			return;
 		}
-		// EmfaticAnnotationMap should be an identifier
 		String label = source.getId();
 		if (label == null) {
-			return;
+			label = source.getLiteral();
 		}
-		if (Objects.equal(EMFATIC_ANNOTATION_MAP_LABEL, label)) {
+		if (Objects.equal(EMFATIC_ANNOTATION_MAP_LABEL, label)
+				|| Objects.equal(EMFATIC_ANNOTATION_MAP_URI, label)) {
 			for (MapEntry kv : annt.getDetails()) {
 				this.addAnnotation(new DefaultEmfaticAnnotation(kv.getKey(), kv.getValue()));
 			}
@@ -118,6 +120,16 @@ public class DefaultAnnotationMap implements AnnotationMap {
 			return Collections.emptyList();
 		}
 		return emftcAnn.keysFor(eClass);
+	}
+	
+	@Override
+	public String labelForUri(String uri) throws NoSuchElementException {
+		// TODO Cache uri->label map?
+		return Streams.concat(getMap().values().stream(), this.defaultAnnotations.values().stream())
+				.filter(a -> Objects.equal(a.source(), uri))
+				.findFirst()
+				.orElseThrow()
+				.label();
 	}
 
 

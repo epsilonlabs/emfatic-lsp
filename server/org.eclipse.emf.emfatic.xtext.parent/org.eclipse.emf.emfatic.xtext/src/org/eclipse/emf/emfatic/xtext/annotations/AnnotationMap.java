@@ -10,6 +10,7 @@
 package org.eclipse.emf.emfatic.xtext.annotations;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.resource.Resource;
@@ -18,7 +19,7 @@ import org.eclipse.emf.emfatic.xtext.emfatic.EmfaticPackage;
 
 /**
  * An umbrella for provided {@link EmfaticAnnotation}s.
- * @author horacio
+ * @author Horacio Hoyos Rodriguez
  *
  */
 public interface AnnotationMap {
@@ -70,5 +71,14 @@ public interface AnnotationMap {
 	 * @param resource
 	 */
 	void setResource(Resource resource);
+	
+	/**
+	 * Get the Emfatic annotation label mapped to the provided URI.
+	 *
+	 * @param uri the URI
+	 * @return the label if registered.
+	 * @throws NoSuchElementException if an annotation with the URI does not exist.
+	 */
+	String labelForUri(String uri) throws NoSuchElementException;
 
 }
