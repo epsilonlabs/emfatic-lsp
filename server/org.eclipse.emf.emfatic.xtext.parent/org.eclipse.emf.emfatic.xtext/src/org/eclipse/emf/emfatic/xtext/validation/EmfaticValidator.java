@@ -3,7 +3,7 @@
  */
 package org.eclipse.emf.emfatic.xtext.validation;
 
-import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
 import org.eclipse.emf.common.util.URI;
@@ -141,17 +141,49 @@ public class EmfaticValidator extends AbstractEmfaticValidator {
 		}
 		// TODO We should support content assist for full uri labels! 
 		StringOrQualifiedID source = annt.getSource();
-		if (source.getId() != null && target != null) {
-			List<String> validKeys = this.annotationMap.keysFor(source.getId(), target);
-			for (MapEntry entry : annt.getDetails()) {
-				if (!validKeys.contains(entry.getKey())) {
+		if (target != null) {
+			String label = null;
+			try {
+				label = source.getId();
+				if (label == null) {
+					label = this.annotationMap.labelForUri(source.getLiteral());
 					warning(
-							"The key " + entry.getKey() + " should not be used for " + target.getName() + " types.",
-							EmfaticPackage.Literals.ANNOTATION__DETAILS,
-							IssueCodes.INVALID_KEY_USED,
-							"");
+							"The key uri " + source.getLiteral() + " can be replaced by its label.",
+							EmfaticPackage.Literals.ANNOTATION__SOURCE,
+							IssueCodes.URI_INSTEAD_OF_LABEL,
+							label);
+				}
+			} catch (NoSuchElementException e) {
+				// People may use arbitrary URIs at any point
+			}
+			finally {
+				if (label != null) {
+					final String labelLC = label.toLowerCase();
+					if(!this.annotationMap.labels().stream()
+							.map(String::toLowerCase)
+							.anyMatch(l -> l.equals(labelLC))) {
+						error(
+								"Unknown annotation label " + label + ". This can mean you are "
+										+ "missing an EmfaticAnnotationMap to define a custom label "
+										+ "or there is a missing dependency (label provided via "
+										+ "extension point).",
+								EmfaticPackage.Literals.ANNOTATION__SOURCE,
+								IssueCodes.UNKOWN_ANNOTATION_LABEL,
+								""); 
+					} else {
+						for (MapEntry entry : annt.getDetails()) {
+							if (!this.annotationMap.isValidKey(label, entry.getKey(), target)) {
+								warning(
+										"The key " + entry.getKey() + " should not be used for " + target.getName() + " types.",
+										EmfaticPackage.Literals.ANNOTATION__DETAILS,
+										IssueCodes.INVALID_KEY_USED,
+										"");
+							}
+						}
+					}
 				}
 			}
+			
 		}
 	}
 	

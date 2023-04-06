@@ -7,6 +7,7 @@ import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.emfatic.xtext.emfatic.CompUnit;
 import org.eclipse.emf.emfatic.xtext.emfatic.Import;
 import org.eclipse.emf.emfatic.xtext.validation.IssueCodes;
+import org.eclipse.xtext.ui.editor.model.IXtextDocument;
 import org.eclipse.xtext.ui.editor.model.edit.IModificationContext;
 import org.eclipse.xtext.ui.editor.quickfix.DefaultQuickfixProvider;
 import org.eclipse.xtext.ui.editor.quickfix.Fix;
@@ -53,6 +54,19 @@ public class EmfaticQuickfixProvider extends DefaultQuickfixProvider {
 						Import i = (Import) element;
 						CompUnit unit = (CompUnit) i.eContainer();
 						unit.getImports().remove(i);
+					}
+				);
+	}
+	
+	@Fix(IssueCodes.URI_INSTEAD_OF_LABEL)
+	public void replaceByLabel(final Issue issue, IssueResolutionAcceptor acceptor) {
+		acceptor.accept(
+				issue,
+				"Replace URI", "Used defined label.", "upcase.png",
+				(EObject element, IModificationContext context) -> {
+					IXtextDocument xtextDocument = context.getXtextDocument();
+					String firstLetter = xtextDocument.get(issue.getOffset(), 1);
+					xtextDocument.replace(issue.getOffset(), issue.getLength(), issue.getData()[0]);
 					}
 				);
 	}
