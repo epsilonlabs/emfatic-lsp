@@ -69,20 +69,26 @@ public class DefaultAnnotationMap implements AnnotationMap {
 		String label = annt.label().toLowerCase(); //labels are case insensitive
 		Map<String, EmfaticAnnotation> annotations = getMap();
 		if (annotations.containsKey(label)) {
-			LOG.warn("Annoation label " + label + " is already in use. Annotation will be replaced");
+			LOG.warn("User annoation label " + label + " is already in use. Annotation will be replaced");
 		} else if(this.defaultAnnotations.containsKey(label)) {
 			LOG.warn("Annoation label " + label + " is already in use by a provided Annotation. Annotation will be ignored");
 			return;
 		}
 		else {
-			LOG.info("Adding annotation with label " + label + " and uri " + annt.source());
+			LOG.info("Adding user annotation with label " + label + " and uri " + annt.source());
 		}
 		annotations.put(label, annt);
 	}
 	
 	@Override
 	public void setResource(Resource resource) {
+		LOG.debug("setResource " + resource.getURI());
+		if (this.resource != null && resource.getURI().equals(this.resource.getURI())) {
+			LOG.debug("Resource hasn't changed");
+			return;
+		}
 		this.resource = resource;
+		LOG.debug("Resource has changed, reloading provided annotations");
 		addProvidedAnnotations();
 	}
 	
@@ -159,11 +165,14 @@ public class DefaultAnnotationMap implements AnnotationMap {
 	 * EMFATIC_ANNOTATION_EXTENSION_POINT
 	 */
 	private void addProvidedAnnotations() {
+		LOG.debug("Adding annotations provided by Emfatic by default.");
+		this.defaultAnnotations.clear();
 		addProvidedAnnotation(new EcoreAnnotation());
 		addProvidedAnnotation(new EmfaticMapAnnotation());
 		addProvidedAnnotation(new GenModelAnnotation());
 		addProvidedAnnotation(new MetaDataAnnotation());
 		if (Platform.isRunning()) {
+			LOG.debug("Adding annotations provided by contributing plugins.");
 			IExtensionRegistry reg = Platform.getExtensionRegistry();
 			IConfigurationElement[] elements = reg.getConfigurationElementsFor(AnnotationMap.EMFATIC_ANNOTATION_EXTENSION_POINT);
 			for (IConfigurationElement element : elements) {
