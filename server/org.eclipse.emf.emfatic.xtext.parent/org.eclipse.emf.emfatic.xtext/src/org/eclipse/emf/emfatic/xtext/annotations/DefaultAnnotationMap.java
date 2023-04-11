@@ -14,6 +14,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -22,17 +23,15 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
+import org.eclipse.emf.common.util.EList;
+import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.emfatic.xtext.emfatic.Annotation;
 import org.eclipse.emf.emfatic.xtext.emfatic.MapEntry;
 import org.eclipse.emf.emfatic.xtext.emfatic.StringOrQualifiedID;
-import org.eclipse.xtext.util.IResourceScopeCache;
 
-import com.google.common.base.Objects;
 import com.google.common.collect.Streams;
-import com.google.inject.Inject;
-import com.google.inject.Provider;
 import com.google.inject.Singleton;
 
 @Singleton
@@ -43,61 +42,35 @@ public class DefaultAnnotationMap implements AnnotationMap {
 	
 	public DefaultAnnotationMap() {
 		super();
+		addProvidedAnnotations();
 	}
 	
 	@Override
-	public void addAnnotation(Annotation annt) {
-		StringOrQualifiedID source = annt.getSource();
-		if (source == null) {
-			return;
-		}
-		String label = source.getId();
-		if (label == null) {
-			label = source.getLiteral();
-		}
-		if (Objects.equal(EMFATIC_ANNOTATION_MAP_LABEL, label)
-				|| Objects.equal(EMFATIC_ANNOTATION_MAP_URI, label)) {
-			for (MapEntry kv : annt.getDetails()) {
-				this.addAnnotation(new DefaultEmfaticAnnotation(kv.getKey(), kv.getValue()));
+	public void refreshAnnotations(EList<Annotation> list, Resource resource) {
+		URI uri = resource.getURI();
+		this.userAnnotations.remove(uri);
+		for (Annotation annt : list) {
+			StringOrQualifiedID source = annt.getSource();
+			if (source == null) {
+				return;
+			}
+			String label = source.getId();
+			if (label == null) {
+				label = source.getLiteral();
+			}
+			if (Objects.equals(EMFATIC_ANNOTATION_MAP_LABEL, label)
+					|| Objects.equals(EMFATIC_ANNOTATION_MAP_URI, label)) {
+				for (MapEntry kv : annt.getDetails()) {
+					this.addUserAnnotation(new DefaultEmfaticAnnotation(kv.getKey(), kv.getValue()), uri);
+				}
 			}
 		}
 	}
 	
 	@Override
-	public void addAnnotation(EmfaticAnnotation annt) {
-		// TODO We should support content assist for full uri labels! 
-		String label = annt.label().toLowerCase(); //labels are case insensitive
-		Map<String, EmfaticAnnotation> annotations = getMap();
-		if (annotations.containsKey(label)) {
-			LOG.warn("User annoation label " + label + " is already in use. Annotation will be replaced");
-		} else if(this.defaultAnnotations.containsKey(label)) {
-			LOG.warn("Annoation label " + label + " is already in use by a provided Annotation. Annotation will be ignored");
-			return;
-		}
-		else {
-			LOG.info("Adding user annotation with label " + label + " and uri " + annt.source());
-		}
-		annotations.put(label, annt);
-	}
-	
-	@Override
-	public void setResource(Resource resource) {
-		LOG.debug("setResource " + resource.getURI());
-		if (this.resource != null && resource.getURI().equals(this.resource.getURI())) {
-			LOG.debug("Resource hasn't changed");
-			return;
-		}
-		this.resource = resource;
-		LOG.debug("Resource has changed, reloading provided annotations");
-		addProvidedAnnotations();
-	}
-	
-	@Override
-	public List<String> labels() {
-		List<String> result = Stream.concat(
-					getMap().values().stream(),
-					this.defaultAnnotations.values().stream())
-				.map(v -> v.label())
+	public List<String> labels(Resource resource) {
+		List<String> result = allAnnotations(resource)
+				.map(a -> a.label())
 				.collect(Collectors.toList());
 		// Always return labels in same order
 		Collections.sort(result);
@@ -107,9 +80,7 @@ public class DefaultAnnotationMap implements AnnotationMap {
 	@Override
 	public boolean isValidKey(String label, String name, EClass target) {
 		String mapLabel = label.toLowerCase();
-		EmfaticAnnotation emftcAnn = getMap().getOrDefault(
-				mapLabel,
-				this.defaultAnnotations.get(mapLabel));
+		EmfaticAnnotation emftcAnn = this.annotations.get(mapLabel);
 		if (emftcAnn == null) {
 			return false;
 		}
@@ -119,9 +90,7 @@ public class DefaultAnnotationMap implements AnnotationMap {
 	@Override
 	public List<String> keysFor(String label, EClass eClass) {
 		String mapLabel = label.toLowerCase();
-		EmfaticAnnotation emftcAnn = getMap().getOrDefault(
-				mapLabel,
-				this.defaultAnnotations.get(mapLabel));
+		EmfaticAnnotation emftcAnn =this.annotations.get(mapLabel);
 		if (emftcAnn == null) {
 			return Collections.emptyList();
 		}
@@ -129,36 +98,25 @@ public class DefaultAnnotationMap implements AnnotationMap {
 	}
 	
 	@Override
-	public String labelForUri(String uri) throws NoSuchElementException {
-		// TODO Cache uri->label map?
-		return Streams.concat(getMap().values().stream(), this.defaultAnnotations.values().stream())
-				.filter(a -> Objects.equal(a.source(), uri))
+	public String labelForUri(String uri, Resource resource) throws NoSuchElementException {
+		return allAnnotations(resource)
+				.filter(a -> Objects.equals(a.source(), uri))
 				.findFirst()
 				.orElseThrow()
 				.label();
+	}
+	
+	@Override
+	public boolean knowsLabel(String label, Resource resource) {
+		return this.labels(resource).stream()
+			.anyMatch(l -> l.toLowerCase().equals(label.toLowerCase()));
 	}
 
 
 	private final static Logger LOG = Logger.getLogger(DefaultAnnotationMap.class);
 	
-	@Inject
-	private IResourceScopeCache cache = IResourceScopeCache.NullImpl.INSTANCE;
-	
-	private Resource resource;
-	
-	Map<String, EmfaticAnnotation> defaultAnnotations = new HashMap<>();
-	
-	private Map<String, EmfaticAnnotation> getMap() {
-		if (this.resource == null) {
-			throw new IllegalStateException("The DefaultAnnotationMap resource must not be null");
-		}
-		return cache.get("AnnotationMap", this.resource, new Provider<Map<String, EmfaticAnnotation>>() {
-			@Override
-			public Map<String, EmfaticAnnotation> get() {
-				return new HashMap<>();
-			}
-		});
-	}
+	Map<String, EmfaticAnnotation> annotations = new HashMap<>();
+	Map<URI, Map<String, EmfaticAnnotation>> userAnnotations = new HashMap<>();
 	
 	/**
 	 * Add annotations provided by default by Emfatic and by plugins that contribute to the 
@@ -166,39 +124,63 @@ public class DefaultAnnotationMap implements AnnotationMap {
 	 */
 	private void addProvidedAnnotations() {
 		LOG.debug("Adding annotations provided by Emfatic by default.");
-		this.defaultAnnotations.clear();
-		addProvidedAnnotation(new EcoreAnnotation());
-		addProvidedAnnotation(new EmfaticMapAnnotation());
-		addProvidedAnnotation(new GenModelAnnotation());
-		addProvidedAnnotation(new MetaDataAnnotation());
+		addAnnotation(new EcoreAnnotation());
+		addAnnotation(new EmfaticMapAnnotation());
+		addAnnotation(new GenModelAnnotation());
+		addAnnotation(new MetaDataAnnotation());
 		if (Platform.isRunning()) {
 			LOG.debug("Adding annotations provided by contributing plugins.");
 			IExtensionRegistry reg = Platform.getExtensionRegistry();
 			IConfigurationElement[] elements = reg.getConfigurationElementsFor(AnnotationMap.EMFATIC_ANNOTATION_EXTENSION_POINT);
 			for (IConfigurationElement element : elements) {
-				System.out.println(element.getAttribute("implementation"));
-				Object executable = null;
+				Object annotationImpl = null;
 				try {
-					executable = element.createExecutableExtension("implementation");
+					annotationImpl = element.createExecutableExtension("implementation");
 				}
 				catch (CoreException e) {
 					LOG.error("Unable to instantiate Annotation provider from " + element.getAttribute("class"));
 				}
-				if (executable != null && executable instanceof EmfaticAnnotation) {
-					addProvidedAnnotation((EmfaticAnnotation) executable);
+				if (annotationImpl != null && annotationImpl instanceof EmfaticAnnotation) {
+					addAnnotation((EmfaticAnnotation) annotationImpl);
 				}
 			}
 		}
 	}
-
-	private void addProvidedAnnotation(EmfaticAnnotation annt) {
+	
+	private void addAnnotation(EmfaticAnnotation annt) {
+		// TODO We should support content assist for full uri labels!
+		LOG.debug("Adding provided annotation with label " + annt.label());
 		String label = annt.label().toLowerCase(); //labels are case insensitive
-		if (defaultAnnotations.containsKey(label)) {
-			LOG.error("Annoation label " + label + "is already in use. Annotation will be replaced");
-		} else {
-			LOG.info("Adding annotation with label " + label + " and uri " + annt.source() + " via label");
+		if(this.annotations.containsKey(label)) {
+			LOG.warn("Annoation label " + label + " is already in use by a provided Annotation. Annotation will be ignored");
+			return;
 		}
-		defaultAnnotations.put(label, annt);
+		this.annotations.put(label, annt);
 	}
+	
+	private void addUserAnnotation(EmfaticAnnotation annt, URI uri) {
+		// TODO We should support content assist for full uri labels!
+		LOG.debug("Adding annotation via EmfaticAnnotationMap for resource " + uri);
+		Map<String, EmfaticAnnotation> annotations = this.userAnnotations.computeIfAbsent(uri, (k) -> new HashMap<>());
+		String label = annt.label().toLowerCase(); //labels are case insensitive
+		if (annotations.containsKey(label)) {
+			LOG.warn("User annoation label " + label + " is already in use. Annotation will be replaced");
+		} else if(this.annotations.containsKey(label)) {
+			LOG.warn("Annoation label " + label + " is already in use by a provided Annotation. Annotation will be ignored");
+			return;
+		}
+		LOG.info("Adding user annotation with label " + label + " and uri " + annt.source());
+		annotations.put(label, annt);
+	}
+	
+	private Stream<EmfaticAnnotation> allAnnotations(Resource resource) {
+		return Streams.concat(
+					this.annotations.values().stream(),
+					this.userAnnotations.getOrDefault(resource.getURI(), Collections.emptyMap())
+						.values().stream()
+					);
+	}
+
+	
 
 }

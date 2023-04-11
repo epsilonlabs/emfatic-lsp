@@ -65,7 +65,6 @@ public class EmfaticQuickfixProvider extends DefaultQuickfixProvider {
 				"Replace URI", "Used defined label.", "upcase.png",
 				(EObject element, IModificationContext context) -> {
 					IXtextDocument xtextDocument = context.getXtextDocument();
-					String firstLetter = xtextDocument.get(issue.getOffset(), 1);
 					xtextDocument.replace(issue.getOffset(), issue.getLength(), issue.getData()[0]);
 					}
 				);

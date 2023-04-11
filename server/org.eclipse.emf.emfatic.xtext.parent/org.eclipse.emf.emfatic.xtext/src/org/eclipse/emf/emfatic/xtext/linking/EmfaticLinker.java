@@ -9,10 +9,8 @@
  ******************************************************************************/
 package org.eclipse.emf.emfatic.xtext.linking;
 
-import org.apache.log4j.Logger;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.emfatic.xtext.annotations.AnnotationMap;
-import org.eclipse.emf.emfatic.xtext.emfatic.Annotation;
 import org.eclipse.emf.emfatic.xtext.emfatic.CompUnit;
 import org.eclipse.emf.emfatic.xtext.emfatic.PackageDecl;
 import org.eclipse.xtext.diagnostics.IDiagnosticConsumer;
@@ -38,15 +36,12 @@ public class EmfaticLinker extends LazyLinker {
 			CompUnit unit = (CompUnit) model;
 			PackageDecl pckg = unit.getPackage();
 			if (pckg != null) {
-				this.annotations.setResource(model.eResource());
-				for (Annotation annt : pckg.getAnnotations()) {
-					annotations.addAnnotation(annt);
-				}
+				annotations.refreshAnnotations(pckg.getAnnotations(), model.eResource());
 			}
 		}
 	}
 	
-	private static final Logger LOG = Logger.getLogger(EmfaticLinker.class);
+	//private static final Logger LOG = Logger.getLogger(EmfaticLinker.class);
 	
 	@Inject
 	private AnnotationMap annotations;

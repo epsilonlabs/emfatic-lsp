@@ -146,7 +146,7 @@ public class EmfaticValidator extends AbstractEmfaticValidator {
 			try {
 				label = source.getId();
 				if (label == null) {
-					label = this.annotationMap.labelForUri(source.getLiteral());
+					label = this.annotationMap.labelForUri(source.getLiteral(), annt.eResource());
 					warning(
 							"The key uri " + source.getLiteral() + " can be replaced by its label.",
 							EmfaticPackage.Literals.ANNOTATION__SOURCE,
@@ -158,10 +158,7 @@ public class EmfaticValidator extends AbstractEmfaticValidator {
 			}
 			finally {
 				if (label != null) {
-					final String labelLC = label.toLowerCase();
-					if(!this.annotationMap.labels().stream()
-							.map(String::toLowerCase)
-							.anyMatch(l -> l.equals(labelLC))) {
+					if(!this.annotationMap.knowsLabel(label, annt.eResource())) {
 						error(
 								"Unknown annotation label " + label + ". This can mean you are "
 										+ "missing an EmfaticAnnotationMap to define a custom label "

@@ -12,6 +12,7 @@ package org.eclipse.emf.emfatic.xtext.annotations;
 import java.util.List;
 import java.util.NoSuchElementException;
 
+import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.emfatic.xtext.emfatic.Annotation;
@@ -28,22 +29,18 @@ public interface AnnotationMap {
 
 	/**
 	 * Add a user defined annotation (via emfatic source)
-	 * @param annt the annotation to add
+	 * @param list the annotations to add
+	 * @param resource the Resource that adds the annotations
 	 */
-	void addAnnotation(Annotation annt);
-	
-	/**
-	 * Add a framework annotation. It can be the emfatic predefined ones, or user provided via
-	 * extension point.
-	 * @param annt the annotation to add.
-	 */
-	void addAnnotation(EmfaticAnnotation annt);
+	void refreshAnnotations(EList<Annotation> list, Resource resource);
 
 	/**
 	 * The list of all available labels (user and provided annotations)
-	 * @return
+	 * 
+	 * @param resource the Resoruce for which labels are retrieved
+	 * @return the list of labels
 	 */
-	List<String> labels();
+	List<String> labels(Resource resource);
 	
 	/**
 	 * True if the annotation's key is valid for the provided ECLass. The annotation is found using
@@ -65,20 +62,23 @@ public interface AnnotationMap {
 	 */
 	List<String> keysFor(String label, EClass eClass);
 	
-	
 	/**
-	 * The resource this AnnotationMap is used for.
-	 * @param resource
-	 */
-	void setResource(Resource resource);
-	
-	/**
-	 * Get the Emfatic annotation label mapped to the provided URI.
+	 * Get the Emfatic annotation label mapped to the provided URI, in the given Resource
 	 *
 	 * @param uri the URI
+	 * @param resource the Resoruce in which the URI is searched
 	 * @return the label if registered.
 	 * @throws NoSuchElementException if an annotation with the URI does not exist.
 	 */
-	String labelForUri(String uri) throws NoSuchElementException;
+	String labelForUri(String uri, Resource resource) throws NoSuchElementException;
+
+	/**
+	 * Cehck if the provided label matches the label of any of the user or provided annotations
+	 * @param label	the label to test
+	 * @param resource the Resoruce in which the label is searched
+	 * @return true, if the label is known
+	 */
+	boolean knowsLabel(String label, Resource resource);
+
 
 }
