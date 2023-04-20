@@ -22,7 +22,7 @@
           "emfatic"
         ],
         "extensions": [
-          ".emf"
+          ".lspemf"
         ],
         "configuration": "./language-configuration.json"
       }
@@ -33,7 +33,28 @@
         "scopeName": "source.emfatic",
         "path": "./syntaxes/emfatic.tmLanguage"
       }
-    ]
+    ],
+    "configuration": {
+      "type": "object",
+      "title": "Emfatic configuration",
+      "properties": {
+        "emfaticServer.maxNumberOfProblems": {
+          "type": "number",
+          "default": 100,
+          "description": "Controls the maximum number of problems produced by the server."
+        },
+        "emfaticServer.trace.server": {
+          "type": "string",
+          "enum": [
+            "off",
+            "messages",
+            "verbose"
+          ],
+          "default": "messages",
+          "description": "Traces the communication between VSCode and the languageServerExample service."
+        }        
+      }
+    }
   },
   "devDependencies": {
     "@types/node": "^18.15.5",

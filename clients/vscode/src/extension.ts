@@ -8,6 +8,8 @@ import { LanguageClient, LanguageClientOptions, StreamInfo,
     Position as LSPosition,
     Location as LSLocation } from 'vscode-languageclient/node';
 
+let client: LanguageClient;
+
 export function activate(context: ExtensionContext) {
     // The server is started as a separate app and listens on port 5007
     let connectionInfo = {
@@ -24,16 +26,17 @@ export function activate(context: ExtensionContext) {
     };
 
     let clientOptions: LanguageClientOptions = {
-        documentSelector: ['emf'],
+        documentSelector: ['lspemf'],
         synchronize: {
-            fileEvents: workspace.createFileSystemWatcher('**/*.*')
-        }
+            configurationSection: 'emfaticServer',
+            fileEvents: workspace.createFileSystemWatcher('**/*.lspemf')
+        },
     };
 
     // Create the language client and start the client.
-    let lc = new LanguageClient('Emfatic vscode', serverOptions, clientOptions);
+    client = new LanguageClient('emfaticlsp', 'Emfatic Editor', serverOptions, clientOptions);
 
-    lc.start();
+    client.start();
 
     // TODO: errors to investigate:
     // lc.trace = Trace.Verbose;
@@ -43,3 +46,11 @@ export function activate(context: ExtensionContext) {
     // client can be deactivated on extension deactivation
     // context.subscriptions.push(disposable);
 }
+
+export function deactivate(): Thenable<void> | undefined {
+    if (!client) {
+      return undefined;
+    }
+    return client.stop();
+  }
+  
