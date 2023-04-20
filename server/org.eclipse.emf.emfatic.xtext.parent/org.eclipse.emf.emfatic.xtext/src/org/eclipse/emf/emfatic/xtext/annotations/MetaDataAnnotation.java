@@ -12,6 +12,13 @@ package org.eclipse.emf.emfatic.xtext.annotations;
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.emfatic.xtext.emfatic.EmfaticPackage;
 
+/**
+ * Extended metadata EAnnotations are used in models that were created from XML Schema to capture 
+ * details about the schema that have no other direct representation in Ecore.
+ * 
+ * @author Horacio Hoyos Rodriguez
+ *
+ */
 public class MetaDataAnnotation extends BaseAnnotation implements EmfaticAnnotation {
 
 	@Override

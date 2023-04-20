@@ -13,6 +13,7 @@ import java.util.Collection;
 
 import org.apache.log4j.Logger;
 import org.eclipse.emf.emfatic.xtext.annotations.AnnotationMap;
+import org.eclipse.emf.emfatic.xtext.emfatic.TopLevelDecl;
 import org.eclipse.xtext.AbstractElement;
 import org.eclipse.xtext.AbstractRule;
 import org.eclipse.xtext.Assignment;
@@ -23,13 +24,8 @@ import org.eclipse.xtext.TerminalRule;
 import org.eclipse.xtext.ide.editor.contentassist.ContentAssistContext;
 import org.eclipse.xtext.ide.editor.contentassist.ContentAssistEntry;
 import org.eclipse.xtext.ide.editor.contentassist.IIdeContentProposalAcceptor;
-import org.eclipse.xtext.ide.editor.contentassist.IdeContentProposalCreator;
-import org.eclipse.xtext.ide.editor.contentassist.IdeContentProposalPriorities;
 import org.eclipse.xtext.ide.editor.contentassist.IdeContentProposalProvider;
-import org.eclipse.xtext.ide.editor.contentassist.IdeCrossrefProposalProvider;
-import org.eclipse.xtext.naming.IQualifiedNameConverter;
 import org.eclipse.xtext.resource.IEObjectDescription;
-import org.eclipse.xtext.scoping.IScopeProvider;
 import org.eclipse.xtext.util.TextRegion;
 
 import com.google.common.base.Predicate;
@@ -45,6 +41,14 @@ public class EmfaticIdeCPP extends IdeContentProposalProvider {
 		Collection<ContentAssistContext> contexts,
 		IIdeContentProposalAcceptor acceptor) {
 		for (ContentAssistContext context : getFilteredContexts(contexts)) {
+			LOG.debug("createProposals context " + context);
+			LOG.debug("createProposals for location " + context.getOffset());
+			LOG.debug("createProposals with prefix " + context.getPrefix());
+			LOG.debug("createProposals for current element " + context.getCurrentModel().eClass().getName());
+			LOG.debug("createProposals for previous element " + context.getPreviousModel().eClass().getName());
+			LOG.debug("createProposals for last completed node " + context.getLastCompleteNode().getText());
+			LOG.debug("createProposals for last completed node " + context.getLastCompleteNode().getText());
+			LOG.debug("createProposals for region " + context.getReplaceRegion().getLength() + " : " + context.getReplaceRegion().getOffset());
 			for (AbstractElement element : context.getFirstSetGrammarElements()) {
 				if (!acceptor.canAcceptMoreProposals()) {
 					return;
@@ -78,7 +82,7 @@ public class EmfaticIdeCPP extends IdeContentProposalProvider {
 		LOG.debug("Creating Assignment proposals in the context of " + context.getCurrentModel().eClass().getName());
 		AbstractElement terminal = assignment.getTerminal();
 		if (terminal instanceof CrossReference) {
-			createProposals(terminal, context, acceptor);
+			_createProposals((CrossReference) terminal, context, acceptor);
 		} else {
 			if (terminal instanceof RuleCall) {
 				AbstractRule rule = ((RuleCall) terminal).getRule();
@@ -90,7 +94,7 @@ public class EmfaticIdeCPP extends IdeContentProposalProvider {
 					} else {
 						proposal = assignment.getFeature();
 					}
-					ContentAssistEntry entry = proposalCreator.createProposal(proposal, context,
+					ContentAssistEntry entry = getProposalCreator().createProposal(proposal, context,
 							(ContentAssistEntry it) -> {
 								if ("STRING".equals(rule.getName())) {
 									it.getEditPositions()
@@ -103,29 +107,33 @@ public class EmfaticIdeCPP extends IdeContentProposalProvider {
 								it.setDescription(rule.getName());
 							});
 						if (entry != null) {
-							LOG.warn("Adding Proposal " + entry.getProposal() + ".");
+							LOG.warn("Adding Proposal: " + entry.getProposal());
 						}
-					acceptor.accept(entry, proposalPriorities.getDefaultPriority(entry));
+					acceptor.accept(entry, getProposalPriorities().getDefaultPriority(entry));
 				}
 			}
 		}
 	}
+	
 
-	@Override
-	protected void _createProposals(
-		Keyword keyword,
-		ContentAssistContext context,
-		IIdeContentProposalAcceptor acceptor) {
-		LOG.debug("Creating Keyword proposals for " + keyword.getValue() + " in the context of " + context.getCurrentModel().eClass().getName());
-		if (filterKeyword(keyword, context)) {
-			ContentAssistEntry entry = proposalCreator.createProposal(keyword.getValue(), context,
-					ContentAssistEntry.KIND_KEYWORD, null);
-			if (entry != null) {
-				LOG.warn("Adding Proposal " + entry.getProposal() + ".");
-				acceptor.accept(entry, proposalPriorities.getKeywordPriority(keyword.getValue(), entry));
-			}
-		}
-	}
+//	@Override
+//	protected void _createProposals(
+//		Keyword keyword,
+//		ContentAssistContext context,
+//		IIdeContentProposalAcceptor acceptor) {
+//		LOG.debug("Creating Keyword proposals for " + keyword.getValue() + " in the context of " + context.getCurrentModel().eClass().getName());
+//		if(context.getCurrentModel() instanceof TopLevelDecl) {
+//			System.out.println(((TopLevelDecl)context.getCurrentModel()).getAnnotations()); 
+//		}
+//		if (filterKeyword(keyword, context)) {
+//			ContentAssistEntry entry = getProposalCreator().createProposal(keyword.getValue(), context,
+//					ContentAssistEntry.KIND_KEYWORD, null);
+//			if (entry != null) {
+//				LOG.warn("Adding Proposal: " + entry.getProposal());
+//				acceptor.accept(entry, getProposalPriorities().getKeywordPriority(keyword.getValue(), entry));
+//			}
+//		}
+//	}
 	
 	@Override
 	protected void _createProposals(
@@ -139,7 +147,7 @@ public class EmfaticIdeCPP extends IdeContentProposalProvider {
 		ContentProposals sw = new ContentProposals(calledRule, getProposalCreator(), context, annotationMap);
 		sw.doSwitch(context.getCurrentModel()).
 			forEach(a ->  {
-			acceptor.accept(a, proposalPriorities.getDefaultPriority(a));
+			acceptor.accept(a, getProposalPriorities().getDefaultPriority(a));
 			});
 		
 	}
@@ -154,47 +162,12 @@ public class EmfaticIdeCPP extends IdeContentProposalProvider {
 	}
 
 	
-
-	protected IScopeProvider getScopeProvider() {
-		return scopeProvider;
-	}
-
-	protected IQualifiedNameConverter getQualifiedNameConverter() {
-		return qualifiedNameConverter;
-	}
-
-	protected IdeCrossrefProposalProvider getCrossrefProposalProvider() {
-		return crossrefProposalProvider;
-	}
-
-	protected IdeContentProposalCreator getProposalCreator() {
-		return proposalCreator;
-	}
-
-	protected IdeContentProposalPriorities getProposalPriorities() {
-		return proposalPriorities;
-	}
-	
 	private static final Logger LOG = Logger.getLogger(EmfaticIdeCPP.class);
 	
 	
 	@Inject
 	private AnnotationMap annotationMap;
 	
-	@Inject
-	private IScopeProvider scopeProvider;
-
-	@Inject
-	private IQualifiedNameConverter qualifiedNameConverter;
-
-	@Inject
-	private IdeCrossrefProposalProvider crossrefProposalProvider;
-
-	@Inject
-	private IdeContentProposalCreator proposalCreator;
-
-	@Inject
-	private IdeContentProposalPriorities proposalPriorities;
 	
 
 }

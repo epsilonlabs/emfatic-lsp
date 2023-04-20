@@ -6,6 +6,7 @@ package org.eclipse.emf.emfatic.xtext.validation;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
+import org.apache.log4j.Logger;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EObject;
@@ -19,10 +20,10 @@ import org.eclipse.emf.emfatic.xtext.emfatic.ClassDecl;
 import org.eclipse.emf.emfatic.xtext.emfatic.ClassMember;
 import org.eclipse.emf.emfatic.xtext.emfatic.ClassMemberDecl;
 import org.eclipse.emf.emfatic.xtext.emfatic.Declaration;
+import org.eclipse.emf.emfatic.xtext.emfatic.Details;
 import org.eclipse.emf.emfatic.xtext.emfatic.EmfaticPackage;
 import org.eclipse.emf.emfatic.xtext.emfatic.EnumLiteral;
 import org.eclipse.emf.emfatic.xtext.emfatic.Import;
-import org.eclipse.emf.emfatic.xtext.emfatic.MapEntry;
 import org.eclipse.emf.emfatic.xtext.emfatic.PackageDecl;
 import org.eclipse.emf.emfatic.xtext.emfatic.Param;
 import org.eclipse.emf.emfatic.xtext.emfatic.StringOrQualifiedID;
@@ -69,7 +70,7 @@ public class EmfaticValidator extends AbstractEmfaticValidator {
 			optUri = checker.resolveURI(imprt);
 		} catch (Exception e) {
 			error(
-				"Invalid uri " + checker.uriString(imprt),
+				"Invalid uri '" + checker.uriString(imprt) + "'",
 				EmfaticPackage.Literals.IMPORT__URI,
 				IssueCodes.INVALID_METAMODEL_IMPORTED,
 				""); 
@@ -86,7 +87,7 @@ public class EmfaticValidator extends AbstractEmfaticValidator {
 					""); 
 			} else if (!checker.resourceExists(uri)) {
 				error(
-						"Unable to load metamodel with uri " + uri.toString() + ". Resource was not found.",
+						"Unable to load metamodel with uri '" + uri.toString() + "'. Resource was not found.",
 						EmfaticPackage.Literals.IMPORT__URI,
 						IssueCodes.INVALID_METAMODEL_IMPORTED,
 						"");
@@ -94,7 +95,7 @@ public class EmfaticValidator extends AbstractEmfaticValidator {
 				Resource metamodelResource = EcoreUtil2.getResource(imprt.eResource(), uri.toString());
 				if (metamodelResource != null && metamodelResource.getContents().isEmpty()) {
 					warning(
-							"Metamodel with uri " + uri + " is empty. Check the URI and/or target file.",
+							"Metamodel with uri '" + uri + "' is empty. Check the URI and/or target file.",
 							EmfaticPackage.Literals.IMPORT__URI,
 							IssueCodes.INVALID_METAMODEL_IMPORTED,
 							"");
@@ -109,7 +110,7 @@ public class EmfaticValidator extends AbstractEmfaticValidator {
 			.map(bc -> bc.getBound())
 			.anyMatch(cd -> classDecl.equals(cd))) {
 			error(
-				"Cycle detected: the type " + classDecl.getName() + " cannot extend itself",
+				"Cycle detected: the type '" + classDecl.getName() + "' cannot extend itself",
 				EmfaticPackage.Literals.CLASS_DECL__SUPER_TYPES,
 				IssueCodes.EXTEND_CYCLE_DETECTED,
 				""); 
@@ -117,8 +118,72 @@ public class EmfaticValidator extends AbstractEmfaticValidator {
 	}
 	
 	@Check
-	public void checkValidAnnotationKeys(Annotation annt) {
-		EObject anntOwner = annt.eContainer();
+	public void checkValidLabel(final Annotation annt) {
+		annotationTarget(annt.eContainer()).ifPresent((target) ->
+			resolveLabel(annt).ifPresentOrElse(label -> {
+					if(!this.annotationMap.knowsLabel(label, annt.eResource())) {
+						error(
+								"Unknown annotation label '" + label + "'. This can mean you are "
+										+ "missing an EmfaticAnnotationMap to define a custom label "
+										+ "or there is a missing dependency (label provided via "
+										+ "extension point).",
+								EmfaticPackage.Literals.ANNOTATION__SOURCE,
+									IssueCodes.UNKOWN_ANNOTATION_LABEL,
+									""); 
+					}
+				}, () -> {
+					StringOrQualifiedID source = annt.getSource();
+					warning(
+							"The key uri " + source.getLiteral() + " can be replaced by its label.",
+							EmfaticPackage.Literals.ANNOTATION__SOURCE,
+							IssueCodes.URI_INSTEAD_OF_LABEL,
+							source.getLiteral());
+				})
+			);
+	}
+	
+	@Check
+	public void checkDuplicateKeys(final Details entry) {
+		Annotation annt = (Annotation) entry.eContainer();
+		if (annt.getDetails().stream().anyMatch(d -> d != entry && d.getKey().equals(entry.getKey()))) {
+			error(
+					"Duplicate key detected: " + entry.getKey(),
+					EmfaticPackage.Literals.DETAILS__KEY,
+					IssueCodes.DUPLICATE_KEY_FOUND,
+					entry.getKey()); 
+		}
+	}
+	
+	@Check
+	public void checkValidMapEntry(Details entry) {
+		Annotation annt = (Annotation) entry.eContainer();
+		annotationTarget(annt.eContainer()).ifPresent(target ->
+			resolveLabel(annt). ifPresent(label -> {
+				try {
+					if (!this.annotationMap.isValidKey(label, entry.getKey(), target, annt.eResource())) {
+						warning(
+								"The key '" + entry.getKey() + "' is not a valid key for " + target.getName() + " elements.",
+								EmfaticPackage.Literals.DETAILS__KEY,
+								IssueCodes.INVALID_KEY_USED,
+								"");
+					}
+				} catch (IllegalArgumentException e) {
+					LOG.error("Testing for the label already done, should never get here");
+					throw e;
+				}
+			})
+		);
+	}
+	
+	@Inject
+	private FileExtensionProvider fileExtensionProvider;
+	
+	@Inject
+	private AnnotationMap annotationMap;
+	
+	private final static Logger LOG = Logger.getLogger(EmfaticValidator.class);
+
+	private Optional<EClass> annotationTarget(EObject anntOwner) {
 		EClass target = null;
 		if (anntOwner instanceof PackageDecl) {
 			target = anntOwner.eClass();
@@ -139,56 +204,23 @@ public class EmfaticValidator extends AbstractEmfaticValidator {
 		} else if (anntOwner instanceof EnumLiteral) {
 			target = anntOwner.eClass();
 		}
-		// TODO We should support content assist for full uri labels! 
-		StringOrQualifiedID source = annt.getSource();
-		if (target != null) {
-			String label = null;
-			try {
-				label = source.getId();
-				if (label == null) {
-					label = this.annotationMap.labelForUri(source.getLiteral(), annt.eResource());
-					warning(
-							"The key uri " + source.getLiteral() + " can be replaced by its label.",
-							EmfaticPackage.Literals.ANNOTATION__SOURCE,
-							IssueCodes.URI_INSTEAD_OF_LABEL,
-							label);
-				}
-			} catch (NoSuchElementException e) {
-				// People may use arbitrary URIs at any point
-			}
-			finally {
-				if (label != null) {
-					if(!this.annotationMap.knowsLabel(label, annt.eResource())) {
-						error(
-								"Unknown annotation label " + label + ". This can mean you are "
-										+ "missing an EmfaticAnnotationMap to define a custom label "
-										+ "or there is a missing dependency (label provided via "
-										+ "extension point).",
-								EmfaticPackage.Literals.ANNOTATION__SOURCE,
-								IssueCodes.UNKOWN_ANNOTATION_LABEL,
-								""); 
-					} else {
-						for (MapEntry entry : annt.getDetails()) {
-							if (!this.annotationMap.isValidKey(label, entry.getKey(), target)) {
-								warning(
-										"The key " + entry.getKey() + " should not be used for " + target.getName() + " types.",
-										EmfaticPackage.Literals.ANNOTATION__DETAILS,
-										IssueCodes.INVALID_KEY_USED,
-										"");
-							}
-						}
-					}
-				}
-			}
-			
-		}
+		return Optional.ofNullable(target);
 	}
 	
-	@Inject
-	private FileExtensionProvider fileExtensionProvider;
+	private Optional<String> resolveLabel(Annotation annt) {
+		StringOrQualifiedID source = annt.getSource();
+		String label = null;
+		label = source.getId();
+		if (label == null) {
+			try {
+				label = this.annotationMap.labelForUri(source.getLiteral(), annt.eResource());
+			} catch (NoSuchElementException e) {
+				// People may use arbitrary URIs at any point
+				LOG.warn("Non-registered Annotation URI used: " + source.getLiteral());
+			}
+		}
+		return Optional.ofNullable(label);
+	}
 	
-	@Inject
-	private AnnotationMap annotationMap;
-
 	
 }

@@ -28,12 +28,22 @@ import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.emfatic.xtext.emfatic.Annotation;
-import org.eclipse.emf.emfatic.xtext.emfatic.MapEntry;
+import org.eclipse.emf.emfatic.xtext.emfatic.Details;
 import org.eclipse.emf.emfatic.xtext.emfatic.StringOrQualifiedID;
 
 import com.google.common.collect.Streams;
 import com.google.inject.Singleton;
 
+/**
+ * THe default implementation of {@link AnnotationMap}.
+ * 
+ * This class is responsible for managing annotations in each emfatic file, for providing the
+ * core annotations provided by Emfatic (Ecore, GenModel, ExtendedMetaData and EmfaticAnnotationMap)
+ * and for loading annotations provided via extension points.
+ * 
+ * @author Horacio Hoyos Rodriguez
+ *
+ */
 @Singleton
 public class DefaultAnnotationMap implements AnnotationMap {
 	
@@ -60,7 +70,7 @@ public class DefaultAnnotationMap implements AnnotationMap {
 			}
 			if (Objects.equals(EMFATIC_ANNOTATION_MAP_LABEL, label)
 					|| Objects.equals(EMFATIC_ANNOTATION_MAP_URI, label)) {
-				for (MapEntry kv : annt.getDetails()) {
+				for (Details kv : annt.getDetails()) {
 					this.addUserAnnotation(new DefaultEmfaticAnnotation(kv.getKey(), kv.getValue()), uri);
 				}
 			}
@@ -78,11 +88,14 @@ public class DefaultAnnotationMap implements AnnotationMap {
 	}
 	
 	@Override
-	public boolean isValidKey(String label, String name, EClass target) {
+	public boolean isValidKey(String label, String name, EClass target, Resource resource) {
 		String mapLabel = label.toLowerCase();
 		EmfaticAnnotation emftcAnn = this.annotations.get(mapLabel);
 		if (emftcAnn == null) {
-			return false;
+			emftcAnn = this.userAnnotations.get(resource.getURI()).get(mapLabel);
+			if (emftcAnn == null) {
+				throw new IllegalArgumentException("The provided label does not match any known annotation");
+			}
 		}
 		return emftcAnn.isValidKey(name, target);
 	}

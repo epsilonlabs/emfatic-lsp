@@ -14,6 +14,13 @@ import java.util.List;
 
 import org.eclipse.emf.ecore.EClass;
 
+/**
+ * The default implementation for {@link EmfaticAnnotation}. In this implementation all keys are
+ * valid for all EClasses, that is, {@link #isValidKey(String, EClass)} always returns true.
+ * 
+ * @author Horacio Hoyos Rodriguez
+ *
+ */
 public class DefaultEmfaticAnnotation implements EmfaticAnnotation {
 
 	private final String uri;

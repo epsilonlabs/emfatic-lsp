@@ -80,7 +80,7 @@ StringOrQualifiedID:
  * and using multi-value assignment instead
  */
 Annotation:
-	AT source=StringOrQualifiedID (LPAREN details+=MapEntry (COMMA details+=MapEntry)* RPAREN)?
+	AT source=StringOrQualifiedID (LPAREN details+=Details (COMMA details+=Details)* RPAREN)?
 ;
 
 /**
@@ -89,7 +89,7 @@ Annotation:
  * For this case, we are not concerned with differentiating between String literas
  * and QualifiedIDs.
  */
-MapEntry: 
+Details: 
 	key=(STRING | QualifiedID) EQUALS value=(STRING | QualifiedID)
 ;
 

@@ -12,11 +12,13 @@ package org.eclipse.emf.emfatic.xtext.annotations;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
-import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
+import org.apache.log4j.Logger;
 import org.eclipse.emf.ecore.EClass;
+import org.eclipse.emf.ecore.EClassifier;
 import org.eclipse.emf.emfatic.xtext.emfatic.EmfaticPackage;
+import org.eclipse.xtext.EcoreUtil2;
 
 
 /**
@@ -47,32 +49,76 @@ public class DetailsKey {
 	public DetailsKey(String name, EClass[] targets) {
 		super(); 
 		this.name = name;
-		this.targets = targets == null ?  new ArrayList<>() :  Arrays.asList(targets);
+		this.targets = targets == null ?  
+				new ArrayList<>() :  
+				Arrays.stream(targets).map((t) -> new TargetEClass(t)).collect(Collectors.toList());
 	}
 	
+	/**
+	 * Check if this key applies to the given ECLass.
+	 * @param eClass
+	 * @return
+	 */
 	boolean appliesTo(final EClass eClass) {
 		if (this.targets.isEmpty()) {
 			return true;
 		}
 		return this.targets.stream()
-				.anyMatch(this.strictMatch(eClass)
-						.or(this.subClass(eClass)));		
+				.anyMatch(t -> t.isAssignableTo(eClass));			
 	}
 	
 	public String name() {
 		return this.name;
 	}
 	
+	private static final Logger LOG = Logger.getLogger(DetailsKey.class);
+	
 	private final String name;
-	private final List<EClass> targets;
+	private final List<TargetEClass> targets;
 	
-	private Predicate<EClass> strictMatch(EClass eClass) {
-		return t -> Objects.equals(t, eClass);
+	/**
+	 * Instances of EClasses provided by EmfaticAnnotation implementations might not use the same
+	 * java object instances as the parser. Thus, we need a custom equality checker that uses the
+	 * EPackage URI and the EClas name.
+	 * 
+	 * @author Horacio Hoyos Rodriguez
+	 *
+	 */
+	private class TargetEClass {
+
+		public TargetEClass(EClass eClass) {
+			super();
+			this.name = eClass.getName();
+			this.nsURI = eClass.getEPackage().getNsURI();
+		}
+		
+		/**
+		 * Check whether this EClass is the same as, or a super type of the subType.
+		 * 
+		 * @param subType the sub-type
+		 * @return true, if this EClass is the same as, or a super type of, the sub class. 
+		 * 	Returns false if the superType is null.
+		 */
+		public boolean isAssignableTo(EClass subType) {
+			if (subType == null) {
+				return false;
+			}
+			if (!this.nsURI.equals(subType.getEPackage().getNsURI())) {
+				LOG.debug("SuperType is not in the same ePackage");
+				return false;
+			}
+			EClassifier target = subType.getEPackage().getEClassifier(this.name);
+			if (!(target instanceof EClass)) {
+				LOG.debug("The name " + this.name + " is not for an EClass.");
+				return false;
+			}
+			return EcoreUtil2.isAssignableFrom((EClass) target, subType);
+		}
+		
+		private final String name;
+		private final String nsURI;
+		
 	}
 	
-	private Predicate<EClass> subClass(EClass eClass) {
-		return t -> eClass.getEAllSuperTypes().stream()
-				.anyMatch(this.strictMatch(t));
-	}
 
 }

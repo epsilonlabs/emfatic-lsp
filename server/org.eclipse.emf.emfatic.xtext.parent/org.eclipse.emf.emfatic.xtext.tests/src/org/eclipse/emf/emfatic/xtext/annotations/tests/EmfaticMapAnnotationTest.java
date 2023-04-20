@@ -63,7 +63,7 @@ public class EmfaticMapAnnotationTest {
 			EmfaticPackage.Literals.SUB_PACKAGE_DECL,
 			EmfaticPackage.Literals.CLASS_DECL,
 			EmfaticPackage.Literals.DATA_TYPE,
-			EmfaticPackage.Literals.MAP_ENTRY,
+			EmfaticPackage.Literals.DETAILS,
 			EmfaticPackage.Literals.ATTRIBUTE,
 			EmfaticPackage.Literals.REFERENCE,
 			EmfaticPackage.Literals.OPERATION,

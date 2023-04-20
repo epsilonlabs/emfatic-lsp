@@ -23,9 +23,9 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="source" eType="#//StringOrQualifiedID"
         containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="details" upperBound="-1"
-        eType="#//MapEntry" containment="true"/>
+        eType="#//Details" containment="true"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="MapEntry">
+  <eClassifiers xsi:type="ecore:EClass" name="Details">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="key" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="value" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
   </eClassifiers>

@@ -13,9 +13,37 @@ import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.emfatic.xtext.emfatic.EmfaticPackage;
 
 /**
- * Provides the valid GenModel annotations.
+ * A GenModel-sourced EAnnotation is attached to an EModelElement to specify information that is 
+ * only relevant when generating code, not at runtime.
  * 
- * Taken from <a href="https://dentrassi.de/my-projects/emf-genmodel-annotations/#sample_gen_pattern_1">EMF GenModel Annotations<a>
+ * GenModel-sourced annotations are used for several different purposes. One such EAnnotation may be 
+ * included on any EModelElement
+ * <p>
+ * Supported keys:
+ * <ul>
+ *	<li>Any
+ *	  <ul>  
+ *      <li>documentation
+ *      <li>copyright
+ *    </ul>
+ * 	<li>EOperation
+ *    <ul>
+ * 	    <li>body
+ *    </ul>
+ *  <li>EStructuralFeature
+ *    <ul>  
+ *      <li>get
+ *      <li>suppressedGetVisibility
+ *      <li>suppressedSetVisibility
+ *      <li>suppressedIsSetVisibility
+ *      <li>suppressedUnsetVisibility
+ *    </ul>
+ *  <li>EDataType
+ *    <ul>
+ * 	    <li>create
+ *      <li>convert
+ *    </ul>
+ * </ul> 
  * @author Horacio Hoyos Rodriguez
  *
  */
@@ -45,6 +73,8 @@ public class GenModelAnnotation extends BaseAnnotation implements EmfaticAnnotat
 		targets = new EClass[] {EmfaticPackage.Literals.DATA_TYPE_DECL};
 		addKey(new DetailsKey("create", targets));
 		addKey(new DetailsKey("convert", targets));
+		targets = new EClass[] {EmfaticPackage.Literals.OPERATION};
+		addKey(new DetailsKey("body", targets));
 	}
 	
 	private static final String GEN_MODEL_LABEL = "GenModel";

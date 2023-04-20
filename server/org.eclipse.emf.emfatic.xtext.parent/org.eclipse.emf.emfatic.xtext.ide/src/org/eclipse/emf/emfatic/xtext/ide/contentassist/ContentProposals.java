@@ -12,6 +12,7 @@ package org.eclipse.emf.emfatic.xtext.ide.contentassist;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Objects;
 
 import org.apache.log4j.Logger;
 import org.eclipse.emf.ecore.EClass;
@@ -33,6 +34,8 @@ import org.eclipse.xtext.ide.editor.contentassist.ContentAssistEntry;
 import org.eclipse.xtext.ide.editor.contentassist.IdeContentProposalCreator;
 import org.eclipse.xtext.util.TextRegion;
 
+import com.google.common.base.Strings;
+
 public class ContentProposals extends EmfaticSwitch<Collection<ContentAssistEntry>> {
 	
 	public ContentProposals(
@@ -46,52 +49,85 @@ public class ContentProposals extends EmfaticSwitch<Collection<ContentAssistEntr
 		this.context = context;
 		this.annotationMap = annotations;
 	}
+	
+	
+
+//	@Override
+//	public Collection<ContentAssistEntry> caseTopLevelDecl(TopLevelDecl object) {
+//		Collection<ContentAssistEntry> result = new ArrayList<>();
+//		switch (rule.getName()) {
+//		case "Annotation":
+//			LOG.debug("Creating labels for Annotation@TopLevelDecl");
+//			for (String label : this.annotationMap.labels(object.eResource())) {
+//				result.add(createProposal("@"+label));
+//			}
+//			break;
+//		default:
+//			break;
+//		}
+//		return result;
+//	}
+
+
 
 
 	@Override
 	public Collection<ContentAssistEntry> caseAnnotation(Annotation object) {
 		Collection<ContentAssistEntry> result = new ArrayList<>();
 		if ("QualifiedID".equals(rule.getName())) {
-			LOG.debug("Creating labels for QualifiedID@Annotation");
-			for (String label : this.annotationMap.labels()) {
-				result.add(createProposal(label));
-			}
-		} else if ("KeyEqualsValue".equals(rule.getName())) {
-			// This is for the complete key=value part...
-			EObject anntOwner = object.eContainer();
-			EClass target = null;
-			if (anntOwner instanceof PackageDecl) {
-				target = anntOwner.eClass();
-			} else if (anntOwner instanceof TopLevelDecl) {
-				TopLevelDecl tpLvlDclrtn = (TopLevelDecl) anntOwner;
-				Declaration declaration = tpLvlDclrtn.getDeclaration();
-				if (declaration != null) {
-					target = declaration.eClass();
+			// Content for QualifiedID depends on the las completed node
+			// '@': We are looking for annotation labels
+			// '(', ',': We are looking for valid keys
+			String completedNode = context.getLastCompleteNode().getText();
+			switch (completedNode) {
+			case "@":
+				LOG.debug("Creating labels for label@Annotation");
+				for (String label : this.annotationMap.labels(object.eResource())) {
+					result.add(createProposal(label));
 				}
-			} else if (anntOwner instanceof ClassMemberDecl) {
-				ClassMemberDecl declaration = (ClassMemberDecl) anntOwner;
-				ClassMember member = declaration.getMember();
-				if (member != null) {
-					target = member.eClass();
+				break;
+			case "(":
+			case ",":
+				LOG.debug("Creating labels for key@Annotation");
+				// This is for the complete key=value part...
+				EObject anntOwner = object.eContainer();
+				EClass target = null;
+				if (anntOwner instanceof PackageDecl) {
+					target = anntOwner.eClass();
+				} else if (anntOwner instanceof TopLevelDecl) {
+					TopLevelDecl tpLvlDclrtn = (TopLevelDecl) anntOwner;
+					Declaration declaration = tpLvlDclrtn.getDeclaration();
+					if (declaration != null) {
+						target = declaration.eClass();
+					}
+				} else if (anntOwner instanceof ClassMemberDecl) {
+					ClassMemberDecl declaration = (ClassMemberDecl) anntOwner;
+					ClassMember member = declaration.getMember();
+					if (member != null) {
+						target = member.eClass();
+					}
+				} else if (anntOwner instanceof Param) {
+					target = anntOwner.eClass();
+				} else if (anntOwner instanceof EnumLiteral) {
+					target = anntOwner.eClass();
 				}
-			} else if (anntOwner instanceof Param) {
-				target = anntOwner.eClass();
-			} else if (anntOwner instanceof EnumLiteral) {
-				target = anntOwner.eClass();
-			}
-			// TODO We should support content assist for full uri labels! 
-			StringOrQualifiedID source = object.getSource();
-			if (source.getId() != null && target != null) {
-				for (String key : this.annotationMap.keysFor(source.getId(), target)) {
-					result.add(createProposal(key));
+				// TODO We should support content assist for full uri labels! 
+				StringOrQualifiedID source = object.getSource();
+				if (source.getId() != null && target != null) {
+					for (String key : this.annotationMap.keysFor(source.getId(), target)) {
+						result.add(createProposal(key));
+					}
 				}
+				break;
+			default:
+				break;
 			}
 		}
 		return result;
 	}
 
 	private ContentAssistEntry createProposal(String label) {
-		LOG.debug("Creating proposal for " + label + " given the prefix " + this.context.getPrefix());
+		LOG.debug("Creating proposal with label <" + label + ">,  given the prefix " + this.context.getPrefix());
 		ContentAssistEntry proposal = proposalCreator.createProposal(label, context,
 				(ContentAssistEntry it) -> {
 					if ("STRING".equals(rule.getName())) {
@@ -105,7 +141,8 @@ public class ContentProposals extends EmfaticSwitch<Collection<ContentAssistEntr
 					//it.setDescription(rule.getName());
 				});
 		if (proposal == null) {
-			LOG.warn("ProposaL for label " + label + " was rejected by the proposalCreator.");
+			LOG.warn("ProposaL with label " + label + " was rejected by the proposalCreator.");
+			proposalCreator.isValidProposal(label, context.getPrefix(), context);
 		}
 		return proposal;
 	}

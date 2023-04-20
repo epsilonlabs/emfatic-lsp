@@ -11,9 +11,22 @@ package org.eclipse.emf.emfatic.xtext.annotations;
 
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.emfatic.xtext.emfatic.EmfaticPackage;
+import org.eclipse.emf.emfatic.xtext.emfatic.PackageDecl;
 
 import com.google.common.base.Objects;
 
+/**
+ * Emfatic allows for short labels to be defined that map to longer URI values for the source 
+ * attribute of an EAnnotation.  The purpose of this feature is to simplify the Emfatic code, making 
+ * it easier to read and edit.
+ * <p>
+ * Declaring an annotation using the label EmfaticAnnotationMap has the side effect of creating a 
+ * new label which can be used later in the program. The EmfaticAnnotationMap can only be used at
+ * the {@link PackageDecl} level.
+ * 
+ * @author Horacio Hoyos Rodriguez
+ *
+ */
 public class EmfaticMapAnnotation extends BaseAnnotation implements EmfaticAnnotation {
 
 	@Override

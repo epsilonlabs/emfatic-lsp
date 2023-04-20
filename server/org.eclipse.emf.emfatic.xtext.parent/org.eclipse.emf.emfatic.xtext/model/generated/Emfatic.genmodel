@@ -23,9 +23,9 @@
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Emfatic.ecore#//Annotation/source"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Emfatic.ecore#//Annotation/details"/>
     </genClasses>
-    <genClasses ecoreClass="Emfatic.ecore#//MapEntry">
-      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Emfatic.ecore#//MapEntry/key"/>
-      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Emfatic.ecore#//MapEntry/value"/>
+    <genClasses ecoreClass="Emfatic.ecore#//Details">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Emfatic.ecore#//Details/key"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Emfatic.ecore#//Details/value"/>
     </genClasses>
     <genClasses ecoreClass="Emfatic.ecore#//Import">
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Emfatic.ecore#//Import/alias"/>

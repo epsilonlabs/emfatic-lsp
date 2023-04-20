@@ -19,7 +19,9 @@ import org.eclipse.emf.emfatic.xtext.emfatic.Annotation;
 import org.eclipse.emf.emfatic.xtext.emfatic.EmfaticPackage;
 
 /**
- * An umbrella for provided {@link EmfaticAnnotation}s.
+ * An umbrella for provided {@link EmfaticAnnotation}s that provides convenience methods for quering
+ * and validating annotations and their keys.
+ *  
  * @author Horacio Hoyos Rodriguez
  *
  */
@@ -43,15 +45,17 @@ public interface AnnotationMap {
 	List<String> labels(Resource resource);
 	
 	/**
-	 * True if the annotation's key is valid for the provided ECLass. The annotation is found using
+	 * Check if the annotation's key is valid for the provided ECLass. The annotation is found using
 	 * the provided label.
 	 * 
 	 * @param label	the {@link EmfaticAnnotation} label
 	 * @param name	the key name
 	 * @param target	the EClass (from {@link EmfaticPackage} to which the annotation has been added
+	 * @param resource the Resource in which the label is searched
+	 * @throws IllegalArgumentException if the label does not match a known annotation
 	 * @return true if the key for the annotation can be used for that EClass
 	 */
-	boolean isValidKey(String label, String name, EClass target);
+	boolean isValidKey(String label, String name, EClass target, Resource resource);
 
 	/**
 	 * All keys provided by the annotation identified by the label for the given EClass
@@ -73,9 +77,10 @@ public interface AnnotationMap {
 	String labelForUri(String uri, Resource resource) throws NoSuchElementException;
 
 	/**
-	 * Cehck if the provided label matches the label of any of the user or provided annotations
+	 * Cehck if the provided label matches the label of any of the user or provided annotations.
+	 * 
 	 * @param label	the label to test
-	 * @param resource the Resoruce in which the label is searched
+	 * @param resource the Resource in which the label is searched
 	 * @return true, if the label is known
 	 */
 	boolean knowsLabel(String label, Resource resource);

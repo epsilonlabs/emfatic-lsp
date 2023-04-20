@@ -45,9 +45,9 @@ class EmfaticEcoreTest {
 		StringOrQualifiedID source = namespace.getSource();
 		Assertions.assertNull(source.getLiteral());
 		Assertions.assertEquals("namespace", source.getId());
-		EList<MapEntry> details = namespace.getDetails();
+		EList<Details> details = namespace.getDetails();
 		Assertions.assertEquals(2, details.size());
-		MapEntry entry = details.get(0);
+		Details entry = details.get(0);
 		Assertions.assertEquals("uri", entry.getKey());
 		Assertions.assertEquals("http://www.eclipse.org/emf/2002/Ecore", entry.getValue());
 		entry = details.get(1);
@@ -149,9 +149,9 @@ class EmfaticEcoreTest {
 		StringOrQualifiedID source = annot.getSource();
 		Assertions.assertNull(source.getLiteral());
 		Assertions.assertEquals("Ecore", source.getId());
-		EList<MapEntry> details = annot.getDetails();
+		EList<Details> details = annot.getDetails();
 		Assertions.assertEquals(1, details.size());
-		MapEntry entry = details.get(0);
+		Details entry = details.get(0);
 		Assertions.assertEquals("constraints", entry.getKey());
 		Assertions.assertEquals("ConsistentTransient", entry.getValue());
 		// Class
