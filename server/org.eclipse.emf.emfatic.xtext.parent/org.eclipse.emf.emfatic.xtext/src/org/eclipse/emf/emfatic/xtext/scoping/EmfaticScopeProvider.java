@@ -3,13 +3,17 @@
  */
 package org.eclipse.emf.emfatic.xtext.scoping;
 
+
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EReference;
+import org.eclipse.emf.emfatic.xtext.emfatic.ClassDecl;
 import org.eclipse.emf.emfatic.xtext.emfatic.EmfaticPackage;
 import org.eclipse.xtext.EcoreUtil2;
 import org.eclipse.xtext.scoping.IScope;
 import org.eclipse.xtext.scoping.impl.FilteringScope;
+
+import com.google.common.base.Objects;
 
 /**
  * This class contains custom scoping description in order to filter the EMF
@@ -21,7 +25,9 @@ import org.eclipse.xtext.scoping.impl.FilteringScope;
 public class EmfaticScopeProvider extends AbstractEmfaticScopeProvider {
 
 	@Override
-	public IScope getScope(EObject context, EReference reference) {
+	public IScope getScope(
+		EObject context,
+		EReference reference) {
 		if (reference == EmfaticPackage.Literals.DATA_TYPE_WITH_MULTI__TYPE) {
 			// DataTypes
 			return new FilteringScope(
@@ -30,9 +36,17 @@ public class EmfaticScopeProvider extends AbstractEmfaticScopeProvider {
 		}
 		if (reference == EmfaticPackage.Literals.BOUND_CLASS_EXCEPT_WILDCARD__BOUND) {
 			// Classes
-			return new FilteringScope(
-					super.getScope(context, reference),
-					(e) -> isSubType(e.getEClass(), EmfaticPackage.Literals.CLASS_DECL));
+			if (context instanceof ClassDecl) {
+				return new FilteringScope(
+						super.getScope(context, reference),
+						e -> isSubType(e.getEClass(), EmfaticPackage.Literals.CLASS_DECL)
+								&& !Objects.equal(e.getEObjectOrProxy(), context));
+			} else {
+				return new FilteringScope(
+						super.getScope(context, reference),
+						e -> isSubType(e.getEClass(), EmfaticPackage.Literals.CLASS_DECL));
+			}
+			
 			
 		}
 		if (reference == EmfaticPackage.Literals.BOUND_CLASSIFIER_EXCEPT_WILDCARD__BOUND) {
@@ -52,7 +66,9 @@ public class EmfaticScopeProvider extends AbstractEmfaticScopeProvider {
 	 * @param superType the super type
 	 * @return true, if is sub type
 	 */
-	private boolean isSubType(EClass type, EClass superType) {
+	private boolean isSubType(
+		EClass type,
+		EClass superType) {
 		return EcoreUtil2.isAssignableFrom(superType, type);
 	}
 

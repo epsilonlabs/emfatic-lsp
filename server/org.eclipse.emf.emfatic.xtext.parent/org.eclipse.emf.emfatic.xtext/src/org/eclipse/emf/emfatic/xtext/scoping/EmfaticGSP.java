@@ -116,7 +116,9 @@ public class EmfaticGSP extends DefaultGlobalScopeProvider {
 	 * @return a Resource with the equivalent Emfatic elements
 	 * TODO Support generics?
 	 */
-	private Resource translateEcore(Resource resource, ResourceSet resourceSet) {
+	private Resource translateEcore(
+		Resource resource,
+		ResourceSet resourceSet) {
 		LOG.debug("Translating Metamodel with uri: " + resource.getURI() + " to Emfatic");
 		Resource result = null;
 		if (resource.getContents().isEmpty()) {
@@ -144,7 +146,8 @@ public class EmfaticGSP extends DefaultGlobalScopeProvider {
 	 * We use our ECORE_RESOURCE_URI, so when generating the emfatic ecore, we know what comes from the 
 	 * Ecore metamodel.
 	 */
-	private Iterable<IEObjectDescription> ecoreDescriptors(final Resource resoruce) {
+	private Iterable<IEObjectDescription> ecoreDescriptors(
+		final Resource resoruce) {
 		URI libraryResourceURI = URI.createURI(ECORE_RESOURCE_URI);
 		Resource ecoreResource = resoruce.getResourceSet().getResource(libraryResourceURI, false);
 		if (ecoreResource == null) {
@@ -164,7 +167,10 @@ public class EmfaticGSP extends DefaultGlobalScopeProvider {
 	 * @param ep the EPackate to load
 	 * @return the resource
 	 */
-	private Resource ecoreToEmf(ResourceSet resourceSet, URI libaryResourceURI, EPackage ep) {
+	private Resource ecoreToEmf(
+		ResourceSet resourceSet,
+		URI libaryResourceURI,
+		EPackage ep) {
 		Resource libaryResource = new ResourceImpl(libaryResourceURI);
 		resourceSet.getResources().add(libaryResource);
 		CompUnit compUint = emfaticInstance(EmfaticPackage.Literals.COMP_UNIT);
@@ -180,7 +186,8 @@ public class EmfaticGSP extends DefaultGlobalScopeProvider {
 	 *
 	 * @return the package decl
 	 */
-	private PackageDecl translatePackage(String name) {
+	private PackageDecl translatePackage(
+		String name) {
 		PackageDecl pd = emfaticInstance(EmfaticPackage.Literals.PACKAGE_DECL);
 		pd.setName(name);
 		return pd;
@@ -193,7 +200,8 @@ public class EmfaticGSP extends DefaultGlobalScopeProvider {
 	 * @return the collection<? extends top level decl>
 	 * TODO generics
 	 */
-	private Collection<? extends TopLevelDecl> transalteClassifiers(EList<EClassifier> eClassifiers) {
+	private Collection<? extends TopLevelDecl> transalteClassifiers(
+		EList<EClassifier> eClassifiers) {
 		List<TopLevelDecl> result = eClassifiers.stream()
 				.filter(EClass.class::isInstance)
 				.map(EClass.class::cast)
@@ -219,7 +227,8 @@ public class EmfaticGSP extends DefaultGlobalScopeProvider {
 	 * @return the top level decl
 	 * TODO generics
 	 */
-	private TopLevelDecl translateClass(EClass clazz) {
+	private TopLevelDecl translateClass(
+		EClass clazz) {
 		ClassDecl cd = emfaticInstance(EmfaticPackage.Literals.CLASS_DECL);
 		cd.setName(clazz.getName());
 		TopLevelDecl tld = emfaticInstance(EmfaticPackage.Literals.TOP_LEVEL_DECL);
@@ -241,7 +250,8 @@ public class EmfaticGSP extends DefaultGlobalScopeProvider {
 	 * @return the list
 	 * TODO generics
 	 */
-	private List<TopLevelDecl> translateDataType(EDataType type) {
+	private List<TopLevelDecl> translateDataType(
+		EDataType type) {
 		// All DataTypeDecl shate the same instance class name
 		List<TopLevelDecl> result = new ArrayList<>();
 		DataTypeDecl dtd = emfaticInstance(EmfaticPackage.Literals.DATA_TYPE_DECL);
@@ -277,7 +287,8 @@ public class EmfaticGSP extends DefaultGlobalScopeProvider {
 	 * @param type the type
 	 * @return the top level decl
 	 */
-	private TopLevelDecl translateEnum(EEnum type) {
+	private TopLevelDecl translateEnum(
+		EEnum type) {
 		EnumDecl ed = emfaticInstance(EmfaticPackage.Literals.ENUM_DECL);
 		ed.setName(type.getName());
 		TopLevelDecl tld = emfaticInstance(EmfaticPackage.Literals.TOP_LEVEL_DECL);
@@ -294,7 +305,8 @@ public class EmfaticGSP extends DefaultGlobalScopeProvider {
 	 * @return the t
 	 */
 	@SuppressWarnings("unchecked")
-	private <T extends EObject> T emfaticInstance(EClass eClass) {
+	private <T extends EObject> T emfaticInstance(
+		EClass eClass) {
 		return (T) EmfaticPackage.eINSTANCE.getEmfaticFactory().create(eClass);
 	}
 	
@@ -304,7 +316,8 @@ public class EmfaticGSP extends DefaultGlobalScopeProvider {
 	 * @param element the element
 	 * @return the string or qualified ID
 	 */
-	private StringOrQualifiedID createInstanceClassName(ENamedElement element) {
+	private StringOrQualifiedID createInstanceClassName(
+		ENamedElement element) {
 		StringOrQualifiedID instanceClassName = emfaticInstance(EmfaticPackage.Literals.STRING_OR_QUALIFIED_ID);
 		instanceClassName.setLiteral("http://www.eclipse.org/emf/2002/Ecore#//" + element.getName());
 		return instanceClassName;
@@ -327,7 +340,9 @@ public class EmfaticGSP extends DefaultGlobalScopeProvider {
 	 * @param checker TODO
 	 * @return
 	 */
-	private List<URI> getImportedUris(final Resource context, ImportUriChecker checker) {
+	private List<URI> getImportedUris(
+		final Resource context,
+		ImportUriChecker checker) {
 		CompUnit compUnit = (CompUnit) context.getContents().get(0);
 		List<URI> result = new ArrayList<>();
 		for (Import stmt : compUnit.getImports()) {
