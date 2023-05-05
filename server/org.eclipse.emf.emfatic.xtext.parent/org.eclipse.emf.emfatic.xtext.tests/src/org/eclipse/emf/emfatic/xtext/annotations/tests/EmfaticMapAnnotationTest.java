@@ -10,7 +10,6 @@ import org.eclipse.emf.emfatic.xtext.annotations.EmfaticAnnotation;
 import org.eclipse.emf.emfatic.xtext.annotations.EmfaticMapAnnotation;
 import org.eclipse.emf.emfatic.xtext.annotations.GenModelAnnotation;
 import org.eclipse.emf.emfatic.xtext.annotations.MetaDataAnnotation;
-import org.eclipse.emf.emfatic.xtext.emfatic.EmfaticPackage;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -56,18 +55,4 @@ public class EmfaticMapAnnotationTest {
 	    );
 	}
 	
-	
-	
-	private static EClass[] annotatableElements = new EClass[] {
-			EmfaticPackage.Literals.PACKAGE_DECL,
-			EmfaticPackage.Literals.SUB_PACKAGE_DECL,
-			EmfaticPackage.Literals.CLASS_DECL,
-			EmfaticPackage.Literals.DATA_TYPE,
-			EmfaticPackage.Literals.DETAILS,
-			EmfaticPackage.Literals.ATTRIBUTE,
-			EmfaticPackage.Literals.REFERENCE,
-			EmfaticPackage.Literals.OPERATION,
-			EmfaticPackage.Literals.PARAM,
-			EmfaticPackage.Literals.ENUM_LITERAL
-	};
 }
