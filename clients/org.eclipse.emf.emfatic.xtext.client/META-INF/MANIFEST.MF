@@ -1,0 +1,13 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: %bundleName
+Bundle-SymbolicName: org.eclipse.emf.emfatic.xtext.client;singleton:=true
+Bundle-Version: 1.0.0.qualifier
+Require-Bundle: org.eclipse.core.contenttype,
+ org.eclipse.ui,
+ org.eclipse.lsp4e,
+ org.eclipse.jdt.annotation,
+ org.eclipse.ui.genericeditor;bundle-version="1.2.200"
+Bundle-Vendor: %bundleVendor
+Automatic-Module-Name: org.eclipse.emf.emfatic.xtext.client
+Bundle-RequiredExecutionEnvironment: JavaSE-17

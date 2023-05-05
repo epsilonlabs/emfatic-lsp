@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension
+         point="org.eclipse.ui.editors">
+      <editorContentTypeBinding
+            contentTypeId="org.eclipse.emf.emfatic.xtext.languageserver"
+            editorId="org.eclipse.ui.genericeditor.GenericEditor">
+      </editorContentTypeBinding>
+   </extension>
+   <extension
+         point="org.eclipse.lsp4e.languageServer">
+      <server
+            class="org.eclipse.emf.emfatic.xtext.client.EmfaticSCP"
+            id="org.eclipse.emf.emfatic.xtext.languageserver.server"
+            label="org.eclipse.emf.emfatic.xtext.languageserver.server">
+      </server>
+      <contentTypeMapping
+            contentType="org.eclipse.emf.emfatic.xtext.languageserver"
+            id="org.eclipse.emf.emfatic.xtext.languageserver.server">
+      </contentTypeMapping>
+   </extension>
+   <extension
+         point="org.eclipse.core.contenttype.contentTypes">
+      <content-type
+            base-type="org.eclipse.core.runtime.text"
+            file-extensions="lspemf"
+            id="org.eclipse.emf.emfatic.xtext.languageserver"
+            name="Emfatic Language Server"
+            priority="normal">
+      </content-type>
+   </extension>
+
+</plugin>
