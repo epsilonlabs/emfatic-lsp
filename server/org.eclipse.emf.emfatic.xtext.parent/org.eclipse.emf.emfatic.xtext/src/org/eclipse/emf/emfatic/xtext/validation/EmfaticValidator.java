@@ -5,6 +5,7 @@ package org.eclipse.emf.emfatic.xtext.validation;
 
 import java.util.NoSuchElementException;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import org.apache.log4j.Logger;
 import org.eclipse.emf.common.util.URI;
@@ -19,14 +20,19 @@ import org.eclipse.emf.emfatic.xtext.emfatic.Annotation;
 import org.eclipse.emf.emfatic.xtext.emfatic.ClassDecl;
 import org.eclipse.emf.emfatic.xtext.emfatic.ClassMember;
 import org.eclipse.emf.emfatic.xtext.emfatic.ClassMemberDecl;
+import org.eclipse.emf.emfatic.xtext.emfatic.ClassifierDecl;
+import org.eclipse.emf.emfatic.xtext.emfatic.CompUnit;
 import org.eclipse.emf.emfatic.xtext.emfatic.Declaration;
 import org.eclipse.emf.emfatic.xtext.emfatic.Details;
 import org.eclipse.emf.emfatic.xtext.emfatic.EmfaticPackage;
 import org.eclipse.emf.emfatic.xtext.emfatic.EnumLiteral;
+import org.eclipse.emf.emfatic.xtext.emfatic.Feature;
 import org.eclipse.emf.emfatic.xtext.emfatic.Import;
+import org.eclipse.emf.emfatic.xtext.emfatic.Operation;
 import org.eclipse.emf.emfatic.xtext.emfatic.PackageDecl;
 import org.eclipse.emf.emfatic.xtext.emfatic.Param;
 import org.eclipse.emf.emfatic.xtext.emfatic.StringOrQualifiedID;
+import org.eclipse.emf.emfatic.xtext.emfatic.SubPackageDecl;
 import org.eclipse.emf.emfatic.xtext.emfatic.TopLevelDecl;
 import org.eclipse.xtext.EcoreUtil2;
 import org.eclipse.xtext.resource.FileExtensionProvider;
@@ -49,6 +55,9 @@ import com.google.inject.Inject;
  */
 public class EmfaticValidator extends AbstractEmfaticValidator {
 	
+	/**
+	 * Warn if Ecore metamodel is loaded
+	 */
 	@Check
 	public void checkEcoreMetamodelImported(Import imprt) {
 		String literalURI = imprt.getUri().getLiteral();
@@ -62,6 +71,10 @@ public class EmfaticValidator extends AbstractEmfaticValidator {
 		}
 	}
 	
+	/**
+	 * Check that the URI is valid and that it's not an empty resource
+	 * @param imprt
+	 */
 	@Check
 	public void checkImportedUriIsValid(Import imprt) {
 		ImportUriChecker checker = new ImportUriChecker(imprt.eResource(), this.fileExtensionProvider);
@@ -104,6 +117,9 @@ public class EmfaticValidator extends AbstractEmfaticValidator {
 		}
 	}
 	
+	/**
+	 * Check for self inheritance in ClassDecl
+	 */
 	@Check
 	public void checkSelfInheritance(ClassDecl classDecl) {
 		if(classDecl.getSuperTypes().stream()
@@ -117,6 +133,9 @@ public class EmfaticValidator extends AbstractEmfaticValidator {
 		}
 	}
 	
+	/**
+	 * Check that he annotation label has been previously defined.
+	 */
 	@Check
 	public void checkValidLabel(final Annotation annt) {
 		annotationTarget(annt.eContainer()).ifPresent((target) ->
@@ -142,6 +161,9 @@ public class EmfaticValidator extends AbstractEmfaticValidator {
 			);
 	}
 	
+	/**
+	 * Check that annotation is not assigning duplicate keys
+	 */
 	@Check
 	public void checkDuplicateKeys(final Details entry) {
 		Annotation annt = (Annotation) entry.eContainer();
@@ -154,8 +176,11 @@ public class EmfaticValidator extends AbstractEmfaticValidator {
 		}
 	}
 	
+	/**
+	 * Check that the key is valid for the EObject to which the annotation is attached
+	 */
 	@Check
-	public void checkValidMapEntry(Details entry) {
+	public void checkValidDetails(Details entry) {
 		Annotation annt = (Annotation) entry.eContainer();
 		annotationTarget(annt.eContainer()).ifPresent(target ->
 			resolveLabel(annt). ifPresent(label -> {
@@ -173,6 +198,78 @@ public class EmfaticValidator extends AbstractEmfaticValidator {
 				}
 			})
 		);
+	}
+	
+	/**
+	 * Check that ClassDecl have unique names within their PackDecl
+	 */
+	@Check
+	public void checkClassDeclUniqueName(ClassifierDecl entry) {
+		TopLevelDecl topLvlDecl = (TopLevelDecl) entry.eContainer();
+		EObject context = topLvlDecl.eContainer();
+		Stream<Declaration> otherClassDecl = null;
+		if (Objects.equal(context.eClass(), EmfaticPackage.Literals.COMP_UNIT)) {
+			CompUnit compUnit = (CompUnit) context;
+			otherClassDecl = compUnit.getDeclarations().stream()
+					.map(tld -> tld.getDeclaration())
+					.filter(d -> d != entry);		
+		} else if (Objects.equal(context.eClass(), EmfaticPackage.Literals.SUB_PACKAGE_DECL)) {
+			SubPackageDecl pckDecl = (SubPackageDecl) context;
+			otherClassDecl = pckDecl.getDeclarations().stream()
+					.map(tld -> tld.getDeclaration())
+					.filter(d -> d != entry);	
+		} else {
+			return;
+		}
+		if (otherClassDecl
+			.anyMatch(d -> (d instanceof ClassifierDecl)
+					&& d.getName().equals(entry.getName()))) {
+			error(
+					"Duplicate names detected: " + entry,
+					EmfaticPackage.Literals.DECLARATION__NAME,
+					IssueCodes.DUPLICATE_CLASS_NAME,
+					""); 
+		}
+	}
+	
+	/**
+	 * Check that Features have unique names within their class
+	 */
+	@Check
+	public void checkFeatureUniqueName(Feature entry) {
+		ClassMemberDecl decl = (ClassMemberDecl) entry.eContainer();
+		ClassDecl classDecl = (ClassDecl) decl.eContainer();
+		if (classDecl.getMembers().stream()
+				.map(cm -> cm.getMember())
+				.filter(cm -> (cm instanceof Feature) && cm != entry)
+				.anyMatch(f -> f.getName().equals(entry.getName()))
+				) {
+			error(
+					"Duplicate names detected: " + entry,
+					EmfaticPackage.Literals.CLASS_MEMBER__NAME,
+					IssueCodes.DUPLICATE_FEATURE_NAME,
+					""); 
+		}
+	}
+	
+	/**
+	 * Check that Operations have unique names within their class
+	 */
+	@Check
+	public void checkOperationUniqueName(Operation entry) {
+		ClassMemberDecl decl = (ClassMemberDecl) entry.eContainer();
+		ClassDecl classDecl = (ClassDecl) decl.eContainer();
+		if (classDecl.getMembers().stream()
+				.map(cm -> cm.getMember())
+				.filter(cm -> (cm instanceof Operation) && cm != entry)
+				.anyMatch(f -> f.getName().equals(entry.getName()))
+				) {
+			error(
+					"Duplicate names detected: " + entry,
+					EmfaticPackage.Literals.CLASS_MEMBER__NAME,
+					IssueCodes.DUPLICATE_OPERATION_NAME,
+					""); 
+		}
 	}
 	
 	@Inject

@@ -99,7 +99,8 @@
   <eClassifiers xsi:type="ecore:EClass" name="ClassMember">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="Attribute" eSuperTypes="#//ClassMember">
+  <eClassifiers xsi:type="ecore:EClass" name="Feature" eSuperTypes="#//ClassMember"/>
+  <eClassifiers xsi:type="ecore:EClass" name="Attribute" eSuperTypes="#//Feature">
     <eStructuralFeatures xsi:type="ecore:EReference" name="typeWithMulti" eType="#//DataTypeWithMulti"
         containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="defValue" eType="#//Expr"
@@ -115,7 +116,7 @@
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="lowerBound" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="upperBound" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="Reference" eSuperTypes="#//ClassMember">
+  <eClassifiers xsi:type="ecore:EClass" name="Reference" eSuperTypes="#//Feature">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="kind" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="typeWithMulti" eType="#//ClassRefWithMulti"
         containment="true"/>

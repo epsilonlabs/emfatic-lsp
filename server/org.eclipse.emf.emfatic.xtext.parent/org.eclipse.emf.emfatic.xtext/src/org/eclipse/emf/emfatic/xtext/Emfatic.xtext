@@ -273,7 +273,11 @@ ClassMemberDecl:
 ;
 
 ClassMember:
-	(Attribute | Reference | Operation)
+	(Feature| Operation)
+;
+
+Feature:
+	Attribute | Reference 
 ;
 
 /**

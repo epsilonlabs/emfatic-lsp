@@ -80,6 +80,7 @@
     <genClasses ecoreClass="Emfatic.ecore#//ClassMember">
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Emfatic.ecore#//ClassMember/name"/>
     </genClasses>
+    <genClasses ecoreClass="Emfatic.ecore#//Feature"/>
     <genClasses ecoreClass="Emfatic.ecore#//Attribute">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Emfatic.ecore#//Attribute/typeWithMulti"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Emfatic.ecore#//Attribute/defValue"/>
