@@ -1,15 +1,20 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <?pde?>
 <!-- generated with https://github.com/eclipse-cbi/targetplatform-dsl -->
-<target name="Epsilon Target Platform" sequenceNumber="1692629507">
+<target name="Epsilon Target Platform" sequenceNumber="1692633662">
   <locations>
     <location includeMode="planner" includeAllPlatforms="false" includeSource="true" includeConfigurePhase="true" type="InstallableUnit">
+      <unit id="org.eclipse.e4.core.tools.feature.feature.group" version="4.28.0.v20230510-1239"/>
       <unit id="org.eclipse.core.runtime" version="3.27.0.v20230515-1719"/>
-      <unit id="org.eclipse.jdt" version="3.19.100.v20230605-0440"/>
-      <unit id="org.eclipse.jdt.annotation" version="2.2.700.v20220826-1026"/>
+      <unit id="org.eclipse.jdt.feature.group" version="3.19.100.v20230605-0440"/>
       <unit id="org.eclipse.lsp4e" version="0.16.1.202305241229"/>
       <unit id="org.eclipse.lsp4j" version="0.21.0.v20230517-2120"/>
+      <unit id="org.eclipse.ui.ide" version="3.21.0.v20230526-1500"/>
+      <unit id="org.eclipse.ui.ide.application" version="1.5.0.v20230526-1051"/>
       <unit id="org.eclipse.xtext.sdk.feature.group" version="2.31.0.v20230529-0659"/>
+      <unit id="org.eclipse.pde.feature.group" version="3.15.0.v20230605-0440"/>
+      <unit id="org.eclipse.platform.feature.group" version="4.28.0.v20230605-0440"/>
+      <unit id="org.eclipse.platform.sdk" version="4.28.0.I20230605-0440"/>
       <repository location="https://download.eclipse.org/releases/2023-06"/>
     </location>
     <location includeMode="planner" includeAllPlatforms="false" includeSource="true" includeConfigurePhase="true" type="InstallableUnit">

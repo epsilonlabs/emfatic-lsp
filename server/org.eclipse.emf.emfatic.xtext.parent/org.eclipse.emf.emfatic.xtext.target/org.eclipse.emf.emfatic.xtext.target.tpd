@@ -1,12 +1,17 @@
 target "Epsilon Target Platform" environment JavaSE-17 with configurePhase requirements source
 
 location "https://download.eclipse.org/releases/2023-06" {
+	org.eclipse.e4.core.tools.feature.feature.group
 	org.eclipse.core.runtime
-	org.eclipse.jdt
-	org.eclipse.jdt.annotation
+	org.eclipse.jdt.feature.group
 	org.eclipse.lsp4e
 	org.eclipse.lsp4j
+	org.eclipse.ui.ide
+	org.eclipse.ui.ide.application
 	org.eclipse.xtext.sdk.feature.group
+	org.eclipse.pde.feature.group
+	org.eclipse.platform.feature.group
+	org.eclipse.platform.sdk 
 }
 
 location "https://download.eclipse.org/tools/orbit/downloads/2023-06" {
