@@ -4,9 +4,7 @@ import * as net from 'net';
 
 import { Trace } from 'vscode-jsonrpc';
 import { workspace, ExtensionContext } from 'vscode';
-import { LanguageClient, LanguageClientOptions, StreamInfo,
-    Position as LSPosition,
-    Location as LSLocation } from 'vscode-languageclient/node';
+import { LanguageClient, LanguageClientOptions, StreamInfo} from 'vscode-languageclient/node';
 
 let client: LanguageClient;
 
@@ -33,18 +31,9 @@ export function activate(context: ExtensionContext) {
         },
     };
 
-    // Create the language client and start the client.
     client = new LanguageClient('emfaticlsp', 'Emfatic Editor', serverOptions, clientOptions);
-
+    client.setTrace(Trace.Verbose);
     client.start();
-
-    // TODO: errors to investigate:
-    // lc.trace = Trace.Verbose;
-    // let disposable = lc.start();
-
-    // Push the disposable to the context's subscriptions so that the
-    // client can be deactivated on extension deactivation
-    // context.subscriptions.push(disposable);
 }
 
 export function deactivate(): Thenable<void> | undefined {
