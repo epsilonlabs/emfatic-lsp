@@ -17,7 +17,7 @@ Require-Bundle: org.eclipse.emf.emfatic.xtext,
  org.eclipse.compare,
  org.eclipse.xtext.builder
 Import-Package: org.apache.log4j
-Bundle-RequiredExecutionEnvironment: JavaSE-11
+Bundle-RequiredExecutionEnvironment: JavaSE-17
 Export-Package: org.eclipse.emf.emfatic.xtext.ui.internal,
  org.eclipse.emf.emfatic.xtext.ui.contentassist,
  org.eclipse.emf.emfatic.xtext.ui.quickfix

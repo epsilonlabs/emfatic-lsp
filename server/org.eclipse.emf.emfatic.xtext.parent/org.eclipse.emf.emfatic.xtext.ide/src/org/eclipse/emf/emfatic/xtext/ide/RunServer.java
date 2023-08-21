@@ -44,6 +44,7 @@ public class RunServer {
 	public static void main(String[] args) throws InterruptedException, IOException {
 		Injector injector = Guice.createInjector(new ServerModule());
 		LanguageServerImpl languageServer = injector.getInstance(LanguageServerImpl.class);
+
 		Function<MessageConsumer, MessageConsumer> wrapper = consumer -> {
 			MessageConsumer result = new MessageConsumer() {
 
