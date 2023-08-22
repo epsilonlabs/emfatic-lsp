@@ -2,6 +2,10 @@
   "name": "emfatic",
   "displayName": "Emfatic",
   "description": "LSP client for the Emfatic language",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/epsilonlabs/emfatic-lsp.git"
+  },
   "version": "0.0.1",
   "scripts": {
     "build": "tsc -p .",
