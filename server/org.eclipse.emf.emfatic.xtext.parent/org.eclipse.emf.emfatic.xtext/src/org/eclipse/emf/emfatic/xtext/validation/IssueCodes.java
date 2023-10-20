@@ -2,14 +2,18 @@ package org.eclipse.emf.emfatic.xtext.validation;
 
 public interface IssueCodes {
 	
-	public static final String INVALID_METAMODEL_IMPORTED = "ERR-01";
-	public static final String EXTEND_CYCLE_DETECTED = "ERR-02";
-	public static final String INVALID_KEY_USED = "ERR-03";
-	public static final String UNKOWN_ANNOTATION_LABEL = "ERR-04";
-	public static final String URI_INSTEAD_OF_LABEL = "ERR-05";
-	public static final String DUPLICATE_KEY_FOUND = "ERR-06";
-	public static final String DUPLICATE_CLASS_NAME = "ERR-07";
-	public static final String DUPLICATE_FEATURE_NAME = "ERR-08";
-	public static final String DUPLICATE_OPERATION_NAME = "ERR-09";
+	public static final String E_INVALID_METAMODEL_IMPORTED = "E1000";
+	public static final String E_EXTEND_CYCLE_DETECTED = "E1001";
+	public static final String E_UNKOWN_ANNOTATION_LABEL = "E1002";
+	public static final String E_DUPLICATE_KEY_FOUND = "E1004";
+	public static final String E_DUPLICATE_CLASS_NAME = "E1005";
+	public static final String E_DUPLICATE_FEATURE_NAME = "E1006";
+	public static final String E_DUPLICATE_OPERATION_NAME = "E1007";
+	
+	public static final String W_ECORE_IMPORTED = "W2000";
+	public static final String W_EMPTY_METAMODEL = "W2001";
+	public static final String W_URI_INSTEAD_OF_LABEL = "W1003";
+	public static final String W_INVALID_KEY_USED = "W1004";
+	
 	
 }

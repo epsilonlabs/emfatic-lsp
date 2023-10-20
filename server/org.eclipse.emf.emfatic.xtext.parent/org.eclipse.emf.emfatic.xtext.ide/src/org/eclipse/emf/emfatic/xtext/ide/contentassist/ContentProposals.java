@@ -12,7 +12,6 @@ package org.eclipse.emf.emfatic.xtext.ide.contentassist;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Objects;
 
 import org.apache.log4j.Logger;
 import org.eclipse.emf.ecore.EClass;
@@ -33,8 +32,6 @@ import org.eclipse.xtext.ide.editor.contentassist.ContentAssistContext;
 import org.eclipse.xtext.ide.editor.contentassist.ContentAssistEntry;
 import org.eclipse.xtext.ide.editor.contentassist.IdeContentProposalCreator;
 import org.eclipse.xtext.util.TextRegion;
-
-import com.google.common.base.Strings;
 
 public class ContentProposals extends EmfaticSwitch<Collection<ContentAssistEntry>> {
 	
@@ -67,9 +64,6 @@ public class ContentProposals extends EmfaticSwitch<Collection<ContentAssistEntr
 //		}
 //		return result;
 //	}
-
-
-
 
 	@Override
 	public Collection<ContentAssistEntry> caseAnnotation(Annotation object) {
@@ -126,6 +120,19 @@ public class ContentProposals extends EmfaticSwitch<Collection<ContentAssistEntr
 		return result;
 	}
 
+	@Override
+	public Collection<ContentAssistEntry> defaultCase(EObject object) {
+		return Collections.emptyList();
+	}
+
+	private static final Logger LOG = Logger.getLogger(ContentProposals.class);
+
+	// TODO Decide if this should be changeable so we can reuse the switch
+	private final AbstractRule rule;
+	private final IdeContentProposalCreator proposalCreator;
+	private final ContentAssistContext context;
+	private final AnnotationMap annotationMap;
+	
 	private ContentAssistEntry createProposal(String label) {
 		LOG.debug("Creating proposal with label <" + label + ">,  given the prefix " + this.context.getPrefix());
 		ContentAssistEntry proposal = proposalCreator.createProposal(label, context,
@@ -147,17 +154,5 @@ public class ContentProposals extends EmfaticSwitch<Collection<ContentAssistEntr
 		return proposal;
 	}
 
-	@Override
-	public Collection<ContentAssistEntry> defaultCase(EObject object) {
-		return Collections.emptyList();
-	}
-
-	private static final Logger LOG = Logger.getLogger(ContentProposals.class);
-
-	// TODO Decide if this should be changeable so we can reuse the switch
-	private final AbstractRule rule;
-	private final IdeContentProposalCreator proposalCreator;
-	private final ContentAssistContext context;
-	private final AnnotationMap annotationMap;
 
 }

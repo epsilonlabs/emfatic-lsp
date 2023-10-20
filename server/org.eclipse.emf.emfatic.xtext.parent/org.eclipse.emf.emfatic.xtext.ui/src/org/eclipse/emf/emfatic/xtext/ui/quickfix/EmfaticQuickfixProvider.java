@@ -20,23 +20,14 @@ import org.eclipse.xtext.validation.Issue;
  * See https://www.eclipse.org/Xtext/documentation/310_eclipse_support.html#quick-fixes
  */
 public class EmfaticQuickfixProvider extends DefaultQuickfixProvider {
-
-//	@Fix(EmfaticValidator.INVALID_NAME)
-//	public void capitalizeName(final Issue issue, IssueResolutionAcceptor acceptor) {
-//		acceptor.accept(issue, "Capitalize name", "Capitalize the name.", "upcase.png", new IModification() {
-//			public void apply(IModificationContext context) throws BadLocationException {
-//				IXtextDocument xtextDocument = context.getXtextDocument();
-//				String firstLetter = xtextDocument.get(issue.getOffset(), 1);
-//				xtextDocument.replace(issue.getOffset(), 1, firstLetter.toUpperCase());
-//			}
-//		});
-//	}
 	
-	@Fix(IssueCodes.INVALID_METAMODEL_IMPORTED)
+	@Fix(IssueCodes.E_INVALID_METAMODEL_IMPORTED)
+	@Fix(IssueCodes.W_ECORE_IMPORTED)
+	@Fix(IssueCodes.W_EMPTY_METAMODEL)
 	public void removeImport(final Issue issue, IssueResolutionAcceptor acceptor) {
 		acceptor.accept(
 				issue,
-				"Remove import", "Remove invalid metamodel.", "upcase.png",
+				"Remove import", "Remove metamodel.", "package-variant-closed-remove.png",
 				(EObject element, IModificationContext context) -> {
 						Import i = (Import) element;
 						CompUnit unit = (CompUnit) i.eContainer();
@@ -45,7 +36,7 @@ public class EmfaticQuickfixProvider extends DefaultQuickfixProvider {
 				);
 	}
 	
-	@Fix(IssueCodes.EXTEND_CYCLE_DETECTED)
+	@Fix(IssueCodes.E_EXTEND_CYCLE_DETECTED)
 	public void removeSuperClass(final Issue issue, IssueResolutionAcceptor acceptor) {
 		acceptor.accept(
 				issue,
@@ -58,7 +49,7 @@ public class EmfaticQuickfixProvider extends DefaultQuickfixProvider {
 				);
 	}
 	
-	@Fix(IssueCodes.URI_INSTEAD_OF_LABEL)
+	@Fix(IssueCodes.W_URI_INSTEAD_OF_LABEL)
 	public void replaceByLabel(final Issue issue, IssueResolutionAcceptor acceptor) {
 		acceptor.accept(
 				issue,

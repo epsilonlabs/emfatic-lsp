@@ -66,7 +66,7 @@ public class EmfaticValidator extends AbstractEmfaticValidator {
 			warning(
 					"Ecore metemodel is imported by default.",
 					EmfaticPackage.Literals.IMPORT__URI,
-					IssueCodes.INVALID_METAMODEL_IMPORTED,
+					IssueCodes.W_ECORE_IMPORTED,
 					"");
 		}
 	}
@@ -85,7 +85,7 @@ public class EmfaticValidator extends AbstractEmfaticValidator {
 			error(
 				"Invalid uri '" + checker.uriString(imprt) + "'",
 				EmfaticPackage.Literals.IMPORT__URI,
-				IssueCodes.INVALID_METAMODEL_IMPORTED,
+				IssueCodes.E_INVALID_METAMODEL_IMPORTED,
 				""); 
 		}
 		if (optUri.isPresent()) {
@@ -96,13 +96,13 @@ public class EmfaticValidator extends AbstractEmfaticValidator {
 							+ checker.validExtensions()
 							+ " models.",
 					EmfaticPackage.Literals.IMPORT__URI,
-					IssueCodes.INVALID_METAMODEL_IMPORTED,
+					IssueCodes.E_INVALID_METAMODEL_IMPORTED,
 					""); 
 			} else if (!checker.resourceExists(uri)) {
 				error(
 						"Unable to load metamodel with uri '" + uri.toString() + "'. Resource was not found.",
 						EmfaticPackage.Literals.IMPORT__URI,
-						IssueCodes.INVALID_METAMODEL_IMPORTED,
+						IssueCodes.E_INVALID_METAMODEL_IMPORTED,
 						"");
 			} else {
 				Resource metamodelResource = EcoreUtil2.getResource(imprt.eResource(), uri.toString());
@@ -110,7 +110,7 @@ public class EmfaticValidator extends AbstractEmfaticValidator {
 					warning(
 							"Metamodel with uri '" + uri + "' is empty. Check the URI and/or target file.",
 							EmfaticPackage.Literals.IMPORT__URI,
-							IssueCodes.INVALID_METAMODEL_IMPORTED,
+							IssueCodes.W_EMPTY_METAMODEL,
 							"");
 				}
 			}
@@ -128,7 +128,7 @@ public class EmfaticValidator extends AbstractEmfaticValidator {
 			error(
 				"Cycle detected: the type '" + classDecl.getName() + "' cannot extend itself",
 				EmfaticPackage.Literals.CLASS_DECL__SUPER_TYPES,
-				IssueCodes.EXTEND_CYCLE_DETECTED,
+				IssueCodes.E_EXTEND_CYCLE_DETECTED,
 				""); 
 		}
 	}
@@ -138,27 +138,29 @@ public class EmfaticValidator extends AbstractEmfaticValidator {
 	 */
 	@Check
 	public void checkValidLabel(final Annotation annt) {
-		annotationTarget(annt.eContainer()).ifPresent((target) ->
-			resolveLabel(annt).ifPresentOrElse(label -> {
-					if(!this.annotationMap.knowsLabel(label, annt.eResource())) {
-						error(
-								"Unknown annotation label '" + label + "'. This can mean you are "
-										+ "missing an EmfaticAnnotationMap to define a custom label "
-										+ "or there is a missing dependency (label provided via "
-										+ "extension point).",
-								EmfaticPackage.Literals.ANNOTATION__SOURCE,
-									IssueCodes.UNKOWN_ANNOTATION_LABEL,
-									""); 
-					}
-				}, () -> {
-					StringOrQualifiedID source = annt.getSource();
-					warning(
-							"The key uri " + source.getLiteral() + " can be replaced by its label.",
-							EmfaticPackage.Literals.ANNOTATION__SOURCE,
-							IssueCodes.URI_INSTEAD_OF_LABEL,
-							source.getLiteral());
-				})
-			);
+		StringOrQualifiedID source = annt.getSource();
+		var label = source.getId();
+		if (label != null) {
+			if(!this.annotationMap.knowsLabel(label, annt.eResource())) {
+				error(
+						"Unknown annotation label '" + label + "'. This can mean you are "
+								+ "missing an EmfaticAnnotationMap to define a custom label "
+								+ "or there is a missing dependency (label provided via "
+								+ "extension point). Remember that URIs must be within double quotes.",
+						EmfaticPackage.Literals.ANNOTATION__SOURCE,
+							IssueCodes.E_UNKOWN_ANNOTATION_LABEL,
+							""); 
+			}
+		} else {
+			label = this.annotationMap.labelForUri(source.getLiteral(), annt.eResource());
+			if (label != null) {
+				warning(
+						"The key uri " + source.getLiteral() + " can be replaced by its label: " + label,
+						EmfaticPackage.Literals.ANNOTATION__SOURCE,
+						IssueCodes.W_URI_INSTEAD_OF_LABEL,
+						label);
+			}
+		}
 	}
 	
 	/**
@@ -171,7 +173,7 @@ public class EmfaticValidator extends AbstractEmfaticValidator {
 			error(
 					"Duplicate key detected: " + entry.getKey(),
 					EmfaticPackage.Literals.DETAILS__KEY,
-					IssueCodes.DUPLICATE_KEY_FOUND,
+					IssueCodes.E_DUPLICATE_KEY_FOUND,
 					entry.getKey()); 
 		}
 	}
@@ -189,8 +191,8 @@ public class EmfaticValidator extends AbstractEmfaticValidator {
 						warning(
 								"The key '" + entry.getKey() + "' is not a valid key for " + target.getName() + " elements.",
 								EmfaticPackage.Literals.DETAILS__KEY,
-								IssueCodes.INVALID_KEY_USED,
-								"");
+								IssueCodes.W_INVALID_KEY_USED,
+								entry.getKey());
 					}
 				} catch (IllegalArgumentException e) {
 					LOG.error("Testing for the label already done, should never get here");
@@ -221,15 +223,15 @@ public class EmfaticValidator extends AbstractEmfaticValidator {
 		} else {
 			return;
 		}
-		if (otherClassDecl
-			.anyMatch(d -> (d instanceof ClassifierDecl)
-					&& d.getName().equals(entry.getName()))) {
-			error(
-					"Duplicate names detected: " + entry,
-					EmfaticPackage.Literals.DECLARATION__NAME,
-					IssueCodes.DUPLICATE_CLASS_NAME,
-					""); 
-		}
+		otherClassDecl.forEach(oc -> {
+			if (oc instanceof ClassifierDecl && oc.getName().equals(entry.getName())) {
+				error(
+						"Duplicate names detected: " + entry,
+						EmfaticPackage.Literals.DECLARATION__NAME,
+						IssueCodes.E_DUPLICATE_CLASS_NAME,
+						oc.getName());
+			}
+		});
 	}
 	
 	/**
@@ -239,17 +241,18 @@ public class EmfaticValidator extends AbstractEmfaticValidator {
 	public void checkFeatureUniqueName(Feature entry) {
 		ClassMemberDecl decl = (ClassMemberDecl) entry.eContainer();
 		ClassDecl classDecl = (ClassDecl) decl.eContainer();
-		if (classDecl.getMembers().stream()
-				.map(cm -> cm.getMember())
-				.filter(cm -> (cm instanceof Feature) && cm != entry)
-				.anyMatch(f -> f.getName().equals(entry.getName()))
-				) {
-			error(
-					"Duplicate names detected: " + entry,
-					EmfaticPackage.Literals.CLASS_MEMBER__NAME,
-					IssueCodes.DUPLICATE_FEATURE_NAME,
-					""); 
-		}
+		classDecl.getMembers().stream()
+			.map(cm -> cm.getMember())
+			.filter(cm -> (cm instanceof Feature) && cm != entry)
+			.forEach(f -> {
+				if (f.getName().equals(entry.getName())) {
+					error(
+							"Duplicate names detected: " + entry,
+							EmfaticPackage.Literals.CLASS_MEMBER__NAME,
+							IssueCodes.E_DUPLICATE_FEATURE_NAME,
+							f.getName());
+				}
+			});
 	}
 	
 	/**
@@ -259,17 +262,18 @@ public class EmfaticValidator extends AbstractEmfaticValidator {
 	public void checkOperationUniqueName(Operation entry) {
 		ClassMemberDecl decl = (ClassMemberDecl) entry.eContainer();
 		ClassDecl classDecl = (ClassDecl) decl.eContainer();
-		if (classDecl.getMembers().stream()
+		classDecl.getMembers().stream()
 				.map(cm -> cm.getMember())
 				.filter(cm -> (cm instanceof Operation) && cm != entry)
-				.anyMatch(f -> f.getName().equals(entry.getName()))
-				) {
-			error(
-					"Duplicate names detected: " + entry,
-					EmfaticPackage.Literals.CLASS_MEMBER__NAME,
-					IssueCodes.DUPLICATE_OPERATION_NAME,
-					""); 
-		}
+				.forEach(op -> {
+					if (op.getName().equals(entry.getName())) {
+						error(
+								"Duplicate names detected: " + entry,
+								EmfaticPackage.Literals.CLASS_MEMBER__NAME,
+								IssueCodes.E_DUPLICATE_OPERATION_NAME,
+								op.getName()); 
+					}
+		});
 	}
 	
 	@Inject

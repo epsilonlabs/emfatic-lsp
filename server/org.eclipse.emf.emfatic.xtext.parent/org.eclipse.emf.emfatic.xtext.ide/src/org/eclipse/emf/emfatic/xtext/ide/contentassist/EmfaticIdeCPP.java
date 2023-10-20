@@ -13,7 +13,6 @@ import java.util.Collection;
 
 import org.apache.log4j.Logger;
 import org.eclipse.emf.emfatic.xtext.annotations.AnnotationMap;
-import org.eclipse.emf.emfatic.xtext.emfatic.TopLevelDecl;
 import org.eclipse.xtext.AbstractElement;
 import org.eclipse.xtext.AbstractRule;
 import org.eclipse.xtext.Assignment;
