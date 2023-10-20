@@ -12,8 +12,13 @@
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Emfatic.ecore#//CompUnit/declarations"/>
     </genClasses>
     <genClasses ecoreClass="Emfatic.ecore#//PackageDecl">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Emfatic.ecore#//PackageDecl/ns"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Emfatic.ecore#//PackageDecl/annotations"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Emfatic.ecore#//PackageDecl/name"/>
+    </genClasses>
+    <genClasses ecoreClass="Emfatic.ecore#//PackageNs">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Emfatic.ecore#//PackageNs/uri"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Emfatic.ecore#//PackageNs/prefix"/>
     </genClasses>
     <genClasses ecoreClass="Emfatic.ecore#//StringOrQualifiedID">
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Emfatic.ecore#//StringOrQualifiedID/literal"/>
