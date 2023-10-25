@@ -4,6 +4,7 @@
 package org.eclipse.emf.emfatic.xtext.ui.quickfix;
 
 import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.emfatic.xtext.emfatic.ClassDecl;
 import org.eclipse.emf.emfatic.xtext.emfatic.CompUnit;
 import org.eclipse.emf.emfatic.xtext.emfatic.Import;
 import org.eclipse.emf.emfatic.xtext.validation.IssueCodes;
@@ -21,13 +22,15 @@ import org.eclipse.xtext.validation.Issue;
  */
 public class EmfaticQuickfixProvider extends DefaultQuickfixProvider {
 	
-	@Fix(IssueCodes.E_INVALID_METAMODEL_IMPORTED)
+	@Fix(IssueCodes.E_INVALID_IMPORT_URI)
+	@Fix(IssueCodes.E_UNSUPPORTED_URI_EXTENSION)
+	@Fix(IssueCodes.E_IMPORTED_METAMODEL_NOT_FOUND)
 	@Fix(IssueCodes.W_ECORE_IMPORTED)
 	@Fix(IssueCodes.W_EMPTY_METAMODEL)
 	public void removeImport(final Issue issue, IssueResolutionAcceptor acceptor) {
 		acceptor.accept(
 				issue,
-				"Remove import", "Remove metamodel.", "package-variant-closed-remove.png",
+				"Remove import", "Remove import satement.", "package-variant-closed-remove.png",
 				(EObject element, IModificationContext context) -> {
 						Import i = (Import) element;
 						CompUnit unit = (CompUnit) i.eContainer();
@@ -40,11 +43,10 @@ public class EmfaticQuickfixProvider extends DefaultQuickfixProvider {
 	public void removeSuperClass(final Issue issue, IssueResolutionAcceptor acceptor) {
 		acceptor.accept(
 				issue,
-				"Remove class", "Remove cycle class.", "upcase.png",
+				"Remove class", "Remove cycle class.", "sync-off.png",
 				(EObject element, IModificationContext context) -> {
-						Import i = (Import) element;
-						CompUnit unit = (CompUnit) i.eContainer();
-						unit.getImports().remove(i);
+						ClassDecl ec = (ClassDecl) element;
+						ec.getSuperTypes().remove(Integer.parseInt(issue.getData()[0]));
 					}
 				);
 	}
@@ -53,12 +55,13 @@ public class EmfaticQuickfixProvider extends DefaultQuickfixProvider {
 	public void replaceByLabel(final Issue issue, IssueResolutionAcceptor acceptor) {
 		acceptor.accept(
 				issue,
-				"Replace URI", "Used defined label.", "upcase.png",
+				"Replace URI", "Used defined label.", "swap-horizontal.png",
 				(EObject element, IModificationContext context) -> {
 					IXtextDocument xtextDocument = context.getXtextDocument();
 					xtextDocument.replace(issue.getOffset(), issue.getLength(), issue.getData()[0]);
 					}
 				);
 	}
+	
 
 }

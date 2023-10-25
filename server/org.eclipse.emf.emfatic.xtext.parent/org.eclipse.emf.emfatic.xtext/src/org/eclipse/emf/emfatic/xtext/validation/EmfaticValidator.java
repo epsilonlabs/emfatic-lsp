@@ -85,24 +85,24 @@ public class EmfaticValidator extends AbstractEmfaticValidator {
 			error(
 				"Invalid uri '" + checker.uriString(imprt) + "'",
 				EmfaticPackage.Literals.IMPORT__URI,
-				IssueCodes.E_INVALID_METAMODEL_IMPORTED,
+				IssueCodes.E_INVALID_IMPORT_URI,
 				""); 
 		}
 		if (optUri.isPresent()) {
 			URI uri = optUri.get();
 			if (!checker.isValidResoruce(uri)) {
 				error(
-					"Invalid uri file extension. Can only import *.ecore and " 
+					"Unsupported URI file extension. Can only import *.ecore and " 
 							+ checker.validExtensions()
 							+ " models.",
 					EmfaticPackage.Literals.IMPORT__URI,
-					IssueCodes.E_INVALID_METAMODEL_IMPORTED,
+					IssueCodes.E_UNSUPPORTED_URI_EXTENSION,
 					""); 
 			} else if (!checker.resourceExists(uri)) {
 				error(
 						"Unable to load metamodel with uri '" + uri.toString() + "'. Resource was not found.",
 						EmfaticPackage.Literals.IMPORT__URI,
-						IssueCodes.E_INVALID_METAMODEL_IMPORTED,
+						IssueCodes.E_IMPORTED_METAMODEL_NOT_FOUND,
 						"");
 			} else {
 				Resource metamodelResource = EcoreUtil2.getResource(imprt.eResource(), uri.toString());
@@ -122,14 +122,18 @@ public class EmfaticValidator extends AbstractEmfaticValidator {
 	 */
 	@Check
 	public void checkSelfInheritance(ClassDecl classDecl) {
-		if(classDecl.getSuperTypes().stream()
-			.map(bc -> bc.getBound())
-			.anyMatch(cd -> classDecl.equals(cd))) {
-			error(
-				"Cycle detected: the type '" + classDecl.getName() + "' cannot extend itself",
-				EmfaticPackage.Literals.CLASS_DECL__SUPER_TYPES,
-				IssueCodes.E_EXTEND_CYCLE_DETECTED,
-				""); 
+		var extendsList = classDecl.getSuperTypes().stream()
+			.map(bc -> bc.getBound()).toList();
+		for(int i=0;i<extendsList.size();i++) {
+			var cd = extendsList.get(i);
+			if(classDecl.equals(cd)) {
+				error(
+					"Cycle detected: the type '" + classDecl.getName() + "' cannot extend itself",
+					EmfaticPackage.Literals.CLASS_DECL__SUPER_TYPES,
+					i,
+					IssueCodes.E_EXTEND_CYCLE_DETECTED,
+					String.valueOf(i)); 
+			}
 		}
 	}
 	
@@ -152,13 +156,14 @@ public class EmfaticValidator extends AbstractEmfaticValidator {
 							""); 
 			}
 		} else {
-			label = this.annotationMap.labelForUri(source.getLiteral(), annt.eResource());
+			String literal = source.getLiteral();
+			label = this.annotationMap.labelForUri(literal, annt.eResource());
 			if (label != null) {
 				warning(
-						"The key uri " + source.getLiteral() + " can be replaced by its label: " + label,
+						"The key uri " + literal + " can be replaced by its label: " + label,
 						EmfaticPackage.Literals.ANNOTATION__SOURCE,
 						IssueCodes.W_URI_INSTEAD_OF_LABEL,
-						label);
+						label.toLowerCase());
 			}
 		}
 	}
@@ -169,12 +174,16 @@ public class EmfaticValidator extends AbstractEmfaticValidator {
 	@Check
 	public void checkDuplicateKeys(final Details entry) {
 		Annotation annt = (Annotation) entry.eContainer();
-		if (annt.getDetails().stream().anyMatch(d -> d != entry && d.getKey().equals(entry.getKey()))) {
-			error(
+		for(int i=0;i<annt.getDetails().size();i++) {
+			var d = annt.getDetails().get(i);
+			if (d != entry && d.getKey().equals(entry.getKey())) {
+				error(
 					"Duplicate key detected: " + entry.getKey(),
 					EmfaticPackage.Literals.DETAILS__KEY,
+					i,
 					IssueCodes.E_DUPLICATE_KEY_FOUND,
 					entry.getKey()); 
+			}
 		}
 	}
 	

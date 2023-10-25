@@ -9,6 +9,7 @@ import org.eclipse.emf.emfatic.xtext.emfatic.CompUnit
 import org.eclipse.xtext.testing.util.ParseHelper
 import org.eclipse.xtext.testing.validation.ValidationTestHelper
 import org.eclipse.emf.emfatic.xtext.emfatic.EmfaticPackage
+import org.eclipse.emf.emfatic.xtext.validation.IssueCodes
 
 @ExtendWith(InjectionExtension)
 @InjectWith(EmfaticInjectorProvider)
@@ -39,7 +40,7 @@ class EmfaticValidationTest {
 			@"http://www.eclipse.org/emf/2002/Ecore"(settingDelegates="http://www.eclipse.org/emf/2002/Ecore/OCL")
 			package db;
 		''')
-		validationTestHelper.assertWarning(result, EmfaticPackage.Literals.PACKAGE_DECL, "23")
+		validationTestHelper.assertWarning(result, EmfaticPackage.Literals.ANNOTATION, IssueCodes.W_URI_INSTEAD_OF_LABEL)
 	}
 
 }
