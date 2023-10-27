@@ -27,4 +27,5 @@ class KeyValueMap {
 class Value {
     attr String tag;
     attr String value;
+    op boolean isSet();
 }

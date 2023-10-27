@@ -92,9 +92,9 @@ public class EmfaticValidator extends AbstractEmfaticValidator {
 			URI uri = optUri.get();
 			if (!checker.isValidResoruce(uri)) {
 				error(
-					"Unsupported URI file extension. Can only import *.ecore and " 
+					"Unsupported URI file extension. When using 'platform' or 'file' URI, only import *.ecore and " 
 							+ checker.validExtensions()
-							+ " models.",
+							+ " models are supported.",
 					EmfaticPackage.Literals.IMPORT__URI,
 					IssueCodes.E_UNSUPPORTED_URI_EXTENSION,
 					""); 
@@ -157,14 +157,17 @@ public class EmfaticValidator extends AbstractEmfaticValidator {
 			}
 		} else {
 			String literal = source.getLiteral();
-			label = this.annotationMap.labelForUri(literal, annt.eResource());
-			if (label != null) {
+			try {
+				label = this.annotationMap.labelForUri(literal, annt.eResource());
 				warning(
 						"The key uri " + literal + " can be replaced by its label: " + label,
 						EmfaticPackage.Literals.ANNOTATION__SOURCE,
 						IssueCodes.W_URI_INSTEAD_OF_LABEL,
 						label.toLowerCase());
+			} catch (NoSuchElementException e) {
+				// No issue
 			}
+			
 		}
 	}
 	

@@ -6,6 +6,7 @@ class Table {
 	val Column[*] columns;
 }
 
+@"http://www.eclipse.org/emf/2002/GenModel"(documentation="A Table Column")
 class Column {
 	attr String name;
 	attr String type;

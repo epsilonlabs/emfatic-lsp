@@ -32,48 +32,48 @@ public class MetaDataAnnotation extends BaseAnnotation implements EmfaticAnnotat
 	}
 	
 	protected void doCreateKeys() {
-		addKey(new DetailsKey("Namespace", new EClass[] {
+		addKey(new DetailsKey("namespace", new EClass[] {
 				EmfaticPackage.Literals.PACKAGE_DECL,
 				EmfaticPackage.Literals.CLASSIFIER_DECL,
 				EmfaticPackage.Literals.ATTRIBUTE,
 				EmfaticPackage.Literals.REFERENCE}));
-		addKey(new DetailsKey("Qualified", new EClass[] {
+		addKey(new DetailsKey("qualified", new EClass[] {
 				EmfaticPackage.Literals.PACKAGE_DECL}));
-		addKey(new DetailsKey("Name", new EClass[] {
+		addKey(new DetailsKey("name", new EClass[] {
 				EmfaticPackage.Literals.CLASSIFIER_DECL,
 				EmfaticPackage.Literals.ATTRIBUTE,
 				EmfaticPackage.Literals.REFERENCE
 				}));
-		addKey(new DetailsKey("ContentKind", new EClass[] {
+		addKey(new DetailsKey("contentKind", new EClass[] {
 				EmfaticPackage.Literals.CLASSIFIER_DECL}));
 		EClass[] targets =  new EClass[] {
 				EmfaticPackage.Literals.ATTRIBUTE,
 				EmfaticPackage.Literals.REFERENCE};
-		addKey(new DetailsKey("FeatureKind", targets));
-		addKey(new DetailsKey("Wildcards", targets));
-		addKey(new DetailsKey("ProcessingKind", targets));
-		addKey(new DetailsKey("Affiliation", targets));
-		addKey(new DetailsKey("Group", targets));
+		addKey(new DetailsKey("featureKind", targets));
+		addKey(new DetailsKey("wildcards", targets));
+		addKey(new DetailsKey("processingKind", targets));
+		addKey(new DetailsKey("affiliation", targets));
+		addKey(new DetailsKey("group", targets));
 		targets =  new EClass[] {
 				EmfaticPackage.Literals.DATA_TYPE};
-		addKey(new DetailsKey("BaseType", targets));
-		addKey(new DetailsKey("ItemType", targets));
-		addKey(new DetailsKey("MemberTypes", targets));
-		addKey(new DetailsKey("WhiteSpaceFacet", targets));
-		addKey(new DetailsKey("EnumerationFacet", targets));
-		addKey(new DetailsKey("PatternFacet", targets));
-		addKey(new DetailsKey("TotalDigitsFacet", targets));
-		addKey(new DetailsKey("FractionDigitsFacet", targets));
-		addKey(new DetailsKey("LengthFacet", targets));
-		addKey(new DetailsKey("MinLengthFacet", targets));
-		addKey(new DetailsKey("MaxLengthFacet", targets));
-		addKey(new DetailsKey("MinExclusiveFacet", targets));
-		addKey(new DetailsKey("MaxExclusiveFacet", targets));
-		addKey(new DetailsKey("MinInclusiveFacet", targets));
-		addKey(new DetailsKey("MaxInclusiveFacet", targets));
+		addKey(new DetailsKey("baseType", targets));
+		addKey(new DetailsKey("itemType", targets));
+		addKey(new DetailsKey("memberTypes", targets));
+		addKey(new DetailsKey("whiteSpaceFacet", targets));
+		addKey(new DetailsKey("enumerationFacet", targets));
+		addKey(new DetailsKey("patternFacet", targets));
+		addKey(new DetailsKey("totalDigitsFacet", targets));
+		addKey(new DetailsKey("fractionDigitsFacet", targets));
+		addKey(new DetailsKey("lengthFacet", targets));
+		addKey(new DetailsKey("minLengthFacet", targets));
+		addKey(new DetailsKey("maxLengthFacet", targets));
+		addKey(new DetailsKey("minExclusiveFacet", targets));
+		addKey(new DetailsKey("maxExclusiveFacet", targets));
+		addKey(new DetailsKey("minInclusiveFacet", targets));
+		addKey(new DetailsKey("maxInclusiveFacet", targets));
 	}
 	
 	private static final String EXTENDED_METADATA_LABEL = "ExtendedMetaData";
-	private static final String EXTENDED_METADATA_URI = "http:///org/eclipse/emf/ecore/util/ExtendedMetaData";
+	private static final String EXTENDED_METADATA_URI = "http://org/eclipse/emf/ecore/util/ExtendedMetaData";
 
 }
