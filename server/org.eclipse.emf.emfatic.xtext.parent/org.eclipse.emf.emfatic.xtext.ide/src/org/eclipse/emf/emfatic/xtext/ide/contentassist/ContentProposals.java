@@ -46,24 +46,6 @@ public class ContentProposals extends EmfaticSwitch<Collection<ContentAssistEntr
 		this.context = context;
 		this.annotationMap = annotations;
 	}
-	
-	
-
-//	@Override
-//	public Collection<ContentAssistEntry> caseTopLevelDecl(TopLevelDecl object) {
-//		Collection<ContentAssistEntry> result = new ArrayList<>();
-//		switch (rule.getName()) {
-//		case "Annotation":
-//			LOG.debug("Creating labels for Annotation@TopLevelDecl");
-//			for (String label : this.annotationMap.labels(object.eResource())) {
-//				result.add(createProposal("@"+label));
-//			}
-//			break;
-//		default:
-//			break;
-//		}
-//		return result;
-//	}
 
 	@Override
 	public Collection<ContentAssistEntry> caseAnnotation(Annotation object) {
@@ -135,9 +117,9 @@ public class ContentProposals extends EmfaticSwitch<Collection<ContentAssistEntr
 	
 	private ContentAssistEntry createProposal(String label) {
 		LOG.debug("Creating proposal with label <" + label + ">,  given the prefix " + this.context.getPrefix());
-		ContentAssistEntry proposal = proposalCreator.createProposal(label, context,
+		ContentAssistEntry proposal = this.proposalCreator.createProposal(label, context,
 				(ContentAssistEntry it) -> {
-					if ("STRING".equals(rule.getName())) {
+					if ("STRING".equals(this.rule.getName())) {
 						it.getEditPositions()
 								.add(new TextRegion(context.getOffset() + 1, label.length() - 2));
 						it.setKind(ContentAssistEntry.KIND_TEXT);
@@ -148,8 +130,8 @@ public class ContentProposals extends EmfaticSwitch<Collection<ContentAssistEntr
 					//it.setDescription(rule.getName());
 				});
 		if (proposal == null) {
-			LOG.warn("ProposaL with label " + label + " was rejected by the proposalCreator.");
-			proposalCreator.isValidProposal(label, context.getPrefix(), context);
+			LOG.warn("Proposal with label " + label + " was rejected by the proposalCreator.");
+			this.proposalCreator.isValidProposal(label, context.getPrefix(), context);
 		}
 		return proposal;
 	}

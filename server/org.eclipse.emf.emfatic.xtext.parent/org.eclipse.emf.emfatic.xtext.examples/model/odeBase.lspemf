@@ -22,6 +22,7 @@ enum TimeUnit {
 class KeyValueMap {
     attr String key;
     val Value[*] values;
+    ref BaseElement[1]#keyValueMaps owner;
 }
 
 class Value {

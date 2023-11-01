@@ -101,7 +101,7 @@
     <genClasses ecoreClass="Emfatic.ecore#//Reference">
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Emfatic.ecore#//Reference/kind"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Emfatic.ecore#//Reference/typeWithMulti"/>
-      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Emfatic.ecore#//Reference/oppositeName"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference Emfatic.ecore#//Reference/opposite"/>
     </genClasses>
     <genClasses ecoreClass="Emfatic.ecore#//ClassRefWithMulti">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Emfatic.ecore#//ClassRefWithMulti/type"/>

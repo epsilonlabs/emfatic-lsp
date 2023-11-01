@@ -327,9 +327,8 @@ SimpleMultiplicityExpr:
  * sequence reference : referenceKind typeWithMulti (HASH oppositeName=ID)? name=ID SEMI ;
  */
 Reference:
-	kind=ReferenceKind typeWithMulti=ClassRefWithMulti (HASH oppositeName=ID)? name=ID SEMI
+	kind=ReferenceKind typeWithMulti=ClassRefWithMulti (HASH opposite=[Reference|ID])? name=ID SEMI
 ;
-
 
 /**
  * This can be used when only EClass can be referenced (e.g. extends, References)
@@ -337,7 +336,6 @@ Reference:
 ClassRefWithMulti:
 	type=BoundClassExceptWildcard (multiplicity=Multiplicity)?
 ;
-
 
 /**
  * token referenceKind : "ref" | "val" ;
