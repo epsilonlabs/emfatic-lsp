@@ -4,6 +4,7 @@
 package org.eclipse.emf.emfatic.xtext.ui.quickfix;
 
 import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.emfatic.xtext.emfatic.ClassDecl;
 import org.eclipse.emf.emfatic.xtext.emfatic.CompUnit;
 import org.eclipse.emf.emfatic.xtext.emfatic.Import;
 import org.eclipse.emf.emfatic.xtext.validation.IssueCodes;
@@ -20,23 +21,16 @@ import org.eclipse.xtext.validation.Issue;
  * See https://www.eclipse.org/Xtext/documentation/310_eclipse_support.html#quick-fixes
  */
 public class EmfaticQuickfixProvider extends DefaultQuickfixProvider {
-
-//	@Fix(EmfaticValidator.INVALID_NAME)
-//	public void capitalizeName(final Issue issue, IssueResolutionAcceptor acceptor) {
-//		acceptor.accept(issue, "Capitalize name", "Capitalize the name.", "upcase.png", new IModification() {
-//			public void apply(IModificationContext context) throws BadLocationException {
-//				IXtextDocument xtextDocument = context.getXtextDocument();
-//				String firstLetter = xtextDocument.get(issue.getOffset(), 1);
-//				xtextDocument.replace(issue.getOffset(), 1, firstLetter.toUpperCase());
-//			}
-//		});
-//	}
 	
-	@Fix(IssueCodes.INVALID_METAMODEL_IMPORTED)
+	@Fix(IssueCodes.E_INVALID_IMPORT_URI)
+	@Fix(IssueCodes.E_UNSUPPORTED_URI_EXTENSION)
+	@Fix(IssueCodes.E_IMPORTED_METAMODEL_NOT_FOUND)
+	@Fix(IssueCodes.W_ECORE_IMPORTED)
+	@Fix(IssueCodes.W_EMPTY_METAMODEL)
 	public void removeImport(final Issue issue, IssueResolutionAcceptor acceptor) {
 		acceptor.accept(
 				issue,
-				"Remove import", "Remove invalid metamodel.", "upcase.png",
+				"Remove import", "Remove import satement.", "package-variant-closed-remove.png",
 				(EObject element, IModificationContext context) -> {
 						Import i = (Import) element;
 						CompUnit unit = (CompUnit) i.eContainer();
@@ -45,29 +39,29 @@ public class EmfaticQuickfixProvider extends DefaultQuickfixProvider {
 				);
 	}
 	
-	@Fix(IssueCodes.EXTEND_CYCLE_DETECTED)
+	@Fix(IssueCodes.E_EXTEND_CYCLE_DETECTED)
 	public void removeSuperClass(final Issue issue, IssueResolutionAcceptor acceptor) {
 		acceptor.accept(
 				issue,
-				"Remove class", "Remove cycle class.", "upcase.png",
+				"Remove class", "Remove cycle class.", "sync-off.png",
 				(EObject element, IModificationContext context) -> {
-						Import i = (Import) element;
-						CompUnit unit = (CompUnit) i.eContainer();
-						unit.getImports().remove(i);
+						ClassDecl ec = (ClassDecl) element;
+						ec.getSuperTypes().remove(Integer.parseInt(issue.getData()[0]));
 					}
 				);
 	}
 	
-	@Fix(IssueCodes.URI_INSTEAD_OF_LABEL)
+	@Fix(IssueCodes.W_URI_INSTEAD_OF_LABEL)
 	public void replaceByLabel(final Issue issue, IssueResolutionAcceptor acceptor) {
 		acceptor.accept(
 				issue,
-				"Replace URI", "Used defined label.", "upcase.png",
+				"Replace URI", "Used defined label.", "swap-horizontal.png",
 				(EObject element, IModificationContext context) -> {
 					IXtextDocument xtextDocument = context.getXtextDocument();
 					xtextDocument.replace(issue.getOffset(), issue.getLength(), issue.getData()[0]);
 					}
 				);
 	}
+	
 
 }
