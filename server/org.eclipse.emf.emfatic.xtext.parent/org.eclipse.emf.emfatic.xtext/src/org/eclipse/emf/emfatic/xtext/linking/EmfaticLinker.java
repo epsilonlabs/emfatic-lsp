@@ -11,6 +11,7 @@ package org.eclipse.emf.emfatic.xtext.linking;
 
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.emfatic.xtext.annotations.AnnotationMap;
+import org.eclipse.emf.emfatic.xtext.ecore.Twin;
 import org.eclipse.emf.emfatic.xtext.emfatic.CompUnit;
 import org.eclipse.emf.emfatic.xtext.emfatic.PackageDecl;
 import org.eclipse.xtext.diagnostics.IDiagnosticConsumer;
@@ -38,11 +39,13 @@ public class EmfaticLinker extends LazyLinker {
 			if (pckg != null) {
 				annotations.refreshAnnotations(pckg.getAnnotations(), model.eResource());
 			}
+			twin.copy((CompUnit) model);
 		}
 	}
 	
-	//private static final Logger LOG = Logger.getLogger(EmfaticLinker.class);
-	
 	@Inject
 	private AnnotationMap annotations;
+	
+	@Inject
+	private Twin twin;
 }

@@ -1,5 +1,7 @@
 package tdl;
 
+import "My.ecore";
+
 class Table {
 	attr String name;
 	attr String ~package;

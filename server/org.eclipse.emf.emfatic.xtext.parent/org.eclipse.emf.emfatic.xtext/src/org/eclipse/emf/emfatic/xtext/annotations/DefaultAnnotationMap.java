@@ -35,7 +35,7 @@ import com.google.common.collect.Streams;
 import com.google.inject.Singleton;
 
 /**
- * THe default implementation of {@link AnnotationMap}.
+ * The default implementation of {@link AnnotationMap}.
  * 
  * This class is responsible for managing annotations in each emfatic file, for providing the
  * core annotations provided by Emfatic (Ecore, GenModel, ExtendedMetaData and EmfaticAnnotationMap)
@@ -120,6 +120,20 @@ public class DefaultAnnotationMap implements AnnotationMap {
 	}
 	
 	@Override
+	public String uriForLabel(String id, Resource resource) {
+		var result = this.annotations.get(id);
+		if (result == null) {
+			var user = this.userAnnotations.get(resource.getURI());
+			if (user != null) {
+				result = user.get(id);
+				
+			}
+		}
+		return result == null ? null : result.source();
+	}
+
+	
+	@Override
 	public boolean knowsLabel(String label, Resource resource) {
 		return this.labels(resource).stream()
 			.anyMatch(l -> l.toLowerCase().equals(label.toLowerCase()));
@@ -193,7 +207,5 @@ public class DefaultAnnotationMap implements AnnotationMap {
 						.values().stream()
 					);
 	}
-
-	
 
 }

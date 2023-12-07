@@ -30,5 +30,8 @@
             priority="normal">
       </content-type>
    </extension>
+   <extension
+         point="org.eclipse.tm4e.registry.grammars">
+   </extension>
 
 </plugin>

@@ -7,7 +7,9 @@ Require-Bundle: org.eclipse.core.contenttype,
  org.eclipse.ui,
  org.eclipse.lsp4e,
  org.eclipse.jdt.annotation,
- org.eclipse.ui.genericeditor;bundle-version="1.2.200"
+ org.eclipse.ui.genericeditor;bundle-version="1.2.200",
+ org.eclipse.tm4e.core;bundle-version="0.6.2",
+ org.eclipse.tm4e.registry
 Bundle-Vendor: %bundleVendor
 Automatic-Module-Name: org.eclipse.emf.emfatic.xtext.client
 Bundle-RequiredExecutionEnvironment: JavaSE-17

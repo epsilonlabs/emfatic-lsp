@@ -5,10 +5,12 @@ package org.eclipse.emf.emfatic.xtext;
 
 import org.eclipse.emf.emfatic.xtext.annotations.AnnotationMap;
 import org.eclipse.emf.emfatic.xtext.annotations.DefaultAnnotationMap;
+import org.eclipse.emf.emfatic.xtext.ecore.Twin;
 import org.eclipse.emf.emfatic.xtext.linking.EmfaticLinker;
 import org.eclipse.emf.emfatic.xtext.naming.EmfaticQNP;
 import org.eclipse.emf.emfatic.xtext.scoping.EmfaticGSP;
 import org.eclipse.emf.emfatic.xtext.scoping.EmfaticINALSP;
+import org.eclipse.emf.emfatic.xtext.scoping.EmfaticImport;
 import org.eclipse.emf.emfatic.xtext.scoping.EmfaticRDS;
 import org.eclipse.xtext.naming.IQualifiedNameProvider;
 import org.eclipse.xtext.resource.IDefaultResourceDescriptionStrategy;
@@ -39,7 +41,6 @@ public class EmfaticRuntimeModule extends AbstractEmfaticRuntimeModule {
 		return EmfaticRDS.class;
 	}
 	
-	// contributed by org.eclipse.xtext.xtext.generator.scoping.ImportNamespacesScopingFragment2
 	public void configureIScopeProviderDelegate(Binder binder) {
 		binder.bind(IScopeProvider.class).annotatedWith(Names.named(AbstractDeclarativeScopeProvider.NAMED_DELEGATE)).to(EmfaticINALSP.class);
 	}
@@ -55,5 +56,13 @@ public class EmfaticRuntimeModule extends AbstractEmfaticRuntimeModule {
 	
 	public void configureAnnotationsProvider(Binder binder) {
 		binder.bind(AnnotationMap.class).to(DefaultAnnotationMap.class);
+	}
+	
+	public void configureTwinProvider(Binder binder) {
+		binder.bind(Twin.class);
+	}
+	
+	public void configureEmfaticImport(Binder binder) {
+		binder.bind(EmfaticImport.class);
 	}
 }

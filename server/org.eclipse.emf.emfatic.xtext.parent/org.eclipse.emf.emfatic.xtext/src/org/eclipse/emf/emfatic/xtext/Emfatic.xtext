@@ -245,13 +245,15 @@ TypeArg:
  * sequence wildcard : QMARK ( extendsOrSuper boundExceptWildcard )? ; 
  */
 Wildcard:
-	{Wildcard} QMARK ( ExtendsOrSuper extends=BoundClassifierExceptWildcard )?
+	{Wildcard} QMARK ( dir=ExtendsOrSuper bound=BoundClassifierExceptWildcard )?
 ; 
 
 /**
  * token extendsOrSuper : "extends" | "super" ; 
  */
-ExtendsOrSuper : "extends" | "super" ; 
+ExtendsOrSuper:
+	extnds?="extends" | sper?="super"
+; 
 
 // there are no array types in EMF
 

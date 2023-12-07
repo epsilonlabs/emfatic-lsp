@@ -91,8 +91,14 @@
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="TypeArg"/>
   <eClassifiers xsi:type="ecore:EClass" name="Wildcard" eSuperTypes="#//TypeArg">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="extends" eType="#//BoundClassifierExceptWildcard"
+    <eStructuralFeatures xsi:type="ecore:EReference" name="dir" eType="#//ExtendsOrSuper"
         containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="bound" eType="#//BoundClassifierExceptWildcard"
+        containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="ExtendsOrSuper">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="extnds" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="sper" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="ClassMemberDecl">
     <eStructuralFeatures xsi:type="ecore:EReference" name="annotations" upperBound="-1"

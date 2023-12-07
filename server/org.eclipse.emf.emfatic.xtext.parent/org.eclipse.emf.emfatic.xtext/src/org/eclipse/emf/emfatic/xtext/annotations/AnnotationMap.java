@@ -85,5 +85,15 @@ public interface AnnotationMap {
 	 */
 	boolean knowsLabel(String label, Resource resource);
 
+	/**
+	 * Get the Emfatic annotation URI mapped to the provided Label, in the given Resource
+	 *
+	 * @param uri the URI
+	 * @param resource the Resoruce in which the URI is searched
+	 * @return the label if registered.
+	 * @throws NoSuchElementException if an annotation with the URI does not exist.
+	 */
+	String uriForLabel(String id, Resource resource);
+
 
 }

@@ -1,4 +1,4 @@
-@namespace(uri="http://www.deis-project.eu/ode/base", prefix="odeBase")
+@namespace(uri="http://www.deis-project.eu/ode/bas", prefix="odeBase")
 package odeBase;
 
 abstract class BaseElement {

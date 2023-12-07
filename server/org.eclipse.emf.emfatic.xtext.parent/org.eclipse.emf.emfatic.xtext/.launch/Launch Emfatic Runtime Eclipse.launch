@@ -30,7 +30,7 @@
     <stringAttribute key="pde.version" value="3.3"/>
     <stringAttribute key="product" value="org.eclipse.platform.ide"/>
     <setAttribute key="selected_target_bundles">
-        <setEntry value="com.google.gson@default:default"/>
+        <setEntry value="com.google.gson*2.9.1.v20220915-1632@default:default"/>
         <setEntry value="com.google.guava@default:default"/>
         <setEntry value="com.google.inject@default:default"/>
         <setEntry value="com.ibm.icu*67.1.0.v20200706-1749@default:default"/>
@@ -56,7 +56,6 @@
         <setEntry value="org.apache.batik.util@default:default"/>
         <setEntry value="org.apache.commons.cli@default:default"/>
         <setEntry value="org.apache.commons.commons-io@default:default"/>
-        <setEntry value="org.apache.commons.io@default:default"/>
         <setEntry value="org.apache.commons.jxpath@default:default"/>
         <setEntry value="org.apache.commons.logging@default:default"/>
         <setEntry value="org.apache.felix.gogo.command@default:default"/>
@@ -194,8 +193,8 @@
         <setEntry value="org.eclipse.jface.databinding@default:default"/>
         <setEntry value="org.eclipse.jface.text@default:default"/>
         <setEntry value="org.eclipse.jface@default:default"/>
-        <setEntry value="org.eclipse.lsp4j.jsonrpc@default:default"/>
-        <setEntry value="org.eclipse.lsp4j@default:default"/>
+        <setEntry value="org.eclipse.lsp4j*0.19.0.v20221118-0359@default:default"/>
+        <setEntry value="org.eclipse.lsp4j.jsonrpc*0.19.0.v20221118-0359@default:default"/>
         <setEntry value="org.eclipse.ltk.core.refactoring@default:default"/>
         <setEntry value="org.eclipse.ltk.ui.refactoring@default:default"/>
         <setEntry value="org.eclipse.osgi.compatibility.state@default:false"/>
@@ -290,6 +289,7 @@
     </setAttribute>
     <setAttribute key="selected_workspace_bundles">
         <setEntry value="TargetDep@default:default"/>
+        <setEntry value="org.eclipse.emf.emfatic.xtext.client@default:default"/>
         <setEntry value="org.eclipse.emf.emfatic.xtext.ide@default:default"/>
         <setEntry value="org.eclipse.emf.emfatic.xtext.tests@default:default"/>
         <setEntry value="org.eclipse.emf.emfatic.xtext.ui.tests@default:default"/>

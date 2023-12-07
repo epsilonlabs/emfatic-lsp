@@ -52,6 +52,8 @@ import com.google.inject.Inject;
  *  <p>
  *  TODO For Ecore we should use the {@link EcoreValidator} and translate those errors to Xtext ones
  *  TODO Foe Ecore we should create the emfatic-2-ecore mapper first
+ *  
+ *  TODO Check that MapEntryDecl dont use primitive types for key/values
  */
 public class EmfaticValidator extends AbstractEmfaticValidator {
 	

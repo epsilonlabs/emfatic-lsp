@@ -37,5 +37,16 @@
 			<unit id="io.github.classgraph" version="4.8.138.v20211212-1642"/>
 			<repository location="https://download.eclipse.org/tools/orbit/downloads/2022-09"/>
 		</location>
+		<location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
+			<repository location="https://download.eclipse.org/lsp4e/releases/0.21.0"/>
+			<unit id="org.eclipse.lsp4e" version="0.15.0.202211292024"/>
+			<unit id="org.eclipse.lsp4e.debug" version="0.15.0.202211181112"/>
+		</location>
+		<location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
+			<repository location="https://download.eclipse.org/tm4e/snapshots/"/>
+			<unit id="org.eclipse.tm4e.feature.feature.group" version="0.6.2.202311160651"/>
+			<unit id="org.eclipse.tm4e.feature.source.feature.group" version="0.6.2.202311160651"/>
+			<unit id="org.eclipse.tm4e.samples.source" version="0.4.1.202303141648"/>
+		</location>
 	</locations>
 </target>
