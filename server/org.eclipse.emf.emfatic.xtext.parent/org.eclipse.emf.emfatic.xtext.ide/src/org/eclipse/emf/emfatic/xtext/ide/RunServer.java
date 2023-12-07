@@ -33,6 +33,14 @@ import com.google.inject.Injector;
  */
 public class RunServer {
 
+	public static boolean debug = true;
+
+	static void debug(String message) {
+		if (debug) {
+			System.out.println("Server: " + message);
+		}
+	}
+
 	public static void main(String[] args) throws InterruptedException, IOException {
 		Injector injector = Guice.createInjector(new ServerModule());
 		LanguageServerImpl languageServer = injector.getInstance(LanguageServerImpl.class);
@@ -48,14 +56,23 @@ public class RunServer {
 			};
 			return result;
 		};
+
+		debug("Establishing socket and waiting for connection");
+
 		Launcher<LanguageClient> launcher = createSocketLauncher(languageServer,
 				LanguageClient.class, new InetSocketAddress("localhost", 5007),
 				Executors.newCachedThreadPool(), wrapper);
+
+		debug("Connection established");
+
 		languageServer.connect(launcher.getRemoteProxy());
 		Future<?> future = launcher.startListening();
+
 		while (!future.isDone()) {
-			Thread.sleep(10_000l);
+			debug("Active");
+			Thread.sleep(30_000l);
 		}
+		debug("Shut down");
 	}
 
 	static <T> Launcher<T> createSocketLauncher(Object localService, Class<T> remoteInterface, SocketAddress socketAddress,

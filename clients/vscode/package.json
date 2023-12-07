@@ -2,6 +2,10 @@
   "name": "emfatic",
   "displayName": "Emfatic",
   "description": "LSP client for the Emfatic language",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/epsilonlabs/emfatic-lsp.git"
+  },
   "version": "0.0.1",
   "scripts": {
     "build": "tsc -p .",
@@ -52,12 +56,12 @@
           ],
           "default": "messages",
           "description": "Traces the communication between VSCode and the languageServerExample service."
-        }        
+        }
       }
     }
   },
   "devDependencies": {
-    "@types/node": "^18.15.5",
+    "@types/node": "^18.17.5",
     "@types/vscode": "^1.76.0",
     "typescript": "^5.0.2",
     "vscode-test": "^1.6.1"
