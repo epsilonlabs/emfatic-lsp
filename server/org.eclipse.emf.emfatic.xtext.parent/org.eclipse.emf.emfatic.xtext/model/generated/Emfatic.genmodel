@@ -49,11 +49,14 @@
     </genClasses>
     <genClasses ecoreClass="Emfatic.ecore#//ClassDecl">
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Emfatic.ecore#//ClassDecl/abstract"/>
-      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Emfatic.ecore#//ClassDecl/kind"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Emfatic.ecore#//ClassDecl/kind"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Emfatic.ecore#//ClassDecl/typeParamsInfo"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Emfatic.ecore#//ClassDecl/superTypes"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Emfatic.ecore#//ClassDecl/instClassName"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Emfatic.ecore#//ClassDecl/members"/>
+    </genClasses>
+    <genClasses ecoreClass="Emfatic.ecore#//ClassKind">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Emfatic.ecore#//ClassKind/interface"/>
     </genClasses>
     <genClasses ecoreClass="Emfatic.ecore#//TypeParamsInfo">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Emfatic.ecore#//TypeParamsInfo/tp"/>
@@ -79,8 +82,7 @@
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Emfatic.ecore#//Wildcard/bound"/>
     </genClasses>
     <genClasses ecoreClass="Emfatic.ecore#//ExtendsOrSuper">
-      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Emfatic.ecore#//ExtendsOrSuper/extnds"/>
-      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Emfatic.ecore#//ExtendsOrSuper/sper"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Emfatic.ecore#//ExtendsOrSuper/super"/>
     </genClasses>
     <genClasses ecoreClass="Emfatic.ecore#//ClassMemberDecl">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Emfatic.ecore#//ClassMemberDecl/annotations"/>

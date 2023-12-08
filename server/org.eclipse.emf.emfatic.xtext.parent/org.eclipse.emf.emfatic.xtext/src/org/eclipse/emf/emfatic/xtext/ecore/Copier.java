@@ -9,16 +9,20 @@ import org.eclipse.emf.ecore.EClassifier;
 import org.eclipse.emf.ecore.EModelElement;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EPackage;
+import org.eclipse.emf.ecore.ETypeParameter;
 import org.eclipse.emf.ecore.EcoreFactory;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.emfatic.xtext.annotations.AnnotationMap;
 import org.eclipse.emf.emfatic.xtext.emfatic.Annotation;
+import org.eclipse.emf.emfatic.xtext.emfatic.BoundClassExceptWildcard;
+import org.eclipse.emf.emfatic.xtext.emfatic.BoundClassifierExceptWildcard;
 import org.eclipse.emf.emfatic.xtext.emfatic.ClassDecl;
 import org.eclipse.emf.emfatic.xtext.emfatic.CompUnit;
 import org.eclipse.emf.emfatic.xtext.emfatic.MapEntryDecl;
 import org.eclipse.emf.emfatic.xtext.emfatic.PackageDecl;
 import org.eclipse.emf.emfatic.xtext.emfatic.SubPackageDecl;
 import org.eclipse.emf.emfatic.xtext.emfatic.TopLevelDecl;
+import org.eclipse.emf.emfatic.xtext.emfatic.TypeParam;
 import org.eclipse.emf.emfatic.xtext.emfatic.util.EmfaticSwitch;
 import org.eclipse.xtext.util.OnChangeEvictingCache;
 
@@ -78,17 +82,15 @@ public class Copier extends EmfaticSwitch<Object> {
 	@Override
 	public Object caseMapEntryDecl(MapEntryDecl source) {
 		EClass target = equivalent(source);
-		var key = EcoreFactory.eINSTANCE.createEAttribute();
+		TypeCopier tc = ((TypeCopier) equivalent(source.getKey())).load(this.cache);
+		var key = tc.toEClass() ?  EcoreFactory.eINSTANCE.createEReference() : EcoreFactory.eINSTANCE.createEAttribute();
 		key.setName("key");
-		TypeCopier tc = equivalent(source.getKey());
-		tc.load(this.cache)
-			.configure(key);
+		tc.configure(key);
 		target.getEStructuralFeatures().add(key);
-		var value = EcoreFactory.eINSTANCE.createEAttribute();
+		tc = ((TypeCopier) equivalent(source.getValue())).load(this.cache);
+		var value = tc.toEClass() ?  EcoreFactory.eINSTANCE.createEReference() : EcoreFactory.eINSTANCE.createEAttribute();
 		value.setName("value");
-		tc = equivalent(source.getValue());
-		tc.load(this.cache)
-				.configure(value);
+		tc.configure(value);
 		target.getEStructuralFeatures().add(value);
 		target.setInstanceClassName("java.util.Map$Entry");
 		target.setName(source.getName());
@@ -99,7 +101,30 @@ public class Copier extends EmfaticSwitch<Object> {
 	@Override
 	public Object caseClassDecl(ClassDecl source) {
 		EClass target = equivalent(source);
+		target.setName(source.getName());
 		target.setAbstract(source.isAbstract());
+		target.setInterface(source.getKind().isInterface());
+		if (source.getTypeParamsInfo() != null) {
+			for (TypeParam tp : source.getTypeParamsInfo().getTp()) {
+				ETypeParameter targetTp = equivalent(tp);
+				if (tp.getTypeBoundsInfo() != null) {
+					for (BoundClassifierExceptWildcard tb : tp.getTypeBoundsInfo().getTb()) {
+						var gt = EcoreFactory.eINSTANCE.createEGenericType();
+						ClassifierCopier cp = equivalent(tb);
+						cp.load(this.cache)
+							.configure(gt);
+						targetTp.getEBounds().add(gt);
+					}
+				}
+				targetTp.setName(tp.getTypeVarName());
+				target.getETypeParameters().add(targetTp);
+			}
+		}
+		for (BoundClassExceptWildcard st : source.getSuperTypes()) {
+			ClassCopier cp = equivalent(st);
+			cp.load(this.cache)
+				.configure(target);
+		}
 		return target;
 	}
 

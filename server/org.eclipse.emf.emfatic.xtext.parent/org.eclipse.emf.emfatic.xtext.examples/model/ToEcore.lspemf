@@ -1,3 +1,24 @@
 package tdl;
 
-mapentry StringToStringMapEntry: String -> String;
+mapentry GenericMapEntry : String -> GenericKey<? extends Master<EClass>>;
+
+
+//mapentry EStringToEStringMapEntry : String -> String;
+
+class GenericValue<K>  {
+	attr String name;
+}
+
+class GenericKey<T> {
+}
+
+//class SuperGeneric extends  Master, GenericMaster<ecore.EClass> {
+//}
+//
+class Master<K> {
+	
+}
+//
+//class GenericMaster<M> {
+//	
+//}

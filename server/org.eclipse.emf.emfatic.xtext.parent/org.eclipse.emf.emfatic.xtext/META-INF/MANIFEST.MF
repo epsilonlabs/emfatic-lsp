@@ -20,6 +20,7 @@ Require-Bundle: org.antlr.runtime;bundle-version="[3.2.0,3.2.1)",
 Bundle-RequiredExecutionEnvironment: JavaSE-17
 Export-Package: org.eclipse.emf.emfatic.xtext,
  org.eclipse.emf.emfatic.xtext.annotations,
+ org.eclipse.emf.emfatic.xtext.ecore,
  org.eclipse.emf.emfatic.xtext.emfatic,
  org.eclipse.emf.emfatic.xtext.emfatic.impl,
  org.eclipse.emf.emfatic.xtext.emfatic.util,

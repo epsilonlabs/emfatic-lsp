@@ -56,7 +56,8 @@
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="ClassDecl" eSuperTypes="#//ClassifierDecl">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="abstract" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"/>
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="kind" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="kind" eType="#//ClassKind"
+        containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="typeParamsInfo" eType="#//TypeParamsInfo"
         containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="superTypes" upperBound="-1"
@@ -65,6 +66,9 @@
         containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="members" upperBound="-1"
         eType="#//ClassMemberDecl" containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="ClassKind">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="interface" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="TypeParamsInfo">
     <eStructuralFeatures xsi:type="ecore:EReference" name="tp" upperBound="-1" eType="#//TypeParam"
@@ -97,8 +101,7 @@
         containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="ExtendsOrSuper">
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="extnds" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"/>
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="sper" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="super" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="ClassMemberDecl">
     <eStructuralFeatures xsi:type="ecore:EReference" name="annotations" upperBound="-1"

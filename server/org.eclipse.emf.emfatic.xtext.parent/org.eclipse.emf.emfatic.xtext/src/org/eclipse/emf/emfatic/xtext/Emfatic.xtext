@@ -171,7 +171,7 @@ ClassDecl:
  * token classKind : "class" | "interface" ;
  */
 ClassKind:
-	'class'|'interface'
+	{ClassKind} "class" | interface?="interface"
 ;
 
 /**
@@ -252,7 +252,7 @@ Wildcard:
  * token extendsOrSuper : "extends" | "super" ; 
  */
 ExtendsOrSuper:
-	extnds?="extends" | sper?="super"
+	{ExtendsOrSuper} "extends" | super?="super"
 ; 
 
 // there are no array types in EMF

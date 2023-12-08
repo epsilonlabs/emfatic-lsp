@@ -5,55 +5,58 @@ import org.eclipse.emf.ecore.EcoreFactory;
 import org.eclipse.emf.emfatic.xtext.emfatic.Wildcard;
 import org.eclipse.xtext.util.OnChangeEvictingCache;
 
-public class WildcardCopier extends TypeArgCopier {
+public class WildcardCopier implements TypeArgCopier {
 
 	public WildcardCopier(Wildcard source) {
 		this(source, false, false, null);
 	}
 	
-	WildcardCopier load(OnChangeEvictingCache cache) {
-		var e = false;
-		var s = false;
-		ClassifierCopier cc = null;
-		if (this.source.getDir() != null) {
-			e = this.source.getDir().isExtnds();
-			s = this.source.getDir().isSper();
-			cc = cache.get(this.source.getBound(), this.source.eResource(), () -> null);
+	@Override
+	public void configure(EGenericType gt) {
+		//var ta = EcoreFactory.eINSTANCE.createEGenericType();
+		if (this.targetBound != null) {
+			var taBound = EcoreFactory.eINSTANCE.createEGenericType();
+			this.targetBound.configure(taBound);
+			if (this.extnds) {
+				gt.setEUpperBound(taBound);
+			}
+			if (this.spr) {
+				gt.setEUpperBound(taBound);
+			}
 		}
-		if (e && s) {
-			throw new IllegalStateException("A Wildcard (TypeArg) can't both be 'extends' and 'super'.");
-		}
-		return new WildcardCopier(this.source, e, s, cc.load(cache));
+		//gt.getETypeArguments().add(ta);
 	}
 	
 	@Override
-	void configure(EGenericType gt) {
-		var ta = EcoreFactory.eINSTANCE.createEGenericType();
-		if (this.extnds || this.spr) {
-			var taBound = EcoreFactory.eINSTANCE.createEGenericType();
-			this.bound.configure(taBound);
-			if (this.extnds) {
-				ta.setEUpperBound(taBound);
-			}
-			if (this.spr) {
-				ta.setEUpperBound(taBound);
+	public WildcardCopier load(OnChangeEvictingCache cache) {
+		var s = false;
+		var e = false;
+		ClassifierCopier targetBound = null;
+		if (this.source.getDir() != null) {
+			s = this.source.getDir().isSuper();
+			e = !s;
+			targetBound = cache.get(this.source.getBound(), this.source.eResource(), () -> null);
+			if (targetBound == null) {
+				throw new IllegalArgumentException("Target element not found for " + this.source.getBound());
 			}
 		}
-		gt.getETypeArguments().add(ta);
-		
+		if (targetBound != null) {
+			targetBound = targetBound.load(cache);
+		}
+		return new WildcardCopier(this.source, e, s, targetBound);
 	}
 	
-	private WildcardCopier(Wildcard source, boolean extnds, boolean spr, ClassifierCopier bound) {
+	private WildcardCopier(Wildcard source, boolean extnds, boolean spr, ClassifierCopier targetBound) {
 		super();
 		this.source = source;
 		this.extnds = extnds;
 		this.spr = spr;
-		this.bound = bound;
+		this.targetBound = targetBound;
 	}
 
 	private final Wildcard source;
 	private final boolean extnds;
 	private final boolean spr;
-	private final ClassifierCopier bound;
+	private final ClassifierCopier targetBound;
 	
 }

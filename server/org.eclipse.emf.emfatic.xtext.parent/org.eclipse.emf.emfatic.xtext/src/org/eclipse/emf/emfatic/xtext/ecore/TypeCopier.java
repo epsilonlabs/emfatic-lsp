@@ -1,6 +1,6 @@
 package org.eclipse.emf.emfatic.xtext.ecore;
 
-import org.eclipse.emf.ecore.EAttribute;
+import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.emf.emfatic.xtext.emfatic.TypeWithMulti;
 import org.eclipse.xtext.util.OnChangeEvictingCache;
 
@@ -10,12 +10,23 @@ public class TypeCopier {
 		this(twm, null, null);
 	}
 	
-	void configure(EAttribute target) {
+	void configure(EStructuralFeature target) {
 		if (this.cCopier == null) {
 			throw new IllegalStateException("Call to configure before calling load.");
 		}
 		this.cCopier.configure(target);
 		this.mCopier.configure(target);
+	}
+	
+	/**
+	 * Returns true if the Type references an EClass and not an EDatatype/EEnum
+	 * @return
+	 */
+	boolean toEClass() {
+		if (this.cCopier == null) {
+			throw new IllegalStateException("Call to toEClass before calling load.");
+		}
+		return this.cCopier.toEClass();
 	}
 
 	TypeCopier load(OnChangeEvictingCache cache) {

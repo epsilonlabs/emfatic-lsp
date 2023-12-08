@@ -3,7 +3,9 @@
  */
 package org.eclipse.emf.emfatic.xtext.ui.outline;
 
+import org.eclipse.emf.ecore.EObject;
 import org.eclipse.xtext.ui.editor.outline.impl.DefaultOutlineTreeProvider;
+import org.eclipse.xtext.ui.editor.outline.impl.DocumentRootNode;
 
 /**
  * Customization of the default outline structure.
@@ -11,5 +13,14 @@ import org.eclipse.xtext.ui.editor.outline.impl.DefaultOutlineTreeProvider;
  * See https://www.eclipse.org/Xtext/documentation/310_eclipse_support.html#outline
  */
 public class EmfaticOutlineTreeProvider extends DefaultOutlineTreeProvider {
-
+	
+	protected void _createNode(DocumentRootNode parentNode, EObject modelElement) {
+		Object text = textDispatcher.invoke(modelElement);
+		if (text == null) {
+			text = modelElement.eResource().getURI().trimFileExtension().lastSegment();
+		}
+		createEObjectNode(parentNode, modelElement, imageDispatcher.invoke(modelElement), text,
+				isLeafDispatcher.invoke(modelElement));
+	}
+	
 }
