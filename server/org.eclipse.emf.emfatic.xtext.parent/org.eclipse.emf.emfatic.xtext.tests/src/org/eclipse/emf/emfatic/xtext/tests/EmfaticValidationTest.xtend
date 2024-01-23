@@ -253,7 +253,7 @@ class EmfaticValidationTest {
 			}
 			
 		''')
-		validationTestHelper.assertError(result, EmfaticPackage.Literals.FEATURE, IssueCodes.E_DUPLICATE_FEATURE_NAME)	
+		validationTestHelper.assertError(result, EmfaticPackage.Literals.FEATURE_DECL, IssueCodes.E_DUPLICATE_FEATURE_NAME)	
 		
 		result = parseHelper.parse('''
 			@namespace(uri="http://www.deis-project.eu/ode/base", prefix="odeBase")
@@ -266,7 +266,7 @@ class EmfaticValidationTest {
 			}
 			
 		''')
-		validationTestHelper.assertError(result, EmfaticPackage.Literals.FEATURE, IssueCodes.E_DUPLICATE_FEATURE_NAME)	
+		validationTestHelper.assertError(result, EmfaticPackage.Literals.FEATURE_DECL, IssueCodes.E_DUPLICATE_FEATURE_NAME)	
 	}
 	
 	@Test

@@ -11,6 +11,10 @@ public interface IssueCodes {
 	public static final String E_DUPLICATE_CLASS_NAME = 		"E1006";
 	public static final String E_DUPLICATE_FEATURE_NAME = 		"E1007";
 	public static final String E_DUPLICATE_OPERATION_NAME = 	"E1008";
+	public static final String E_BOUND_TYPEPARAM_WITH_TYPE_ARGS="E1009";
+	public static final String E_REFERENCE_AS_ID = 				"E1010";
+	public static final String E_ATTRIBUTE_IS_RESOLVABLE =		"E1011";
+	public static final String E_DUPLICATE_ID_ATTRIBUTE = 		"E1012";
 	
 	public static final String W_ECORE_IMPORTED = 				"W2000";
 	public static final String W_EMPTY_METAMODEL = 				"W2001";

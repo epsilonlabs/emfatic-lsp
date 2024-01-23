@@ -1,24 +1,26 @@
 package tdl;
 
-mapentry GenericMapEntry : String -> GenericKey<? extends Master<EClass>>;
+//mapentry GenericMapEntry : String -> GenericKey<? extends Master<EClass>>;
 
 
 //mapentry EStringToEStringMapEntry : String -> String;
 
 class GenericValue<K>  {
 	attr String name;
+	attr K name2;
 }
 
 class GenericKey<T> {
+	readonly resolve unique id attr T name;
 }
 
 //class SuperGeneric extends  Master, GenericMaster<ecore.EClass> {
 //}
 //
-class Master<K> {
-	
-}
-//
-//class GenericMaster<M> {
+//class Master<K> : java.util.List {
 //	
 //}
+//
+class GenericMaster {
+	
+}

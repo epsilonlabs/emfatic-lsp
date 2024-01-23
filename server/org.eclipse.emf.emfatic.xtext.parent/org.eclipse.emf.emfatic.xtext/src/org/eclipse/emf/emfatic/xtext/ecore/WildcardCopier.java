@@ -13,7 +13,6 @@ public class WildcardCopier implements TypeArgCopier {
 	
 	@Override
 	public void configure(EGenericType gt) {
-		//var ta = EcoreFactory.eINSTANCE.createEGenericType();
 		if (this.targetBound != null) {
 			var taBound = EcoreFactory.eINSTANCE.createEGenericType();
 			this.targetBound.configure(taBound);
@@ -24,14 +23,13 @@ public class WildcardCopier implements TypeArgCopier {
 				gt.setEUpperBound(taBound);
 			}
 		}
-		//gt.getETypeArguments().add(ta);
 	}
 	
 	@Override
 	public WildcardCopier load(OnChangeEvictingCache cache) {
 		var s = false;
 		var e = false;
-		ClassifierCopier targetBound = null;
+		BoundClassifierExceptWildcardCopier targetBound = null;
 		if (this.source.getDir() != null) {
 			s = this.source.getDir().isSuper();
 			e = !s;
@@ -46,7 +44,7 @@ public class WildcardCopier implements TypeArgCopier {
 		return new WildcardCopier(this.source, e, s, targetBound);
 	}
 	
-	private WildcardCopier(Wildcard source, boolean extnds, boolean spr, ClassifierCopier targetBound) {
+	private WildcardCopier(Wildcard source, boolean extnds, boolean spr, BoundClassifierExceptWildcardCopier targetBound) {
 		super();
 		this.source = source;
 		this.extnds = extnds;
@@ -57,6 +55,6 @@ public class WildcardCopier implements TypeArgCopier {
 	private final Wildcard source;
 	private final boolean extnds;
 	private final boolean spr;
-	private final ClassifierCopier targetBound;
+	private final BoundClassifierExceptWildcardCopier targetBound;
 	
 }

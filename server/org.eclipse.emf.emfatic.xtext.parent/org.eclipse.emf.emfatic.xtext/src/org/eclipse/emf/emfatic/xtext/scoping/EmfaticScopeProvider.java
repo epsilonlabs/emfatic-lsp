@@ -4,12 +4,20 @@
 package org.eclipse.emf.emfatic.xtext.scoping;
 
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EReference;
+import org.eclipse.emf.emfatic.xtext.emfatic.Attribute;
+import org.eclipse.emf.emfatic.xtext.emfatic.BoundDataTypeWithMulti;
 import org.eclipse.emf.emfatic.xtext.emfatic.ClassDecl;
+import org.eclipse.emf.emfatic.xtext.emfatic.ClassRefWithMulti;
 import org.eclipse.emf.emfatic.xtext.emfatic.EmfaticPackage;
+import org.eclipse.emf.emfatic.xtext.emfatic.FeatureDecl;
 import org.eclipse.emf.emfatic.xtext.emfatic.Reference;
+import org.eclipse.emf.emfatic.xtext.emfatic.TypeParam;
 import org.eclipse.xtext.EcoreUtil2;
 import org.eclipse.xtext.scoping.IScope;
 import org.eclipse.xtext.scoping.Scopes;
@@ -30,11 +38,19 @@ public class EmfaticScopeProvider extends AbstractEmfaticScopeProvider {
 	public IScope getScope(
 		EObject context,
 		EReference reference) {
-		if (reference == EmfaticPackage.Literals.DATA_TYPE_WITH_MULTI__TYPE) {
-			// DataTypes
-			return new FilteringScope(
+		if (reference == EmfaticPackage.Literals.BOUND_DATA_TYPE_WITH_MULTI__BOUND) {
+			ClassDecl cls = null;
+			if (context instanceof BoundDataTypeWithMulti) {
+				cls = (ClassDecl)context.eContainer().eContainer().eContainer().eContainer();
+			} else if (context instanceof Attribute) {
+				cls = (ClassDecl)context.eContainer().eContainer().eContainer();
+			}
+			// DataTypes and TypeParameters
+			List<TypeParam> candidates = cls.getTypeParamsInfo() == null ? 
+					new ArrayList<>() : cls.getTypeParamsInfo().getTp();
+			return Scopes.scopeFor(candidates, new FilteringScope(
 					super.getScope(context, reference),
-					(e) ->   isSubType(e.getEClass(), EmfaticPackage.Literals.DATA_TYPE_DECL));
+					(e) -> isSubType(e.getEClass(), EmfaticPackage.Literals.DATA_TYPE_DECL)));
 		}
 		if (reference == EmfaticPackage.Literals.BOUND_CLASS_EXCEPT_WILDCARD__BOUND) {
 			// Classes
@@ -43,30 +59,37 @@ public class EmfaticScopeProvider extends AbstractEmfaticScopeProvider {
 						super.getScope(context, reference),
 						e -> isSubType(e.getEClass(), EmfaticPackage.Literals.CLASS_DECL)
 								&& !Objects.equal(e.getEObjectOrProxy(), context));
-			} else {
-				return new FilteringScope(
+			} else if (context instanceof ClassRefWithMulti) {
+				ClassDecl cls = (ClassDecl)context.eContainer().eContainer();
+				// ClassDecl and TypeParameters
+				List<TypeParam> candidates = cls.getTypeParamsInfo() == null ? 
+						new ArrayList<>() : cls.getTypeParamsInfo().getTp();
+				return Scopes.scopeFor(candidates, new FilteringScope(
 						super.getScope(context, reference),
-						e -> isSubType(e.getEClass(), EmfaticPackage.Literals.CLASS_DECL));
+						e -> isSubType(e.getEClass(), EmfaticPackage.Literals.CLASS_DECL)));
 			}
-			
-			
 		}
 		if (reference == EmfaticPackage.Literals.BOUND_CLASSIFIER_EXCEPT_WILDCARD__BOUND) {
 			// Classifiers
 			return new FilteringScope(
 					super.getScope(context, reference),
-					(e) -> isSubType(e.getEClass(), EmfaticPackage.Literals.CLASSIFIER_DECL));
+					(e) -> isSubType(e.getEClass(), EmfaticPackage.Literals.CLASSIFIER_DECL)
+						|| isSubType(e.getEClass(), EmfaticPackage.Literals.TYPE_PARAM));
 			
 		}
 		if (context	instanceof Reference && reference == EmfaticPackage.Literals.REFERENCE__OPPOSITE) {
 			var emfRef = (Reference) context;
 			var target = emfRef.getTypeWithMulti().getType().getBound();
-			var candidates = target.getMembers().stream()
-				.filter(m -> m.getMember() instanceof Reference)
-				.map(m -> (Reference) m.getMember())
-				.filter(f -> f.getTypeWithMulti().getType().getBound().equals(emfRef.eContainer().eContainer()))
-				.toList();
-			return Scopes.scopeFor(candidates);
+			if (target instanceof ClassDecl) {
+				ClassDecl contextEClass = (ClassDecl) emfRef.eContainer().eContainer().eContainer();
+				var candidates = ((ClassDecl) target).getMembers().stream()
+					.filter(m -> m.getMember() instanceof FeatureDecl 
+							&& ((FeatureDecl)m.getMember()).getFeature() instanceof Reference)
+					.map(m -> (Reference)((FeatureDecl) m.getMember()).getFeature())
+					.filter(f -> f.getTypeWithMulti().getType().getBound().equals(contextEClass))
+					.toList();
+				return Scopes.scopeFor(candidates);
+			}
 		}
 		return super.getScope(context, reference);
 	}

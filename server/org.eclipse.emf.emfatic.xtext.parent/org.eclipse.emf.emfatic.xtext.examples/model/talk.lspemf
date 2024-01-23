@@ -1,0 +1,18 @@
+@namespace(uri="http://ted.com", prefix="ted")
+package ted;
+
+import "My.ecore";
+
+@genmodel(documentation="This is a nice class")
+class A {
+	@GenModel(documentation="")
+	attr String name;
+	@GenModel(copyright="",get="")
+	attr ecore.EShort name2;
+	attr short name3;
+	val B#someA someB; 
+}
+
+class B{
+	ref A someA;
+}

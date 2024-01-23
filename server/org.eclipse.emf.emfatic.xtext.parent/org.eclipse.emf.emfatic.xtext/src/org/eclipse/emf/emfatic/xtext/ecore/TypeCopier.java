@@ -30,7 +30,7 @@ public class TypeCopier {
 	}
 
 	TypeCopier load(OnChangeEvictingCache cache) {
-		ClassifierCopier cCopier = cache.get(this.twm.getType(), this.twm.getType().eResource(), () -> (ClassifierCopier) null);
+		BoundClassifierExceptWildcardCopier cCopier = cache.get(this.twm.getType(), this.twm.getType().eResource(), () -> (BoundClassifierExceptWildcardCopier) null);
 		if (cCopier == null) {
 			throw new IllegalArgumentException("Target element not found for " + this.twm.getType());
 		}
@@ -46,7 +46,7 @@ public class TypeCopier {
 		return new TypeCopier(this.twm, cCopier.load(cache), mCopier.load(cache));
 	}
 	
-	private TypeCopier(TypeWithMulti twm, ClassifierCopier cCopier, MultiplicityCopier mCopier) {
+	private TypeCopier(TypeWithMulti twm, BoundClassifierExceptWildcardCopier cCopier, MultiplicityCopier mCopier) {
 		super();
 		this.twm = twm;
 		this.cCopier = cCopier;
@@ -54,7 +54,7 @@ public class TypeCopier {
 	}
 	
 	private final TypeWithMulti twm;
-	private final ClassifierCopier cCopier;
+	private final BoundClassifierExceptWildcardCopier cCopier;
 	private final MultiplicityCopier mCopier;
 	
 }

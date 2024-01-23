@@ -17,6 +17,8 @@ import org.eclipse.emf.ecore.util.EcoreValidator;
 import org.eclipse.emf.emfatic.xtext.annotations.AnnotationMap;
 import org.eclipse.emf.emfatic.xtext.common.ImportUriChecker;
 import org.eclipse.emf.emfatic.xtext.emfatic.Annotation;
+import org.eclipse.emf.emfatic.xtext.emfatic.Attribute;
+import org.eclipse.emf.emfatic.xtext.emfatic.BoundClassifierExceptWildcard;
 import org.eclipse.emf.emfatic.xtext.emfatic.ClassDecl;
 import org.eclipse.emf.emfatic.xtext.emfatic.ClassMember;
 import org.eclipse.emf.emfatic.xtext.emfatic.ClassMemberDecl;
@@ -26,7 +28,7 @@ import org.eclipse.emf.emfatic.xtext.emfatic.Declaration;
 import org.eclipse.emf.emfatic.xtext.emfatic.Details;
 import org.eclipse.emf.emfatic.xtext.emfatic.EmfaticPackage;
 import org.eclipse.emf.emfatic.xtext.emfatic.EnumLiteral;
-import org.eclipse.emf.emfatic.xtext.emfatic.Feature;
+import org.eclipse.emf.emfatic.xtext.emfatic.FeatureDecl;
 import org.eclipse.emf.emfatic.xtext.emfatic.Import;
 import org.eclipse.emf.emfatic.xtext.emfatic.Operation;
 import org.eclipse.emf.emfatic.xtext.emfatic.PackageDecl;
@@ -34,6 +36,7 @@ import org.eclipse.emf.emfatic.xtext.emfatic.Param;
 import org.eclipse.emf.emfatic.xtext.emfatic.StringOrQualifiedID;
 import org.eclipse.emf.emfatic.xtext.emfatic.SubPackageDecl;
 import org.eclipse.emf.emfatic.xtext.emfatic.TopLevelDecl;
+import org.eclipse.emf.emfatic.xtext.emfatic.TypeParam;
 import org.eclipse.xtext.EcoreUtil2;
 import org.eclipse.xtext.resource.FileExtensionProvider;
 import org.eclipse.xtext.validation.Check;
@@ -252,17 +255,18 @@ public class EmfaticValidator extends AbstractEmfaticValidator {
 	 * Check that Features have unique names within their class
 	 */
 	@Check
-	public void checkFeatureUniqueName(Feature entry) {
+	public void checkFeatureUniqueName(FeatureDecl entry) {
 		ClassMemberDecl decl = (ClassMemberDecl) entry.eContainer();
 		ClassDecl classDecl = (ClassDecl) decl.eContainer();
 		classDecl.getMembers().stream()
 			.map(cm -> cm.getMember())
-			.filter(cm -> (cm instanceof Feature) && cm != entry)
+			.filter(cm -> (cm instanceof FeatureDecl) && cm != entry)
+			.map(m  -> ((FeatureDecl)m).getFeature())
 			.forEach(f -> {
-				if (f.getName().equals(entry.getName())) {
+				if (f.getName().equals(entry.getFeature().getName())) {
 					error(
-							"Duplicate names detected: " + entry,
-							EmfaticPackage.Literals.CLASS_MEMBER__NAME,
+							"Duplicate names detected: " + entry.getFeature().getName(),
+							EmfaticPackage.Literals.FEATURE_DECL__FEATURE,
 							IssueCodes.E_DUPLICATE_FEATURE_NAME,
 							f.getName());
 				}
@@ -279,15 +283,81 @@ public class EmfaticValidator extends AbstractEmfaticValidator {
 		classDecl.getMembers().stream()
 				.map(cm -> cm.getMember())
 				.filter(cm -> (cm instanceof Operation) && cm != entry)
+				.map(Operation.class::cast)
 				.forEach(op -> {
 					if (op.getName().equals(entry.getName())) {
 						error(
-								"Duplicate names detected: " + entry,
-								EmfaticPackage.Literals.CLASS_MEMBER__NAME,
+								"Duplicate names detected: " + entry.getName(),
+								EmfaticPackage.Literals.OPERATION__NAME,
 								IssueCodes.E_DUPLICATE_OPERATION_NAME,
 								op.getName()); 
 					}
 		});
+	}
+	
+	/**
+	 * A {@link BoundClassifierExceptWildcard} that binds a {@link TypeParam} can't have
+	 * type args
+	 * @param entry
+	 */
+	@Check
+	public void checkBoundClassifierExceptWildcardTypeParam(BoundClassifierExceptWildcard entry) {
+		if (entry.getBound() instanceof TypeParam && !entry.getTypeArgs().isEmpty()) {
+			error(
+					"Type arguments ('<?>') are not allowed when the bound type is a TypeParameter",
+					EmfaticPackage.Literals.BOUND_CLASSIFIER_EXCEPT_WILDCARD__TYPE_ARGS,
+					IssueCodes.E_BOUND_TYPEPARAM_WITH_TYPE_ARGS); 
+		}
+	}
+	
+	@Check
+	public void checkModifiers(FeatureDecl entry) {
+		if (!(entry.getFeature() instanceof Attribute) && entry.isId()) {
+			error(
+					"'id' modifier can only be used in Attribute declarations",
+					EmfaticPackage.Literals.FEATURE_DECL__ID,
+					IssueCodes.E_REFERENCE_AS_ID); 
+		}
+		if (entry.getFeature() instanceof Attribute && entry.isResolve()) {
+			error(
+					"'resolve' modifier can only be used in Reference declarations",
+					EmfaticPackage.Literals.FEATURE_DECL__RESOLVE,
+					IssueCodes.E_ATTRIBUTE_IS_RESOLVABLE); 
+		}
+	}
+	
+	/**
+	 * Check that only one Attribtue is ID
+	 * @param entry
+	 */
+	@Check
+	public void onlyOneId(FeatureDecl entry) {
+		if (!entry.isId()) {
+			return;
+		}
+		ClassMemberDecl decl = (ClassMemberDecl) entry.eContainer();
+		ClassDecl classDecl = (ClassDecl) decl.eContainer();
+		var idAttrs = classDecl.getMembers().stream()
+				.map(cm -> cm.getMember())
+				.filter(cm -> (cm instanceof FeatureDecl) 
+						&& cm != entry
+						&& ((FeatureDecl)cm).isId())
+				.toList();
+		idAttrs.forEach(ida -> {
+			error(
+					"Duplicate ID attribute: " + ((FeatureDecl) ida).getFeature().getName(),
+					EmfaticPackage.Literals.FEATURE_DECL__ID,
+					IssueCodes.E_DUPLICATE_ID_ATTRIBUTE,
+					entry.getFeature().getName());
+		});
+	}
+	
+	/**
+	 * Check Feature modifier is valid for feature
+	 */
+	@Check
+	public void checkFeatureModifier() {
+		
 	}
 	
 	@Inject

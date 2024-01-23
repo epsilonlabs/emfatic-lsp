@@ -4,22 +4,32 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.eclipse.emf.ecore.EAnnotation;
+import org.eclipse.emf.ecore.EAttribute;
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EClassifier;
 import org.eclipse.emf.ecore.EModelElement;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EPackage;
+import org.eclipse.emf.ecore.EReference;
+import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.emf.ecore.ETypeParameter;
 import org.eclipse.emf.ecore.EcoreFactory;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.emfatic.xtext.annotations.AnnotationMap;
 import org.eclipse.emf.emfatic.xtext.emfatic.Annotation;
+import org.eclipse.emf.emfatic.xtext.emfatic.Attribute;
+import org.eclipse.emf.emfatic.xtext.emfatic.BoolExpr;
 import org.eclipse.emf.emfatic.xtext.emfatic.BoundClassExceptWildcard;
 import org.eclipse.emf.emfatic.xtext.emfatic.BoundClassifierExceptWildcard;
+import org.eclipse.emf.emfatic.xtext.emfatic.CharExpr;
 import org.eclipse.emf.emfatic.xtext.emfatic.ClassDecl;
 import org.eclipse.emf.emfatic.xtext.emfatic.CompUnit;
+import org.eclipse.emf.emfatic.xtext.emfatic.EmfaticPackage;
+import org.eclipse.emf.emfatic.xtext.emfatic.FeatureDecl;
+import org.eclipse.emf.emfatic.xtext.emfatic.IntExpr;
 import org.eclipse.emf.emfatic.xtext.emfatic.MapEntryDecl;
 import org.eclipse.emf.emfatic.xtext.emfatic.PackageDecl;
+import org.eclipse.emf.emfatic.xtext.emfatic.StringExpr;
 import org.eclipse.emf.emfatic.xtext.emfatic.SubPackageDecl;
 import org.eclipse.emf.emfatic.xtext.emfatic.TopLevelDecl;
 import org.eclipse.emf.emfatic.xtext.emfatic.TypeParam;
@@ -110,23 +120,76 @@ public class Copier extends EmfaticSwitch<Object> {
 				if (tp.getTypeBoundsInfo() != null) {
 					for (BoundClassifierExceptWildcard tb : tp.getTypeBoundsInfo().getTb()) {
 						var gt = EcoreFactory.eINSTANCE.createEGenericType();
-						ClassifierCopier cp = equivalent(tb);
+						BoundClassifierExceptWildcardCopier cp = equivalent(tb);
 						cp.load(this.cache)
 							.configure(gt);
 						targetTp.getEBounds().add(gt);
 					}
 				}
-				targetTp.setName(tp.getTypeVarName());
+				targetTp.setName(tp.getName());
 				target.getETypeParameters().add(targetTp);
 			}
 		}
 		for (BoundClassExceptWildcard st : source.getSuperTypes()) {
-			ClassCopier cp = equivalent(st);
-			cp.load(this.cache)
-				.configure(target);
+			BoundClassExceptWildcardCopier cp = equivalent(st);
+			cp.load(this.cache).configure(target);
 		}
 		return target;
 	}
+	
+	@Override
+	public Object caseFeatureDecl(FeatureDecl source) {
+		EStructuralFeature target = (EStructuralFeature) this.doSwitch(source.getFeature());
+		target.setChangeable(source.isReadonly());
+		target.setVolatile(source.isVolatile());
+		target.setTransient(source.isTransient());
+		target.setUnsettable(source.isUnsettable());
+		target.setDerived(source.isDerived());
+		target.setUnique(source.isUnique());
+		target.setOrdered(source.isOrdered());
+		if (target instanceof EReference) {
+			((EReference) target).setResolveProxies(source.isResolve());
+		}
+		if (target instanceof EAttribute) {
+			((EAttribute) target).setID(source.isId());
+		}
+		return target;
+	}
+
+	@Override
+	public Object caseAttribute(Attribute source) {
+		EAttribute target = equivalent(source);
+		BoundDataTypeWithMultiCopier type = equivalent(source.getTypeWithMulti());
+		type.configure(target);
+		target.setName(source.getName()); 
+		if (source.getDefValue() != null) {
+			switch(source.getDefValue().eClass().getClassifierID()) {
+			case EmfaticPackage.BOOL_EXPR:
+				BoolExpr boolExpr = (BoolExpr)source.getDefValue();
+				target.setDefaultValueLiteral(boolExpr.getValue());
+				break;
+			case EmfaticPackage.STRING_EXPR:
+				StringExpr stringExpr = (StringExpr)source.getDefValue();
+				target.setDefaultValueLiteral(stringExpr.getValue());
+				break;
+			case EmfaticPackage.CHAR_EXPR:
+				CharExpr charExpr = (CharExpr)source.getDefValue();
+				target.setDefaultValueLiteral(charExpr.getValue());
+				break;
+			case EmfaticPackage.INT_EXPR:
+				IntExpr intExpr = (IntExpr)source.getDefValue();
+				int value = intExpr.getValue();
+				if (intExpr.isNegative()) {
+					value *= -1;
+				}
+				target.setDefaultValueLiteral(Integer.toString(value));
+				break;
+			}
+		}
+		return target;
+	}
+
+
 
 	@Inject
 	private AnnotationMap annotations;
