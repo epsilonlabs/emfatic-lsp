@@ -15,3 +15,7 @@
 - Imports
   - uri
   - other package (i.e. other emf)  
+  
+# TODO (ideas)
+
+- Use Xbase so we can import JVM types and use cross-referencing for EClass#instanceTypeName

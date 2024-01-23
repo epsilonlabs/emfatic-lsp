@@ -36,7 +36,6 @@ import org.eclipse.xtext.util.IResourceScopeCache;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
 
-
 /**
  * The Class EmfaticINALSP is responsible for capturing alias information and for creating 
  * {@link ImportScope}s that filter out Emfatic resources in the project not explicitly

@@ -35,20 +35,16 @@ public class MetaDataAnnotation extends BaseAnnotation implements EmfaticAnnotat
 		addKey(new DetailsKey("namespace", new EClass[] {
 				EmfaticPackage.Literals.PACKAGE_DECL,
 				EmfaticPackage.Literals.CLASSIFIER_DECL,
-				EmfaticPackage.Literals.ATTRIBUTE,
-				EmfaticPackage.Literals.REFERENCE}));
+				EmfaticPackage.Literals.FEATURE_DECL}));
 		addKey(new DetailsKey("qualified", new EClass[] {
 				EmfaticPackage.Literals.PACKAGE_DECL}));
 		addKey(new DetailsKey("name", new EClass[] {
 				EmfaticPackage.Literals.CLASSIFIER_DECL,
-				EmfaticPackage.Literals.ATTRIBUTE,
-				EmfaticPackage.Literals.REFERENCE
+				EmfaticPackage.Literals.FEATURE_DECL
 				}));
 		addKey(new DetailsKey("contentKind", new EClass[] {
 				EmfaticPackage.Literals.CLASSIFIER_DECL}));
-		EClass[] targets =  new EClass[] {
-				EmfaticPackage.Literals.ATTRIBUTE,
-				EmfaticPackage.Literals.REFERENCE};
+		EClass[] targets =  new EClass[] {EmfaticPackage.Literals.FEATURE_DECL};
 		addKey(new DetailsKey("featureKind", targets));
 		addKey(new DetailsKey("wildcards", targets));
 		addKey(new DetailsKey("processingKind", targets));

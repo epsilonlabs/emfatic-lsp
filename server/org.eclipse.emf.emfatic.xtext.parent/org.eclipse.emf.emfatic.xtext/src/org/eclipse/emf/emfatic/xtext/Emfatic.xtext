@@ -159,7 +159,7 @@ ClassDecl:
 	kind=ClassKind name=ID
 	(typeParamsInfo=TypeParamsInfo)?
 	("extends" superTypes+=BoundClassExceptWildcard (COMMA superTypes+=BoundClassExceptWildcard)*)? 
-    (COLON instClassName=BoundClassifierExceptWildcard)? 
+    (COLON instClassName=QualifiedID)? 
     LCURLY members+=ClassMemberDecl* RCURLY
 ;
 
@@ -192,7 +192,7 @@ TypeParamsInfo:
  * sequence typeParam : typeVarName=ID (typeBoundsInfo=typeBoundsInfo)? ;
  */
 TypeParam: 
-	typeVarName=ID (typeBoundsInfo=TypeBoundsInfo)?
+	name=ID (typeBoundsInfo=TypeBoundsInfo)?
 ;
 
 /**
@@ -211,8 +211,11 @@ TypeBoundsInfo:
 /**
  * sequence boundExceptWildcard : rawTNameOrTVarOrParamzedTName=qualifiedID (LT oneOrMoreTypeArgs GT)? ; 
  * 
- * We just use name instead of rawTNameOrTVarOrParamzedTName. However, the old
- * name hints at the context resolution: raw, type reference, qualified.
+ * This rule can reference rawT (i.e. java class name), TVar (cross-reference to Classifier) or 
+ * ParamzedTName(EType Parameter name). For Java class names, we modified the ClassDecl rule so
+ * the "instClassName" can only reference QualifiedIDs. For TVar and ParamzedTName, we want to 
+ * support cross-references to ClassifierDecl and TypeParams, because you can reference an EClass'
+ * type param info. For this, we created two bound features that reference either type.
  * 
  * We have simplified this rule by removing the list rules:
  * 
@@ -222,7 +225,8 @@ TypeBoundsInfo:
  * 
  */
 BoundClassifierExceptWildcard:
-	bound=[ClassifierDecl|QualifiedID] (LT typeArgs+=TypeArg (COMMA typeArgs+=TypeArg)* GT)?
+	// bound = ClassifierDecl or TypeParam
+	bound=[ecore::EObject|QualifiedID] (LT typeArgs+=TypeArg (COMMA typeArgs+=TypeArg)* GT)?
 ;
 
 /**
@@ -230,7 +234,8 @@ BoundClassifierExceptWildcard:
  * (attributes) or both (operation's return type)
  */
 BoundClassExceptWildcard:
-	bound=[ClassDecl|QualifiedID] (LT typeArgs+=TypeArg (COMMA typeArgs+=TypeArg)* GT)?
+	// bound = ClassDecl or TypeParam
+	bound=[ecore::EObject|QualifiedID] (LT typeArgs+=TypeArg (COMMA typeArgs+=TypeArg)* GT)?
 ;
  
 
@@ -274,27 +279,44 @@ ExtendsOrSuper:
  * 
  */
 ClassMemberDecl:
-	(annotations+=Annotation* modifiers+=OptNegatedModifier*)
+	(annotations+=Annotation*)
 	member=ClassMember
 ;
 
 ClassMember:
-	(Feature| Operation)
+	(FeatureDecl| Operation)
 ;
 
-Feature:
+/*
+ * Modifiers are defined in the feature declaration to make use of Xtext Unordered Groups.
+ * As a result, the negation is defined for each modifier. This makes the grammar more verbose
+ * but improves "out of the box" validation and content assist.
+ */
+FeatureDecl:
+  (readonly?=Readonly?   	// EStructuralFeature.changeable = false
+& volatile?=Volatile?  		// EStructuralFeature.volatile   = true
+& transient?=Transient?  	// EStructuralFeature.transient  = true
+& unsettable?=Unsettable?	// EStructuralFeature.unsettable = true
+& derived?=Derived?    		// EStructuralFeature.derived    = true
+& unique?=Unique?     		// *ETypedElement.unique         = true  -- bag?
+& ordered?=Ordered?    		// *ETypedElement.ordered        = true  -- random?
+& resolve?=Resolve?    		// *EReference.resolveProxies    = true  -- local?
+& id?=IdModifier? )     	// EAttribute.id                 = true
+  feature=StructuralFeature
+;
+
+StructuralFeature:
 	Attribute | Reference 
 ;
-
 /**
  * sequence attribute : "attr" typeWithMulti name=ID (EQUALS defaultValueExpr)? SEMI ; 
  * 
  * Originally typeWithMulti is not assigned, in Xtext we need to assign it. Further,
- * we introduce the new DataTypeWithMulti, so attributes can only have DataType
+ * we introduce the new BoundDataTypeWithMulti, so attributes can only have DataType
  * types.
  */
 Attribute:
-	"attr" typeWithMulti=DataTypeWithMulti name=ID (EQUALS defValue=DefaultValueExpr)? SEMI
+	"attr" typeWithMulti=BoundDataTypeWithMulti name=ID (EQUALS defValue=DefaultValueExpr)? SEMI
 ; 
 
 /** 
@@ -349,22 +371,60 @@ ReferenceKind:
 /**
  * sequence optNegatedModifier : (BANG)? modifier ;
  */
-OptNegatedModifier : (BANG)? Modifier ;
+//OptNegatedModifier:
+//	{OptNegatedModifier} /*(negated?=BANG)?*/ modifier=Modifier
+//;
 
 /**
- * token modifier
+ * token modifier. Defined independently
  */
-Modifier
+//Modifier:
 // keyword        EMF meaning
-: "readonly"   // EStructuralFeature.changeable = false
-| "volatile"   // EStructuralFeature.volatile   = true
-| "transient"  // EStructuralFeature.transient  = true
-| "unsettable" // EStructuralFeature.unsettable = true
-| "derived"    // EStructuralFeature.derived    = true
-| "unique"     // *ETypedElement.unique         = true  -- bag?
-| "ordered"    // *ETypedElement.ordered        = true  -- random?
-| "resolve"    // *EReference.resolveProxies    = true  -- local?
-| "id"         // EAttribute.id                 = true
+//: "readonly"   // EStructuralFeature.changeable = false
+//| "volatile"   // EStructuralFeature.volatile   = true
+//| "transient"  // EStructuralFeature.transient  = true
+//| "unsettable" // EStructuralFeature.unsettable = true
+//| "derived"    // EStructuralFeature.derived    = true
+//| "unique"     // *ETypedElement.unique         = true  -- bag?
+//| "ordered"    // *ETypedElement.ordered        = true  -- random?
+//| "resolve"    // *EReference.resolveProxies    = true  -- local?
+//| "id"         // EAttribute.id                 = true
+//;
+
+Readonly:
+	{Readonly} (negated?=BANG)? "readonly"
+;
+
+Volatile:
+	{Volatile} (negated?=BANG)? "volatile"
+;
+
+Transient:
+	{Transient} (negated?=BANG)? "transient"
+;
+
+Unsettable:
+	{Unsettable} (negated?=BANG)? "unsettable"
+;
+
+Derived:
+	{Derived} (negated?=BANG)? "derived"
+;
+
+Unique:
+	{Unique} (negated?=BANG)? "unique"
+;
+
+Ordered:
+	{Ordered} (negated?=BANG)? "ordered"
+;
+
+Resolve:
+	{Resolve} (negated?=BANG)? "resolve"
+;
+
+IdModifier:
+	{IdModifier} (negated?=BANG)? "id"
 ;
 
 /**
@@ -390,7 +450,7 @@ TrueOrFalse : "true" | "false" ;
  * sequence intExpr : (MINUS)? INT_LITERAL ;
  */
 IntExpr:
-	(negative=MINUS)? value=INT
+	(negative?=MINUS)? value=INT
 ;
 
 /**
@@ -422,9 +482,13 @@ CharExpr:
  * 
  */
 Operation:
+(
+	unique?=Unique?     		// *ETypedElement.unique         = true  -- bag?
+	& ordered?=Ordered?    		// *ETypedElement.ordered        = true  -- random?
+)
 	"op" (typeParamsInfo=TypeParamsInfo)? 
-   resType=ResultType name=ID LPAREN (params+=Param (COMMA params+=Param)*)? RPAREN 
-   ("throws" exceptions+=BoundClassifierExceptWildcard (COMMA exceptions+=BoundClassifierExceptWildcard)*)? SEMI
+	resType=ResultType name=ID LPAREN (params+=Param (COMMA params+=Param)*)? RPAREN 
+	("throws" exceptions+=BoundClassifierExceptWildcard (COMMA exceptions+=BoundClassifierExceptWildcard)*)? SEMI
 ;
 
 /**
@@ -444,7 +508,7 @@ VoidContainer:
  * sequence param : leadingAnnotations=annotations modifiers typeWithMulti name=ID trailingAnnotations=annotations ;
  */
 Param:
-	leadingAnnotations+=Annotation* modifiers+=OptNegatedModifier* typeWithMulti=TypeWithMulti name=ID trailingAnnotations+=Annotation*
+	leadingAnnotations+=Annotation* /* modifiers+=OptNegatedModifier* */ typeWithMulti=TypeWithMulti name=ID trailingAnnotations+=Annotation*
 ;
 
 /*
@@ -463,9 +527,9 @@ DataType:
 /**
  * This can be used when only DataTypes can be referenced (e.g. Attributes)
  */
-// TODO When datatype accept type parameters, this construct should have a similar one to BoundExceptWildcard
-DataTypeWithMulti:
-	type=[DataType|QualifiedID]  (multiplicity=Multiplicity)?
+BoundDataTypeWithMulti:
+	// type =  DataType or TypeParam
+	bound=[ecore::EObject|QualifiedID] (multiplicity=Multiplicity)?
 ;
 
 /**
@@ -477,9 +541,8 @@ DataTypeWithMulti:
  * 
  * and used a boolean assignment expression instead
  */
-// TODO datatypes should accept type parameters
 DataTypeDecl:
-	(transient?="transient")? "datatype" name=ID COLON instanceClassName=StringOrQualifiedID SEMI
+	(transient?="transient")? "datatype" name=ID (typeParamsInfo=TypeParamsInfo)? COLON instanceClassName=StringOrQualifiedID SEMI
 ; 
 
 /**

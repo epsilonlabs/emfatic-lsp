@@ -63,8 +63,7 @@ public class GenModelAnnotation extends BaseAnnotation implements EmfaticAnnotat
 		addKey(new DetailsKey("documentation"));
 		addKey(new DetailsKey("copyright"));
 		EClass[] targets = new EClass[] {
-				EmfaticPackage.Literals.ATTRIBUTE, 
-				EmfaticPackage.Literals.REFERENCE};
+				EmfaticPackage.Literals.FEATURE_DECL};
 		addKey(new DetailsKey("get", targets));
 		addKey(new DetailsKey("suppressedGetVisibility", targets));
 		addKey(new DetailsKey("suppressedSetVisibility", targets));

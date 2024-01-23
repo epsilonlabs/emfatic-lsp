@@ -127,7 +127,6 @@ public class EmfaticGSP extends DefaultGlobalScopeProvider {
 			}
 		}
 		return result;
-		
 	}
 	
 	/**
