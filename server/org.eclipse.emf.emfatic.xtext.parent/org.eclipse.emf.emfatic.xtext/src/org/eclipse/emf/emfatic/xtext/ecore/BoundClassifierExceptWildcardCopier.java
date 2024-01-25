@@ -3,12 +3,12 @@ package org.eclipse.emf.emfatic.xtext.ecore;
 import java.util.Collections;
 import java.util.List;
 
-import org.eclipse.emf.ecore.EAttribute;
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EClassifier;
 import org.eclipse.emf.ecore.EGenericType;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.ETypeParameter;
+import org.eclipse.emf.ecore.ETypedElement;
 import org.eclipse.emf.ecore.EcoreFactory;
 import org.eclipse.emf.emfatic.xtext.emfatic.BoundClassifierExceptWildcard;
 import org.eclipse.emf.emfatic.xtext.scoping.EmfaticImport;
@@ -43,34 +43,33 @@ class BoundClassifierExceptWildcardCopier extends AbstractClassifierCopier<Bound
 	}
 
 	@Override
+	public void configure(ETypedElement te) {
+		if (this.targetEClassifier != null) {
+			te.setEType(this.targetEClassifier);			
+		}
+		if (!this.targetTypeArgs.isEmpty()) {
+			var teGt = EcoreFactory.eINSTANCE.createEGenericType();
+			te.setEGenericType(teGt);
+			this.targetTypeArgs.forEach(ta -> {
+				var taGt = EcoreFactory.eINSTANCE.createEGenericType();
+				ta.configure(taGt);
+				teGt.getETypeArguments().add(taGt);
+			});	
+		}
+		
+	}
+	
+	@Override
 	public void configure(EGenericType gt) {
-		gt.setEClassifier(this.targetEClassifier);
+		if (this.targetTypeParamter != null) {
+			gt.setETypeParameter(this.targetTypeParamter);
+		}
 		this.targetTypeArgs.forEach(ta -> {
 			var taGt = EcoreFactory.eINSTANCE.createEGenericType();
 			ta.configure(taGt);
 			gt.getETypeArguments().add(taGt);
 		});
-	}
-	
-	void configure(EAttribute target) {
-		if (this.targetEClassifier != null) {
-			target.setEType(this.targetEClassifier);
-		}
-		if (this.targetTypeParamter != null) {
-			var tpGt = EcoreFactory.eINSTANCE.createEGenericType();
-			tpGt.setETypeParameter(this.targetTypeParamter);
-			target.setEGenericType(tpGt);
-		}
-		if (!this.targetTypeArgs.isEmpty()) {
-			var gt = EcoreFactory.eINSTANCE.createEGenericType();
-			gt.setEClassifier(this.targetEClassifier);
-			this.targetTypeArgs.forEach(ta -> {
-				var taGt = EcoreFactory.eINSTANCE.createEGenericType();
-				ta.configure(taGt);
-				gt.getETypeArguments().add(taGt);
-			});
-			target.setEGenericType(gt);
-		}
+		
 	}
 	
 	public boolean toEClass() {

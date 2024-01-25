@@ -479,7 +479,7 @@ Operation:
 	& ordered?=Ordered?    		// *ETypedElement.ordered        = true  -- random?
 )
 	"op" (typeParamsInfo=TypeParamsInfo)? 
-	resType=ResultType name=ID LPAREN (params+=Param (COMMA params+=Param)*)? RPAREN 
+	resultType=ResultType name=ID LPAREN (params+=Param (COMMA params+=Param)*)? RPAREN 
 	("throws" exceptions+=BoundClassifierExceptWildcard (COMMA exceptions+=BoundClassifierExceptWildcard)*)? SEMI
 ;
 

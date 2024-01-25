@@ -1,6 +1,7 @@
 package org.eclipse.emf.emfatic.xtext.ecore;
 
 import org.eclipse.emf.ecore.EGenericType;
+import org.eclipse.emf.ecore.ETypedElement;
 import org.eclipse.emf.ecore.EcoreFactory;
 import org.eclipse.emf.emfatic.xtext.emfatic.Wildcard;
 import org.eclipse.xtext.util.OnChangeEvictingCache;
@@ -9,6 +10,11 @@ public class WildcardCopier implements TypeArgCopier {
 
 	public WildcardCopier(Wildcard source) {
 		this(source, false, false, null);
+	}
+	
+	@Override
+	public void configure(ETypedElement gt) {
+		throw new UnsupportedOperationException("WilcardCopier can not be used to configure ETypedElements");
 	}
 	
 	@Override
@@ -43,7 +49,12 @@ public class WildcardCopier implements TypeArgCopier {
 		}
 		return new WildcardCopier(this.source, e, s, targetBound);
 	}
-	
+
+	private final Wildcard source;
+	private final boolean extnds;
+	private final boolean spr;
+	private final BoundClassifierExceptWildcardCopier targetBound;
+
 	private WildcardCopier(Wildcard source, boolean extnds, boolean spr, BoundClassifierExceptWildcardCopier targetBound) {
 		super();
 		this.source = source;
@@ -52,9 +63,4 @@ public class WildcardCopier implements TypeArgCopier {
 		this.targetBound = targetBound;
 	}
 
-	private final Wildcard source;
-	private final boolean extnds;
-	private final boolean spr;
-	private final BoundClassifierExceptWildcardCopier targetBound;
-	
 }

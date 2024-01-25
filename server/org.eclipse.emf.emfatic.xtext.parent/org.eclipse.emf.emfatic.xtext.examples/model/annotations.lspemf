@@ -1,0 +1,21 @@
+@"http://source/uri"("key1"="value1", "key2"="value2")
+package test;
+
+@"http://class/annotation"(k="v")
+class C {
+  @"http://attribute/annotation"(k="v")
+  attr int a;
+
+  op int Op(
+
+    int a,
+    int b
+   );
+   op String getFullName(String ~id);
+}
+
+enum E { 
+  @"http://before"(k=v) 
+  A=1; 
+  B=2 @"http://after"(k=v); 
+}

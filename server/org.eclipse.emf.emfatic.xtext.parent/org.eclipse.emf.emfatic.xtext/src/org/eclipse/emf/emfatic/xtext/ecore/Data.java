@@ -38,9 +38,9 @@ import org.eclipse.xtext.util.OnChangeEvictingCache;
 
 import com.google.inject.Inject;
 
-public class Copier extends EmfaticSwitch<Object> {
+public class Data extends EmfaticSwitch<Object> {
 	
-	public Copier(OnChangeEvictingCache cache) {
+	public Data(OnChangeEvictingCache cache) {
 		this.cache = cache;
 	}
 
@@ -92,12 +92,12 @@ public class Copier extends EmfaticSwitch<Object> {
 	@Override
 	public Object caseMapEntryDecl(MapEntryDecl source) {
 		EClass target = equivalent(source);
-		TypeCopier tc = ((TypeCopier) equivalent(source.getKey())).load(this.cache);
+		TypeWithMultiCopier tc = ((TypeWithMultiCopier) equivalent(source.getKey())).load(this.cache);
 		var key = tc.toEClass() ?  EcoreFactory.eINSTANCE.createEReference() : EcoreFactory.eINSTANCE.createEAttribute();
 		key.setName("key");
 		tc.configure(key);
 		target.getEStructuralFeatures().add(key);
-		tc = ((TypeCopier) equivalent(source.getValue())).load(this.cache);
+		tc = ((TypeWithMultiCopier) equivalent(source.getValue())).load(this.cache);
 		var value = tc.toEClass() ?  EcoreFactory.eINSTANCE.createEReference() : EcoreFactory.eINSTANCE.createEAttribute();
 		value.setName("value");
 		tc.configure(value);

@@ -7,4 +7,4 @@ Fragment-Host: org.apache.log4j;bundle-version="1.2.19"
 Import-Package: org.eclipse.core.runtime;version="3.7.0",
  org.osgi.framework;version="1.10.0"
 Automatic-Module-Name: org.eclipse.emf.emfatic.xtext.logging
-Bundle-RequiredExecutionEnvironment: JavaSE-17
+Bundle-RequiredExecutionEnvironment: JavaSE-20

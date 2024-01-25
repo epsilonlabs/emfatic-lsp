@@ -4,9 +4,9 @@ import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.emf.emfatic.xtext.emfatic.TypeWithMulti;
 import org.eclipse.xtext.util.OnChangeEvictingCache;
 
-public class TypeCopier {
+public class TypeWithMultiCopier {
 		
-	TypeCopier(TypeWithMulti twm) {
+	TypeWithMultiCopier(TypeWithMulti twm) {
 		this(twm, null, null);
 	}
 	
@@ -14,6 +14,7 @@ public class TypeCopier {
 		if (this.cCopier == null) {
 			throw new IllegalStateException("Call to configure before calling load.");
 		}
+		
 		this.cCopier.configure(target);
 		this.mCopier.configure(target);
 	}
@@ -29,7 +30,7 @@ public class TypeCopier {
 		return this.cCopier.toEClass();
 	}
 
-	TypeCopier load(OnChangeEvictingCache cache) {
+	TypeWithMultiCopier load(OnChangeEvictingCache cache) {
 		BoundClassifierExceptWildcardCopier cCopier = cache.get(this.twm.getType(), this.twm.getType().eResource(), () -> (BoundClassifierExceptWildcardCopier) null);
 		if (cCopier == null) {
 			throw new IllegalArgumentException("Target element not found for " + this.twm.getType());
@@ -43,10 +44,10 @@ public class TypeCopier {
 		} else {
 			mCopier = new MultiplicityCopier();
 		}
-		return new TypeCopier(this.twm, cCopier.load(cache), mCopier.load(cache));
+		return new TypeWithMultiCopier(this.twm, cCopier.load(cache), mCopier.load(cache));
 	}
 	
-	private TypeCopier(TypeWithMulti twm, BoundClassifierExceptWildcardCopier cCopier, MultiplicityCopier mCopier) {
+	private TypeWithMultiCopier(TypeWithMulti twm, BoundClassifierExceptWildcardCopier cCopier, MultiplicityCopier mCopier) {
 		super();
 		this.twm = twm;
 		this.cCopier = cCopier;

@@ -3,6 +3,7 @@ package org.eclipse.emf.emfatic.xtext.ecore;
 import org.eclipse.emf.ecore.EAttribute;
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.ecore.EReference;
 import org.eclipse.emf.ecore.ETypeParameter;
 import org.eclipse.emf.ecore.EcoreFactory;
 import org.eclipse.emf.emfatic.xtext.emfatic.Annotation;
@@ -12,13 +13,20 @@ import org.eclipse.emf.emfatic.xtext.emfatic.BoundClassifierExceptWildcard;
 import org.eclipse.emf.emfatic.xtext.emfatic.BoundDataTypeWithMulti;
 import org.eclipse.emf.emfatic.xtext.emfatic.ClassDecl;
 import org.eclipse.emf.emfatic.xtext.emfatic.ClassMemberDecl;
+import org.eclipse.emf.emfatic.xtext.emfatic.ClassRefWithMulti;
 import org.eclipse.emf.emfatic.xtext.emfatic.CompUnit;
 import org.eclipse.emf.emfatic.xtext.emfatic.DataTypeDecl;
 import org.eclipse.emf.emfatic.xtext.emfatic.EnumDecl;
+import org.eclipse.emf.emfatic.xtext.emfatic.EnumLiteral;
+import org.eclipse.emf.emfatic.xtext.emfatic.Expr;
+import org.eclipse.emf.emfatic.xtext.emfatic.FeatureDecl;
 import org.eclipse.emf.emfatic.xtext.emfatic.MapEntryDecl;
+import org.eclipse.emf.emfatic.xtext.emfatic.Multiplicity;
 import org.eclipse.emf.emfatic.xtext.emfatic.Operation;
 import org.eclipse.emf.emfatic.xtext.emfatic.PackageDecl;
+import org.eclipse.emf.emfatic.xtext.emfatic.Param;
 import org.eclipse.emf.emfatic.xtext.emfatic.Reference;
+import org.eclipse.emf.emfatic.xtext.emfatic.ResultType;
 import org.eclipse.emf.emfatic.xtext.emfatic.SubPackageDecl;
 import org.eclipse.emf.emfatic.xtext.emfatic.TopLevelDecl;
 import org.eclipse.emf.emfatic.xtext.emfatic.TypeParam;
@@ -28,9 +36,9 @@ import org.eclipse.emf.emfatic.xtext.emfatic.util.EmfaticSwitch;
 import org.eclipse.emf.emfatic.xtext.scoping.EmfaticImport;
 import org.eclipse.xtext.util.OnChangeEvictingCache;
 
-public class Creator extends EmfaticSwitch<Object> {
+public class Structure extends EmfaticSwitch<Object> {
 	
-	public Creator(OnChangeEvictingCache cache, EmfaticImport emfaticImport) {
+	public Structure(OnChangeEvictingCache cache, EmfaticImport emfaticImport) {
 		this.cache = cache;
 		this.emfaticImport = emfaticImport;
 	}
@@ -94,10 +102,10 @@ public class Creator extends EmfaticSwitch<Object> {
 
 	@Override
 	public Object caseTypeWithMulti(TypeWithMulti source) {
-		TypeCopier target = this.cache.get(
+		TypeWithMultiCopier target = this.cache.get(
 				source, 
 				source.eResource(), 
-				() -> new TypeCopier(source));
+				() -> new TypeWithMultiCopier(source));
 		this.doSwitch(source.getType());
 		this.doSwitch(source.getMultiplicity());
 		return target;
@@ -131,7 +139,7 @@ public class Creator extends EmfaticSwitch<Object> {
 		source.getTypeArgs().forEach(this::doSwitch);
 		return target;
 	}
-	
+
 	@Override
 	public Object caseClassDecl(ClassDecl source) {
 		var result = this.cache.get(
@@ -147,9 +155,16 @@ public class Creator extends EmfaticSwitch<Object> {
 	}
 
 	@Override
-	public Object caseClassMemberDecl(ClassMemberDecl object) {
-		// TODO Auto-generated method stub
-		return super.caseClassMemberDecl(object);
+	public Object caseClassMemberDecl(ClassMemberDecl source) {
+		source.getAnnotations().forEach(this::doSwitch);
+		this.doSwitch(source.getMember());
+		return super.caseClassMemberDecl(source);
+	}
+
+	@Override
+	public Object caseFeatureDecl(FeatureDecl source) {
+		this.doSwitch(source.getFeature());
+		return super.caseFeatureDecl(source);
 	}
 
 	@Override
@@ -158,11 +173,38 @@ public class Creator extends EmfaticSwitch<Object> {
 				source, 
 				source.eResource(),
 				EcoreFactory.eINSTANCE::createEOperation);
+		if (source.getTypeParamsInfo() != null) {
+			source.getTypeParamsInfo().getTp().forEach(this::doSwitch);
+		}
+		this.doSwitch(source.getResType());
 		source.getParams().forEach(this::doSwitch);
 		source.getExceptions().forEach(this::doSwitch);
 		return result;
 	}
 	
+	@Override
+	public Object caseResultType(ResultType source) {
+		var result = this.cache.get(
+				source, 
+				source.eResource(),
+				() -> new ResultTypeCopier(source));
+		if (source.getType() != null) {
+			this.doSwitch(source.getType());
+		}
+		return result;
+	}
+
+	@Override
+	public Object caseParam(Param source) {
+		source.getLeadingAnnotations().forEach(this::doSwitch);
+		this.doSwitch(source.getTypeWithMulti());
+		source.getTrailingAnnotations().forEach(this::doSwitch);
+		return this.cache.get(
+				source,
+				source.eResource(),
+				EcoreFactory.eINSTANCE::createEParameter);
+	}
+
 	@Override
 	public Object caseAttribute(Attribute source) {
 		EAttribute result = this.cache.get(
@@ -175,15 +217,41 @@ public class Creator extends EmfaticSwitch<Object> {
 	}
 	
 	@Override
-	public Object caseReference(Reference source) {
+	public Object caseExpr(Expr source) {
 		return this.cache.get(
+				source, 
+				source.eResource(), 
+				() -> new ExpressionCopier(source));
+	}
+
+	@Override
+	public Object caseReference(Reference source) {
+		EReference result = this.cache.get(
 				source, 
 				source.eResource(),
 				EcoreFactory.eINSTANCE::createEReference);
+		this.doSwitch(source.getTypeWithMulti());
+		return result;
 	}
 	
 	@Override
+	public Object caseClassRefWithMulti(ClassRefWithMulti source) {
+		var result = this.cache.get(
+				source, 
+				source.eResource(),
+				() -> new ClassRefWithMultiCopier(source));
+		this.doSwitch(source.getType());
+		if (source.getMultiplicity() != null) {
+			this.doSwitch(source.getMultiplicity());
+		}
+		return result;
+	}
+
+	@Override
 	public Object caseDataTypeDecl(DataTypeDecl source) {
+		if (source.getTypeParamsInfo() != null) {
+			source.getTypeParamsInfo().getTp().forEach(this::doSwitch);
+		}
 		return this.cache.get(
 				source, 
 				source.eResource(),
@@ -192,12 +260,20 @@ public class Creator extends EmfaticSwitch<Object> {
 	
 	@Override
 	public Object caseEnumDecl(EnumDecl source) {
+		source.getEnumLiterals().forEach(this::doSwitch);
 		return this.cache.get(
 				source, 
 				source.eResource(),
 				EcoreFactory.eINSTANCE::createEEnum);
 	}
 	
+	@Override
+	public Object caseEnumLiteral(EnumLiteral source) {
+		source.getLeadingAnnotations().forEach(this::doSwitch);
+		source.getTrailingAnnotations().forEach(this::doSwitch);
+		return super.caseEnumLiteral(source);
+	}
+
 	@Override
 	public Object caseAnnotation(Annotation source) {
 		return this.cache.get(
@@ -212,21 +288,29 @@ public class Creator extends EmfaticSwitch<Object> {
 				source, 
 				source.eResource(),
 				EcoreFactory.eINSTANCE::createETypeParameter);
-		source.getTypeBoundsInfo().getTb().forEach(this::doSwitch);
+		if (source.getTypeBoundsInfo() != null) {
+			source.getTypeBoundsInfo().getTb().forEach(this::doSwitch);
+		}
 		return target;
 	}
 
 	@Override
+	public Object caseMultiplicity(Multiplicity source) {
+		return this.cache.get(
+				source, 
+				source.eResource(),
+				() -> new MultiplicityCopier(source));
+	}
+
+	@Override
 	public Object caseBoundDataTypeWithMulti(BoundDataTypeWithMulti source) {
-		var result = new BoundDataTypeWithMultiCopier(source);
+		var result = this.cache.get(
+				source, 
+				source.eResource(),
+				() -> new BoundDataTypeWithMultiCopier(source));
 		this.doSwitch(source.getMultiplicity());
 		return result;
 	}
-
-
-
-
-
 
 	private final OnChangeEvictingCache cache;
 	private final EmfaticImport emfaticImport;
