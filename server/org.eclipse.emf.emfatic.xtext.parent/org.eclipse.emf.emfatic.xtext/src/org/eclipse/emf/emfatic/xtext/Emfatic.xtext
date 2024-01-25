@@ -319,14 +319,6 @@ Attribute:
 	"attr" typeWithMulti=BoundDataTypeWithMulti name=ID (EQUALS defValue=DefaultValueExpr)? SEMI
 ; 
 
-/** 
- * sequence typeWithMulti : name=boundExceptWildcard (multiplicity)? ;
- */
-TypeWithMulti:
-	type=BoundClassifierExceptWildcard (multiplicity=Multiplicity)?
-;
-
-
 /**
  * sequence multiplicity : LSQUARE (multiplicityExpr)? RSQUARE ;
  * 
@@ -495,8 +487,15 @@ Operation:
  * abstract resultType : typeWithMulti | voidContainer ; 
  */
 ResultType:
-	TypeWithMulti | void?=VoidContainer
-; 
+	type=TypeWithMulti | void?=VoidContainer
+;
+
+/** 
+ * sequence typeWithMulti : name=boundExceptWildcard (multiplicity)? ;
+ */
+TypeWithMulti:
+	type=BoundClassifierExceptWildcard (multiplicity=Multiplicity)?
+;
 
 /**
  * sequence voidContainer : "void" ; 

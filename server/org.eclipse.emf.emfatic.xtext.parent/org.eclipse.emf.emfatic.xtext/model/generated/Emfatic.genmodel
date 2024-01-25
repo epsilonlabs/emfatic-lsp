@@ -109,10 +109,6 @@
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Emfatic.ecore#//Attribute/typeWithMulti"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Emfatic.ecore#//Attribute/defValue"/>
     </genClasses>
-    <genClasses ecoreClass="Emfatic.ecore#//TypeWithMulti">
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Emfatic.ecore#//TypeWithMulti/type"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Emfatic.ecore#//TypeWithMulti/multiplicity"/>
-    </genClasses>
     <genClasses ecoreClass="Emfatic.ecore#//Multiplicity">
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Emfatic.ecore#//Multiplicity/lowerBound"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Emfatic.ecore#//Multiplicity/upperBound"/>
@@ -175,7 +171,12 @@
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Emfatic.ecore#//Operation/exceptions"/>
     </genClasses>
     <genClasses ecoreClass="Emfatic.ecore#//ResultType">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Emfatic.ecore#//ResultType/type"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Emfatic.ecore#//ResultType/void"/>
+    </genClasses>
+    <genClasses ecoreClass="Emfatic.ecore#//TypeWithMulti">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Emfatic.ecore#//TypeWithMulti/type"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Emfatic.ecore#//TypeWithMulti/multiplicity"/>
     </genClasses>
     <genClasses ecoreClass="Emfatic.ecore#//Param">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Emfatic.ecore#//Param/leadingAnnotations"/>

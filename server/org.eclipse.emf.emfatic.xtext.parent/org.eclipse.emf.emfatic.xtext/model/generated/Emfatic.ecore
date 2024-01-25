@@ -132,12 +132,6 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="defValue" eType="#//Expr"
         containment="true"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="TypeWithMulti" eSuperTypes="#//ResultType">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="type" eType="#//BoundClassifierExceptWildcard"
-        containment="true"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="multiplicity" eType="#//Multiplicity"
-        containment="true"/>
-  </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Multiplicity">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="lowerBound" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="upperBound" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
@@ -207,7 +201,15 @@
         eType="#//BoundClassifierExceptWildcard" containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="ResultType">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="type" eType="#//TypeWithMulti"
+        containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="void" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="TypeWithMulti">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="type" eType="#//BoundClassifierExceptWildcard"
+        containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="multiplicity" eType="#//Multiplicity"
+        containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Param">
     <eStructuralFeatures xsi:type="ecore:EReference" name="leadingAnnotations" upperBound="-1"

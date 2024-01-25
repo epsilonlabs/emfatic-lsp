@@ -28,47 +28,59 @@ import com.google.inject.Singleton;
 
 @Singleton
 public class EmfaticImport {
-	
+
 	/**
 	 * Wrap package.
-	 * @param name 
+	 * 
+	 * @param name
 	 *
 	 * @return the package decl
 	 */
-	public PackageDecl translate(
-		EPackage ep) {
+	public PackageDecl translate(EPackage ep) {
 		PackageDecl pd = EmfaticFactory.eINSTANCE.createPackageDecl();
 		pd.setName(ep.getName());
 		return pd;
 	}
-	
+
 	/**
 	 * Wrap classifiers.
 	 *
 	 * @param eClassifiers the e classifiers
-	 * @return the collection<? extends top level decl>
-	 * TODO generics
+	 * @return the collection<? extends top level decl> TODO generics
 	 */
-	public Collection<? extends TopLevelDecl> translate(
-		EList<EClassifier> eClassifiers) {
-		List<TopLevelDecl> result = eClassifiers.stream()
-				.filter(EClass.class::isInstance)
-				.map(EClass.class::cast)
-				.map(this::translateClass)
-				.collect(Collectors.toList());
-		result.addAll( eClassifiers.stream()
-				.filter(EDataType.class::isInstance)
-				.map(EDataType.class::cast)
-				.flatMap(dt -> this.translateDataType(dt).stream())
-				.collect(Collectors.toList()));
-		result.addAll( eClassifiers.stream()
-				.filter(EEnum.class::isInstance)
-				.map(EEnum.class::cast)
-				.map(this::translateEnum)
-				.collect(Collectors.toList()));
+	public Collection<? extends TopLevelDecl> translate(EList<EClassifier> eClassifiers) {
+		List<TopLevelDecl> result = eClassifiers.stream().filter(EClass.class::isInstance).map(EClass.class::cast)
+				.map(this::translateClass).collect(Collectors.toList());
+		result.addAll(eClassifiers.stream().filter(EDataType.class::isInstance).map(EDataType.class::cast)
+				.flatMap(dt -> this.translateDataType(dt).stream()).collect(Collectors.toList()));
+		result.addAll(eClassifiers.stream().filter(EEnum.class::isInstance).map(EEnum.class::cast)
+				.map(this::translateEnum).collect(Collectors.toList()));
 		return result;
 	}
-	
+
+	/**
+	 * Returns the original imported ECore instance of the imported Emfatic
+	 * reference
+	 * 
+	 * @param bound
+	 * @return
+	 */
+	public EClassifier export(ClassifierDecl bound) {
+		return switch (bound.eClass().getClassifierID()) {
+		case EmfaticPackage.CLASS_DECL -> {
+			yield this.export((ClassDecl) bound);
+		}
+		case EmfaticPackage.DATA_TYPE_DECL -> {
+			yield this.export((DataTypeDecl) bound);
+		}
+		case EmfaticPackage.ENUM_DECL -> {
+			yield this.export((EnumDecl) bound);
+		}
+		default -> throw new IllegalArgumentException("Unexpected value: " + bound.eClass().getClassifierID());
+		};
+
+	}
+
 	private final Map<ClassifierDecl, EClassifier> imports = new HashMap<>();
 	private final Map<String, EClassifier> nativeImports = new HashMap<>();
 
@@ -76,11 +88,9 @@ public class EmfaticImport {
 	 * Wrap class.
 	 *
 	 * @param clazz the clazz
-	 * @return the top level decl
-	 * TODO generics
+	 * @return the top level decl TODO generics
 	 */
-	private TopLevelDecl translateClass(
-		EClass clazz) {
+	private TopLevelDecl translateClass(EClass clazz) {
 		ClassDecl cd = EmfaticFactory.eINSTANCE.createClassDecl();
 		cd.setName(clazz.getName());
 		TopLevelDecl tld = EmfaticFactory.eINSTANCE.createTopLevelDecl();
@@ -88,43 +98,41 @@ public class EmfaticImport {
 		this.imports.put(cd, clazz);
 		return tld;
 	}
-	
+
 	/**
-	 * Emfatic not only supports the EMF DataTypes, but also, the equivalent
-	 * Java types (both primitive and wrappers).
-	 * We use the EMF URI of the EDataType as the InstanceClass name, so we can
-	 * use this information when exporting to ECore
+	 * Emfatic not only supports the EMF DataTypes, but also, the equivalent Java
+	 * types (both primitive and wrappers). We use the EMF URI of the EDataType as
+	 * the InstanceClass name, so we can use this information when exporting to
+	 * ECore
 	 * 
-	 * TODO The generated list of types is larger than Emfatic. Is this good/bad? 
-	 * 		e.g., we get InvocationTargetException, not sure is a type we want to use,
-	 * 		but... is a valid DataType non the less.
+	 * TODO The generated list of types is larger than Emfatic. Is this good/bad?
+	 * e.g., we get InvocationTargetException, not sure is a type we want to use,
+	 * but... is a valid DataType non the less.
 	 *
 	 * @param type the type
-	 * @return the list
-	 * TODO generics
+	 * @return the list TODO generics
 	 */
-	private List<TopLevelDecl> translateDataType(
-		EDataType type) {
+	private List<TopLevelDecl> translateDataType(EDataType type) {
 		// All DataTypeDecl share the same instance class name
 		List<TopLevelDecl> result = new ArrayList<>();
-		DataTypeDecl dtd =  EmfaticFactory.eINSTANCE.createDataTypeDecl();
+		DataTypeDecl dtd = EmfaticFactory.eINSTANCE.createDataTypeDecl();
 		dtd.setName(type.getName());
 		TopLevelDecl tld = EmfaticFactory.eINSTANCE.createTopLevelDecl();
 		tld.setDeclaration(dtd);
 		result.add(tld);
 		this.imports.put(dtd, type);
-		Class<?> javaType = null; 
+		Class<?> javaType = null;
 		try {
 			javaType = Class.forName(type.getInstanceClassName());
-		 } catch (ClassNotFoundException e) {
-			 DataTypeDecl javaDtd =  EmfaticFactory.eINSTANCE.createDataTypeDecl();
-			 javaDtd.setName(type.getInstanceClassName());
-			 javaDtd.setInstanceClassName(createInstanceClassName(type));
-			 TopLevelDecl javaTld = EmfaticFactory.eINSTANCE.createTopLevelDecl();
-			 javaTld.setDeclaration(javaDtd);
-			 result.add(javaTld);
-			 this.nativeImports.put(javaDtd.getInstanceClassName().getLiteral(), type);
-			 return result;	 
+		} catch (ClassNotFoundException e) {
+			DataTypeDecl javaDtd = EmfaticFactory.eINSTANCE.createDataTypeDecl();
+			javaDtd.setName(type.getInstanceClassName());
+			javaDtd.setInstanceClassName(createInstanceClassName(type));
+			TopLevelDecl javaTld = EmfaticFactory.eINSTANCE.createTopLevelDecl();
+			javaTld.setDeclaration(javaDtd);
+			result.add(javaTld);
+			this.nativeImports.put(javaDtd.getInstanceClassName().getLiteral(), type);
+			return result;
 		}
 		DataTypeDecl javaDtd = EmfaticFactory.eINSTANCE.createDataTypeDecl();
 		javaDtd.setName(javaType.getSimpleName());
@@ -135,15 +143,14 @@ public class EmfaticImport {
 		this.nativeImports.put(javaDtd.getInstanceClassName().getLiteral(), type);
 		return result;
 	}
-	
+
 	/**
 	 * Wrap enum.
 	 *
 	 * @param type the type
 	 * @return the top level decl
 	 */
-	private TopLevelDecl translateEnum(
-		EEnum type) {
+	private TopLevelDecl translateEnum(EEnum type) {
 		EnumDecl ed = EmfaticFactory.eINSTANCE.createEnumDecl();
 		ed.setName(type.getName());
 		TopLevelDecl tld = EmfaticFactory.eINSTANCE.createTopLevelDecl();
@@ -151,21 +158,20 @@ public class EmfaticImport {
 		this.imports.put(ed, type);
 		return tld;
 	}
-	
+
 	/**
 	 * Creates the instance class name.
 	 *
 	 * @param element the element
 	 * @return the string or qualified ID
 	 */
-	private StringOrQualifiedID createInstanceClassName(
-		ENamedElement element) {
+	private StringOrQualifiedID createInstanceClassName(ENamedElement element) {
 		StringOrQualifiedID instanceClassName = EmfaticFactory.eINSTANCE.createStringOrQualifiedID();
 		instanceClassName.setLiteral("http://www.eclipse.org/emf/2002/Ecore#//" + element.getName());
 		return instanceClassName;
 	}
-
-	public EClassifier export(DataTypeDecl bound) {
+	
+	private EClassifier export(DataTypeDecl bound) {
 		if (bound.getInstanceClassName() == null) {
 			return this.imports.get(bound);
 		} else {
@@ -173,24 +179,12 @@ public class EmfaticImport {
 		}
 	}
 	
-	public EClassifier export(EnumDecl bound) {
+	private EClassifier export(EnumDecl bound) {
 		return this.imports.get(bound);
 	}
 	
-	public EClassifier export(ClassDecl bound) {
+	private EClassifier export(ClassDecl bound) {
 		return this.imports.get(bound);
 	}
 
-	public EClassifier export(ClassifierDecl bound) {
-		return switch(bound.eClass().getClassifierID()) {
-			case EmfaticPackage.CLASS_DECL 		->	{ yield this.export((ClassDecl)bound); }
-			case EmfaticPackage.DATA_TYPE_DECL	-> 	{ yield this.export((DataTypeDecl)bound); }
-			case EmfaticPackage.ENUM_DECL 		->	{ yield this.export((EnumDecl)bound); }
-			default -> throw new IllegalArgumentException("Unexpected value: " + bound.eClass().getClassifierID());
-			};
-		
-	}
-	
-	
-	
 }

@@ -353,12 +353,17 @@ public class EmfaticValidator extends AbstractEmfaticValidator {
 	}
 	
 	/**
-	 * Check Feature modifier is valid for feature
+	 * Check Feature modifier is valid for feature:
+	 * 	- resolve only works on ERefernce
+	 *  - id only for EAttribtues
+	 *  
 	 */
 	@Check
 	public void checkFeatureModifier() {
 		
 	}
+	
+	//TODO Check that the attribute defValue matches the Attribut's Type
 	
 	@Inject
 	private FileExtensionProvider fileExtensionProvider;
