@@ -14,13 +14,11 @@ import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.^extension.ExtendWith
 import org.eclipse.emf.emfatic.xtext.emfatic.DataTypeDecl
-import org.eclipse.emf.ecore.EEnum
-import org.eclipse.emf.emfatic.xtext.emfatic.EnumDecl
 import org.eclipse.emf.emfatic.xtext.ecore.Structure
 
 @ExtendWith(InjectionExtension)
 @InjectWith(EmfaticInjectorProvider)
-class CreatorForEnumTest {
+class StructureForDataTypeTest {
 
 	@Inject
 	ParseHelper<CompUnit> parseHelper
@@ -37,14 +35,10 @@ class CreatorForEnumTest {
 	}
 	
 	@Test
-	def void enumType() {
+	def void dataType() {
 		val result = parseHelper.parse('''
 			package test;
-			enum E {
-			  A=1;
-			  B=2;
-			  C=3;
-			}
+			datatype EInt : int;
 		''')
 		process(result)
 		var output = cache.get(
@@ -52,28 +46,20 @@ class CreatorForEnumTest {
 			result.eResource,
 			[null])
 		Assertions.assertNotNull(output)
-		Assertions.assertInstanceOf(EEnum, output);
+		Assertions.assertInstanceOf(EDataType, output);
 		
 	}
 	
 	@Test
-	def void enumTypeWithAnnotations() {
+	def void dataTypeWithGenerics() {
 		val result = parseHelper.parse('''
 			package test;
-			enum E { 
-			  @"http://before"(k=v) 
-			  A=1 @"http://after"(k=v); 
-			}
+			datatype EInt<A> : int;
 		''')
 		process(result)
-		val datatype = result.declarations.head.declaration as EnumDecl
+		val datatype = result.declarations.head.declaration as DataTypeDecl
 		var output = cache.get(
-			datatype.enumLiterals.head.leadingAnnotations.head,
-			result.eResource,
-			[null])
-		Assertions.assertNotNull(output)
-		output = cache.get(
-			datatype.enumLiterals.head.trailingAnnotations.head,
+			datatype.typeParamsInfo.tp.head,
 			result.eResource,
 			[null])
 		Assertions.assertNotNull(output)

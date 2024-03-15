@@ -1,10 +1,11 @@
 package org.eclipse.emf.emfatic.xtext.ecore.tests
 
 import com.google.inject.Inject
-import org.eclipse.emf.ecore.EClass
+import org.eclipse.emf.ecore.EEnum
 import org.eclipse.emf.ecore.EObject
+import org.eclipse.emf.emfatic.xtext.ecore.Structure
 import org.eclipse.emf.emfatic.xtext.emfatic.CompUnit
-import org.eclipse.emf.emfatic.xtext.emfatic.MapEntryDecl
+import org.eclipse.emf.emfatic.xtext.emfatic.EnumDecl
 import org.eclipse.emf.emfatic.xtext.scoping.EmfaticImport
 import org.eclipse.emf.emfatic.xtext.tests.EmfaticInjectorProvider
 import org.eclipse.xtext.testing.InjectWith
@@ -14,11 +15,10 @@ import org.eclipse.xtext.util.OnChangeEvictingCache
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.^extension.ExtendWith
-import org.eclipse.emf.emfatic.xtext.ecore.Structure
 
 @ExtendWith(InjectionExtension)
 @InjectWith(EmfaticInjectorProvider)
-class CreatorForMapEntryTest {
+class StrucutreForEnumTest {
 
 	@Inject
 	ParseHelper<CompUnit> parseHelper
@@ -35,10 +35,14 @@ class CreatorForMapEntryTest {
 	}
 	
 	@Test
-	def void mapEntry() {
+	def void enumType() {
 		val result = parseHelper.parse('''
 			package test;
-			mapentry EStringToStringMapEntry : String -> String;
+			enum E {
+			  A=1;
+			  B=2;
+			  C=3;
+			}
 		''')
 		process(result)
 		var output = cache.get(
@@ -46,16 +50,31 @@ class CreatorForMapEntryTest {
 			result.eResource,
 			[null])
 		Assertions.assertNotNull(output)
-		Assertions.assertInstanceOf(EClass, output);
-		output = cache.get(
-			(result.declarations.head.declaration as MapEntryDecl).key,
+		Assertions.assertInstanceOf(EEnum, output);
+		
+	}
+	
+	@Test
+	def void enumTypeWithAnnotations() {
+		val result = parseHelper.parse('''
+			package test;
+			enum E { 
+			  @"http://before"(k=v) 
+			  A=1 @"http://after"(k=v); 
+			}
+		''')
+		process(result)
+		val datatype = result.declarations.head.declaration as EnumDecl
+		var output = cache.get(
+			datatype.enumLiterals.head.leadingAnnotations.head,
 			result.eResource,
 			[null])
 		Assertions.assertNotNull(output)
 		output = cache.get(
-			(result.declarations.head.declaration as MapEntryDecl).value,
+			datatype.enumLiterals.head.trailingAnnotations.head,
 			result.eResource,
 			[null])
 		Assertions.assertNotNull(output)
 	}
+
 }

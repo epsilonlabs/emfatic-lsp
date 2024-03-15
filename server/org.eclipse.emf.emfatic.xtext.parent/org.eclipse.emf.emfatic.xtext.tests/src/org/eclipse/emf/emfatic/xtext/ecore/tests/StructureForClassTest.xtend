@@ -21,7 +21,7 @@ import org.eclipse.emf.emfatic.xtext.ecore.Structure
 
 @ExtendWith(InjectionExtension)
 @InjectWith(EmfaticInjectorProvider)
-class CreatorForClassTest {
+class StructureForClassTest {
 
 	@Inject
 	ParseHelper<CompUnit> parseHelper
