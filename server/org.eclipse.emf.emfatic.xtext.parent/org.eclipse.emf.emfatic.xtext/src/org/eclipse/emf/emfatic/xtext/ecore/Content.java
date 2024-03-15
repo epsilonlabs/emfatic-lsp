@@ -10,6 +10,7 @@ import org.eclipse.emf.ecore.EClassifier;
 import org.eclipse.emf.ecore.EDataType;
 import org.eclipse.emf.ecore.EModelElement;
 import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.ecore.EOperation;
 import org.eclipse.emf.ecore.EPackage;
 import org.eclipse.emf.ecore.EReference;
 import org.eclipse.emf.ecore.EStructuralFeature;
@@ -24,6 +25,7 @@ import org.eclipse.emf.emfatic.xtext.emfatic.BoundClassExceptWildcard;
 import org.eclipse.emf.emfatic.xtext.emfatic.BoundClassifierExceptWildcard;
 import org.eclipse.emf.emfatic.xtext.emfatic.CharExpr;
 import org.eclipse.emf.emfatic.xtext.emfatic.ClassDecl;
+import org.eclipse.emf.emfatic.xtext.emfatic.ClassMemberDecl;
 import org.eclipse.emf.emfatic.xtext.emfatic.CompUnit;
 import org.eclipse.emf.emfatic.xtext.emfatic.DataTypeDecl;
 import org.eclipse.emf.emfatic.xtext.emfatic.EmfaticPackage;
@@ -53,13 +55,7 @@ public class Content extends EmfaticSwitch<Object> {
 		}
 		EPackage target = (EPackage) this.doSwitch(source.getPackage());
 		for (var d : source.getDeclarations()) {
-			var dTarget = this.doSwitch(d.getDeclaration());
-			if (dTarget instanceof EPackage) {
-				target.getESubpackages().add((EPackage) dTarget);
-			} else if (dTarget instanceof EClassifier) {
-				target.getEClassifiers().add((EClassifier) dTarget);
-			}
-			processAnnotations((EModelElement) dTarget, d);
+			this.doSwitch(d.getDeclaration());
 		}
 		return target;
 	}
@@ -136,9 +132,28 @@ public class Content extends EmfaticSwitch<Object> {
 			BoundClassExceptWildcardCopier cp = equivalent(st);
 			cp.load(this.cache).configure(target);
 		}
+		source.getMembers().forEach(m -> {
+			var mt = this.doSwitch(m);
+			if (mt != null) {
+				if (mt instanceof EStructuralFeature) {
+					target.getEStructuralFeatures().add((EStructuralFeature) mt);
+				} else {
+					target.getEOperations().add((EOperation) mt);
+				}
+			}
+		});
 		return target;
 	}
 	
+	
+	
+	@Override
+	public Object caseClassMemberDecl(ClassMemberDecl source) {
+		EModelElement target = equivalent(source.getMember());
+		processAnnotations(target, source);
+		return target;
+	}
+
 	@Override
 	public Object caseFeatureDecl(FeatureDecl source) {
 		EStructuralFeature target = (EStructuralFeature) this.doSwitch(source.getFeature());
@@ -191,7 +206,6 @@ public class Content extends EmfaticSwitch<Object> {
 		return target;
 	}
 
-
 	@Override
 	public Object caseDataTypeDecl(DataTypeDecl source) {
 		EDataType target = equivalent(source);
@@ -200,6 +214,22 @@ public class Content extends EmfaticSwitch<Object> {
 			target.setInstanceClassName(source.getInstanceClassName().getLiteral());			
 		} else {
 			target.setInstanceClassName(source.getInstanceClassName().getId());
+		}
+		if (source.getTypeParamsInfo() != null) {
+			for (TypeParam tp : source.getTypeParamsInfo().getTp()) {
+				ETypeParameter targetTp = equivalent(tp);
+				if (tp.getTypeBoundsInfo() != null) {
+					for (BoundClassifierExceptWildcard tb : tp.getTypeBoundsInfo().getTb()) {
+						var gt = EcoreFactory.eINSTANCE.createEGenericType();
+						BoundClassifierExceptWildcardCopier cp = equivalent(tb);
+						cp.load(this.cache)
+							.configure(gt);
+						targetTp.getEBounds().add(gt);
+					}
+				}
+				targetTp.setName(tp.getName());
+				target.getETypeParameters().add(targetTp);
+			}
 		}
 		return target;
 	}
@@ -217,6 +247,12 @@ public class Content extends EmfaticSwitch<Object> {
 	}
 	
 	private void processAnnotations(EModelElement target, TopLevelDecl source) {
+		for (Annotation annt : source.getAnnotations()) {
+			target.getEAnnotations().add(processAnnotation(annt, source.eResource()));
+		}
+	}
+	
+	private void processAnnotations(EModelElement target, ClassMemberDecl source) {
 		for (Annotation annt : source.getAnnotations()) {
 			target.getEAnnotations().add(processAnnotation(annt, source.eResource()));
 		}
