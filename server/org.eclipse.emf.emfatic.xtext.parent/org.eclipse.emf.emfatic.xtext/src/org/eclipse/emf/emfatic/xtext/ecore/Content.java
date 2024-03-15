@@ -7,6 +7,7 @@ import org.eclipse.emf.ecore.EAnnotation;
 import org.eclipse.emf.ecore.EAttribute;
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EClassifier;
+import org.eclipse.emf.ecore.EDataType;
 import org.eclipse.emf.ecore.EModelElement;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EPackage;
@@ -24,6 +25,7 @@ import org.eclipse.emf.emfatic.xtext.emfatic.BoundClassifierExceptWildcard;
 import org.eclipse.emf.emfatic.xtext.emfatic.CharExpr;
 import org.eclipse.emf.emfatic.xtext.emfatic.ClassDecl;
 import org.eclipse.emf.emfatic.xtext.emfatic.CompUnit;
+import org.eclipse.emf.emfatic.xtext.emfatic.DataTypeDecl;
 import org.eclipse.emf.emfatic.xtext.emfatic.EmfaticPackage;
 import org.eclipse.emf.emfatic.xtext.emfatic.FeatureDecl;
 import org.eclipse.emf.emfatic.xtext.emfatic.IntExpr;
@@ -38,9 +40,9 @@ import org.eclipse.xtext.util.OnChangeEvictingCache;
 
 import com.google.inject.Inject;
 
-public class Data extends EmfaticSwitch<Object> {
+public class Content extends EmfaticSwitch<Object> {
 	
-	public Data(OnChangeEvictingCache cache) {
+	public Content(OnChangeEvictingCache cache) {
 		this.cache = cache;
 	}
 
@@ -190,6 +192,17 @@ public class Data extends EmfaticSwitch<Object> {
 	}
 
 
+	@Override
+	public Object caseDataTypeDecl(DataTypeDecl source) {
+		EDataType target = equivalent(source);
+		target.setName(source.getName());
+		if (source.getInstanceClassName().getLiteral() != null) {
+			target.setInstanceClassName(source.getInstanceClassName().getLiteral());			
+		} else {
+			target.setInstanceClassName(source.getInstanceClassName().getId());
+		}
+		return target;
+	}
 
 	@Inject
 	private AnnotationMap annotations;

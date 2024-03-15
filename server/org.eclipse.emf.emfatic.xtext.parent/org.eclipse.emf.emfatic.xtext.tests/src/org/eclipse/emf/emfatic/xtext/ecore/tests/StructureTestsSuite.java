@@ -5,8 +5,15 @@ import org.junit.platform.suite.api.SelectPackages;
 import org.junit.platform.suite.api.Suite;
 
 @Suite
-@SelectPackages("org.eclipse.emf.emfatic.xtext.ecore.tests")
-//@SelectClasses( StructureForClassTest.class )
+//@SelectPackages("org.eclipse.emf.emfatic.xtext.ecore.tests")
+@SelectClasses({
+		StructureForClassTest.class,
+		StructureForDataTypeTest.class,
+		StructureForFeaturesTest.class,
+		StructureForMapEntryTest.class,
+		StructureForOperationsTest.class,
+		StructureForPackageTest.class,
+		StrucutreForEnumTest.class })
 public class StructureTestsSuite {
 
 }

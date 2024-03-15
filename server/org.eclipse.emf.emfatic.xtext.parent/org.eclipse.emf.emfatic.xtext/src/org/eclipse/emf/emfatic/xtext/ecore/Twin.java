@@ -20,7 +20,7 @@ public class Twin {
 		super();
 		this.cache = cache;
 		this.structure = new Structure(cache, emfaticImport);
-		this.data = new Data(cache);
+		this.content = new Content(cache);
 	}
 
 	public EPackage copy(final CompUnit model) {
@@ -30,7 +30,7 @@ public class Twin {
 
 				@Override
 				public void process(Resource state) throws Exception {
-					data.doSwitch(model);
+					content.doSwitch(model);
 				}
 			});
 			 
@@ -61,5 +61,5 @@ public class Twin {
 	
 	private final OnChangeEvictingCache cache;
 	private final Structure structure;
-	private final Data data;
+	private final Content content;
 }
