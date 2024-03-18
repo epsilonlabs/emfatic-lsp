@@ -51,11 +51,11 @@ class StrucutreForEnumTest {
 			[null])
 		Assertions.assertNotNull(output)
 		Assertions.assertInstanceOf(EEnum, output);
-		
+		Assertions.assertEquals(3, (output as EEnum).ELiterals.size)
 	}
 	
 	@Test
-	def void enumTypeWithAnnotations() {
+	def void enumTypeWithLitearlAnnotations() {
 		val result = parseHelper.parse('''
 			package test;
 			enum E { 
@@ -75,6 +75,27 @@ class StrucutreForEnumTest {
 			result.eResource,
 			[null])
 		Assertions.assertNotNull(output)
+	}
+	
+	@Test
+	def void eenumUnspecified() {
+		val result = parseHelper.parse('''
+			package test;
+			enum E {
+			  A;  // = 0 (if not specified, first literal has value 0)
+			  B = 3;
+			  C; // = 4 (in general, unspecified values are 1 greater than previous value)
+			  D; // = 5
+			}
+		''')
+		process(result)
+		var output = cache.get(
+			result.declarations.head.declaration,
+			result.eResource,
+			[null])
+		Assertions.assertNotNull(output)
+		Assertions.assertInstanceOf(EEnum, output)
+		Assertions.assertEquals(4, (output as EEnum).ELiterals.size)
 	}
 
 }

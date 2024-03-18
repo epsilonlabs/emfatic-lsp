@@ -2,7 +2,10 @@ package org.eclipse.emf.emfatic.xtext.ecore;
 
 import org.eclipse.emf.ecore.EAttribute;
 import org.eclipse.emf.ecore.EClass;
+import org.eclipse.emf.ecore.EEnum;
 import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.ecore.EPackage;
+import org.eclipse.emf.ecore.EParameter;
 import org.eclipse.emf.ecore.EReference;
 import org.eclipse.emf.ecore.ETypeParameter;
 import org.eclipse.emf.ecore.EcoreFactory;
@@ -65,39 +68,44 @@ public class Structure extends EmfaticSwitch<Object> {
 
 	@Override
 	public Object casePackageDecl(PackageDecl source) {
-		var target = this.cache.get(
+		EPackage result = this.cache.get(
 				source, 
 				source.eResource(),
 				EcoreFactory.eINSTANCE::createEPackage);
-		return target;
+		source.getAnnotations().forEach(this::doSwitch);
+		return result;
 	}
 	
 	@Override
 	public Object caseTopLevelDecl(TopLevelDecl source) {
-		this.doSwitch(source.getDeclaration());
+		Object result = this.doSwitch(source.getDeclaration());
 		source.getAnnotations().forEach(this::doSwitch);
-		return super.caseTopLevelDecl(source);
+		return result;
 	}
 
 	@Override
 	public Object caseSubPackageDecl(SubPackageDecl source) {
-		var target = this.cache.get(
+		var result = this.cache.get(
 				source, 
 				source.eResource(),
 				EcoreFactory.eINSTANCE::createEPackage);
 		source.getDeclarations().forEach(this::doSwitch);
-		return target;
+		EPackage parent = this.equivalent(((CompUnit)source.eContainer().eContainer()).getPackage());
+		parent.getESubpackages().add(result);
+		return result;
 	}
 	
 	@Override
 	public Object caseMapEntryDecl(MapEntryDecl source) {
-		EClass target = this.cache.get(
+		EClass result = this.cache.get(
 				source, 
 				source.eResource(),
 				EcoreFactory.eINSTANCE::createEClass);
 		this.doSwitch(source.getKey());
 		this.doSwitch(source.getValue());
-		return target;
+		EPackage parent = this.equivalent(((CompUnit)source.eContainer().eContainer()).getPackage());
+		parent.getEClassifiers().add(result);
+		return result;
 	}
 
 	@Override
@@ -151,14 +159,16 @@ public class Structure extends EmfaticSwitch<Object> {
 		}
 		source.getSuperTypes().forEach(this::doSwitch);
 		source.getMembers().forEach(this::doSwitch);
+		EPackage parent = this.equivalent(((CompUnit)source.eContainer().eContainer()).getPackage());
+		parent.getEClassifiers().add(result);
 		return result;
 	}
 
 	@Override
 	public Object caseClassMemberDecl(ClassMemberDecl source) {
+		Object result = this.doSwitch(source.getMember());
 		source.getAnnotations().forEach(this::doSwitch);
-		this.doSwitch(source.getMember());
-		return super.caseClassMemberDecl(source);
+		return result;
 	}
 
 	@Override
@@ -196,13 +206,14 @@ public class Structure extends EmfaticSwitch<Object> {
 
 	@Override
 	public Object caseParam(Param source) {
-		source.getLeadingAnnotations().forEach(this::doSwitch);
-		this.doSwitch(source.getTypeWithMulti());
-		source.getTrailingAnnotations().forEach(this::doSwitch);
-		return this.cache.get(
+		EParameter result = this.cache.get(
 				source,
 				source.eResource(),
 				EcoreFactory.eINSTANCE::createEParameter);
+		source.getLeadingAnnotations().forEach(this::doSwitch);
+		this.doSwitch(source.getTypeWithMulti());
+		source.getTrailingAnnotations().forEach(this::doSwitch);
+		return result;
 	}
 
 	@Override
@@ -260,18 +271,24 @@ public class Structure extends EmfaticSwitch<Object> {
 	
 	@Override
 	public Object caseEnumDecl(EnumDecl source) {
-		source.getEnumLiterals().forEach(this::doSwitch);
-		return this.cache.get(
+		EEnum result = this.cache.get(
 				source, 
 				source.eResource(),
 				EcoreFactory.eINSTANCE::createEEnum);
+		source.getEnumLiterals().forEach(this::doSwitch);
+		return result;
 	}
 	
 	@Override
 	public Object caseEnumLiteral(EnumLiteral source) {
+		var result = this.cache.get(
+				source,
+				source.eResource(),
+				EcoreFactory.eINSTANCE::createEEnumLiteral);
 		source.getLeadingAnnotations().forEach(this::doSwitch);
 		source.getTrailingAnnotations().forEach(this::doSwitch);
-		return super.caseEnumLiteral(source);
+		((EEnum)this.equivalent(source.eContainer())).getELiterals().add(result);
+		return result;
 	}
 
 	@Override
@@ -315,5 +332,11 @@ public class Structure extends EmfaticSwitch<Object> {
 	private final OnChangeEvictingCache cache;
 	private final EmfaticImport emfaticImport;
 	
-
+	private <T> T equivalent(EObject source) {
+		var target = this.cache.get(source, source.eResource(), () -> (T) null);
+		if (target == null) {
+			throw new IllegalArgumentException("Target element not found for " + source);
+		}
+		return (T) target;
+	}
 }

@@ -4,12 +4,12 @@ import com.google.inject.Inject
 import org.eclipse.emf.ecore.EAnnotation
 import org.eclipse.emf.ecore.EAttribute
 import org.eclipse.emf.ecore.EClass
-import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.EOperation
 import org.eclipse.emf.ecore.EPackage
 import org.eclipse.emf.ecore.EParameter
 import org.eclipse.emf.ecore.EReference
 import org.eclipse.emf.ecore.ETypeParameter
+import org.eclipse.emf.emfatic.xtext.ecore.Structure
 import org.eclipse.emf.emfatic.xtext.emfatic.Annotation
 import org.eclipse.emf.emfatic.xtext.emfatic.Attribute
 import org.eclipse.emf.emfatic.xtext.emfatic.ClassDecl
@@ -20,29 +20,21 @@ import org.eclipse.emf.emfatic.xtext.emfatic.Operation
 import org.eclipse.emf.emfatic.xtext.emfatic.Param
 import org.eclipse.emf.emfatic.xtext.emfatic.Reference
 import org.eclipse.emf.emfatic.xtext.emfatic.Wildcard
-import org.eclipse.emf.emfatic.xtext.scoping.EmfaticImport
 import org.eclipse.emf.emfatic.xtext.tests.EmfaticInjectorProvider
 import org.eclipse.xtext.testing.InjectWith
 import org.eclipse.xtext.testing.extensions.InjectionExtension
 import org.eclipse.xtext.testing.util.ParseHelper
-import org.eclipse.xtext.util.OnChangeEvictingCache
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.^extension.ExtendWith
-import org.eclipse.emf.emfatic.xtext.ecore.Structure
+
 
 @ExtendWith(InjectionExtension)
 @InjectWith(EmfaticInjectorProvider)
-class StructureForPackageTest {
+class StructureForPackageTest extends StructureTest {
 
 	@Inject
 	ParseHelper<CompUnit> parseHelper
-
-	@Inject
-	OnChangeEvictingCache cache
-
-	@Inject
-	EmfaticImport importer
 
 	@Test
 	def void empty() {
@@ -77,12 +69,14 @@ class StructureForPackageTest {
 			[null])
 		Assertions.assertNotNull(output)
 		Assertions.assertInstanceOf(EPackage, output);
+		Assertions.assertEquals(
+			cache.get(
+				result.package,
+				result.eResource,
+				[null]),
+			(output as EPackage).eContainer)
 	}
-	
-	def Object process(EObject result) {
-		val creator = new Structure(cache, importer)
-		return creator.doSwitch(result)
-	}
+
 	
 	@Test
 	def void mapEntry() {

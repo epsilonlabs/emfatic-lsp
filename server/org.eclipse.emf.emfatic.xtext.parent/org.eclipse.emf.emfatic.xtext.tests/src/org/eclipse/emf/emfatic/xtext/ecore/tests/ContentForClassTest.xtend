@@ -13,6 +13,7 @@ import org.eclipse.xtext.testing.util.ParseHelper
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.^extension.ExtendWith
+import org.eclipse.emf.ecore.EAnnotation
 
 @ExtendWith(InjectionExtension)
 @InjectWith(EmfaticInjectorProvider)
@@ -35,6 +36,28 @@ class ContentForClassTest extends ContentTest {
 		Assertions.assertNotNull(output)
 		Assertions.assertInstanceOf(EClass, output);
 		Assertions.assertEquals("A", (output as EClass).name);
+		Assertions.assertEquals(
+			cache.get(
+				result.package,
+				result.eResource,
+				[null]),
+			(output as EClass).eContainer)
+	}
+	
+	@Test
+	def void emptyClassWithAnnotation() {
+		val result = parseHelper.parse('''
+			package test;
+			@"http://class/annotation"(k="v")
+			class A {}
+		''')
+		process(result)
+		var output = cache.get(
+			result.declarations.head.annotations.head,
+			result.eResource,
+			[null])
+		Assertions.assertNotNull(output)
+		Assertions.assertInstanceOf(EAnnotation, output);
 	}
 	
 	@Test
