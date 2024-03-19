@@ -14,6 +14,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.^extension.ExtendWith
 import org.eclipse.emf.emfatic.xtext.emfatic.Annotation
 import org.eclipse.emf.ecore.EAnnotation
+import org.eclipse.emf.ecore.EReference
 
 @ExtendWith(InjectionExtension)
 @InjectWith(EmfaticInjectorProvider)
@@ -363,7 +364,7 @@ class ContentForFeaturesTest extends ContentTest {
 		Assertions.assertTrue(eAttribute.derived)
 	}
 	
-	/*
+
 	@Test
 	def void classWithRefernce() {
 		val result = parseHelper.parse('''
@@ -371,6 +372,7 @@ class ContentForFeaturesTest extends ContentTest {
 			class A {
 				val B bs;
 			}
+			class B {}
 		''')
 		process(result)
 		val classDecl = result.declarations.head.declaration as ClassDecl
@@ -381,18 +383,20 @@ class ContentForFeaturesTest extends ContentTest {
 			[null])
 		Assertions.assertNotNull(output)
 		Assertions.assertInstanceOf(EReference, output);
-		output = cache.get(
-			(attribute.feature as Reference).typeWithMulti,
-			result.eResource,
-			[null])
-		Assertions.assertNotNull(output)
-		output = cache.get(
-			(attribute.feature as Reference).typeWithMulti.type,
-			result.eResource,
-			[null])
-		Assertions.assertNotNull(output)
+		val eReference = output as EReference
+		Assertions.assertEquals("b", eReference.name)
+		Assertions.assertEquals("B", eReference.EReferenceType.name)
+		Assertions.assertFalse(eReference.isMany)
+		Assertions.assertTrue(eReference.changeable)
+		Assertions.assertFalse(eReference.volatile)
+		Assertions.assertFalse(eReference.transient)
+		Assertions.assertFalse(eReference.unsettable)
+		Assertions.assertFalse(eReference.derived)
+		Assertions.assertFalse(eReference.unique)
+		Assertions.assertFalse(eReference.ordered)
+		Assertions.assertFalse(eReference.resolveProxies)
 	}
-	
+	/*	
 	@Test
 	def void classWithRefernceWithAnnotation() {
 		val result = parseHelper.parse('''

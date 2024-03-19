@@ -10,6 +10,7 @@ import org.eclipse.emf.ecore.EDataType;
 import org.eclipse.emf.ecore.EModelElement;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EPackage;
+import org.eclipse.emf.ecore.EReference;
 import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.emf.ecore.ETypeParameter;
 import org.eclipse.emf.ecore.EcoreFactory;
@@ -34,6 +35,7 @@ import org.eclipse.emf.emfatic.xtext.emfatic.IntExpr;
 import org.eclipse.emf.emfatic.xtext.emfatic.MapEntryDecl;
 import org.eclipse.emf.emfatic.xtext.emfatic.Modifier;
 import org.eclipse.emf.emfatic.xtext.emfatic.PackageDecl;
+import org.eclipse.emf.emfatic.xtext.emfatic.Reference;
 import org.eclipse.emf.emfatic.xtext.emfatic.StringExpr;
 import org.eclipse.emf.emfatic.xtext.emfatic.SubPackageDecl;
 import org.eclipse.emf.emfatic.xtext.emfatic.TopLevelDecl;
@@ -199,6 +201,17 @@ public class Content extends EmfaticSwitch<Object> {
 		return target;
 	}
 
+
+	@Override
+	public Object caseReference(Reference source) {
+		EReference target = equivalent(source);
+		ClassRefWithMultiCopier type = equivalent(source.getTypeWithMulti());
+		type.load(this.cache).configure(target);
+		target.setName(source.getName()); 
+		return target;
+	}
+	
+	
 
 	@Override
 	public Object caseDataTypeDecl(DataTypeDecl source) {

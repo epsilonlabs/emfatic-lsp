@@ -6,6 +6,7 @@ import java.util.List;
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EClassifier;
 import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.ecore.EReference;
 import org.eclipse.emf.ecore.ETypeParameter;
 import org.eclipse.emf.ecore.EcoreFactory;
 import org.eclipse.emf.emfatic.xtext.emfatic.BoundClassExceptWildcard;
@@ -47,6 +48,21 @@ class BoundClassExceptWildcardCopier extends AbstractClassifierCopier<BoundClass
 				gt.getETypeArguments().add(taGt);
 			});
 			target.getEGenericSuperTypes().add(gt);
+		}
+	}
+	
+	public void configure(EReference target) {
+		if (this.targetTypeArgs.isEmpty()) {
+			target.setEType(targetEClassifier);
+		} else {
+			var gt = EcoreFactory.eINSTANCE.createEGenericType();
+			gt.setEClassifier(this.targetEClassifier);
+			this.targetTypeArgs.forEach(ta -> {
+				var taGt = EcoreFactory.eINSTANCE.createEGenericType();
+				ta.configure(taGt);
+				gt.getETypeArguments().add(taGt);
+			});
+			target.setEGenericType(gt);
 		}
 	}
 		

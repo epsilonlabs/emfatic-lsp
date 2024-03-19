@@ -6,10 +6,6 @@ import org.eclipse.xtext.util.OnChangeEvictingCache;
 
 public class TypeWithMultiCopier {
 		
-	TypeWithMultiCopier(TypeWithMulti twm) {
-		this(twm, null, null);
-	}
-	
 	public void configure(EStructuralFeature target) {
 		if (this.cCopier == null) {
 			throw new IllegalStateException("Call to configure before calling load.");
@@ -17,6 +13,10 @@ public class TypeWithMultiCopier {
 		
 		this.cCopier.configure(target);
 		this.mCopier.configure(target);
+	}
+	
+	TypeWithMultiCopier(TypeWithMulti twm) {
+		this(twm, null, null);
 	}
 	
 	/**
@@ -46,6 +46,11 @@ public class TypeWithMultiCopier {
 		}
 		return new TypeWithMultiCopier(this.twm, cCopier.load(cache), mCopier.load(cache));
 	}
+
+	
+	private final TypeWithMulti twm;
+	private final BoundClassifierExceptWildcardCopier cCopier;
+	private final MultiplicityCopier mCopier;
 	
 	private TypeWithMultiCopier(TypeWithMulti twm, BoundClassifierExceptWildcardCopier cCopier, MultiplicityCopier mCopier) {
 		super();
@@ -53,9 +58,5 @@ public class TypeWithMultiCopier {
 		this.cCopier = cCopier;
 		this.mCopier = mCopier;
 	}
-	
-	private final TypeWithMulti twm;
-	private final BoundClassifierExceptWildcardCopier cCopier;
-	private final MultiplicityCopier mCopier;
 	
 }

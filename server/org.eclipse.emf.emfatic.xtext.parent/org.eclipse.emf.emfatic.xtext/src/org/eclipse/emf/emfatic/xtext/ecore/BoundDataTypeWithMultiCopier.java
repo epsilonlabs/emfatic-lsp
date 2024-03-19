@@ -39,8 +39,12 @@ public class BoundDataTypeWithMultiCopier {
 		} else {
 			mCopier = new MultiplicityCopier();
 		}
-		mCopier = mCopier.load(cache);
-		return new BoundDataTypeWithMultiCopier(this.source, targetEDataType, targetTypeParameter, mCopier, this.importer);
+		return new BoundDataTypeWithMultiCopier(
+				this.source,
+				targetEDataType,
+				targetTypeParameter,
+				mCopier.load(cache),
+				this.importer);
 	}
 	
 	void configure(EAttribute target) {

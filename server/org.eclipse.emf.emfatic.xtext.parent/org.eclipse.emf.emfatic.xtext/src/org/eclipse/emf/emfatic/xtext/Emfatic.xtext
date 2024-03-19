@@ -346,12 +346,27 @@ Reference: // *EReference.resolveProxies    = true  -- local?
 	resolve=Resolve? kind=ReferenceKind typeWithMulti=ClassRefWithMulti (HASH opposite=[Reference|ID])? name=ID SEMI
 ;
 
+
 /**
  * This can be used when only EClass can be referenced (e.g. extends, References)
  */
 ClassRefWithMulti:
 	type=BoundClassExceptWildcard (multiplicity=Multiplicity)?
 ;
+
+//BoundTypeRefOrClassExceptWildcard:
+//	// bound = ClassDecl or TypeParam
+//	bound=(ClassRef | TypeParamRef) (LT typeArgs+=TypeArg (COMMA typeArgs+=TypeArg)* GT)?
+//;
+//
+//ClassRef:
+//	class=[ecore::EObject|QualifiedID]
+//;
+//
+//TypeParamRef:
+//	type=[TypeParam]
+//;
+
 
 /**
  * token referenceKind : "ref" | "val" ;

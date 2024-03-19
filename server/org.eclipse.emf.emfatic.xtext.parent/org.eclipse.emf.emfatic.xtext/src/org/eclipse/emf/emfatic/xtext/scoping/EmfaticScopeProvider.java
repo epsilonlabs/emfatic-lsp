@@ -11,6 +11,7 @@ import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EReference;
 import org.eclipse.emf.emfatic.xtext.emfatic.Attribute;
+import org.eclipse.emf.emfatic.xtext.emfatic.BoundClassExceptWildcard;
 import org.eclipse.emf.emfatic.xtext.emfatic.BoundDataTypeWithMulti;
 import org.eclipse.emf.emfatic.xtext.emfatic.ClassDecl;
 import org.eclipse.emf.emfatic.xtext.emfatic.ClassRefWithMulti;
@@ -59,8 +60,12 @@ public class EmfaticScopeProvider extends AbstractEmfaticScopeProvider {
 						super.getScope(context, reference),
 						e -> isSubType(e.getEClass(), EmfaticPackage.Literals.CLASS_DECL)
 								&& !Objects.equal(e.getEObjectOrProxy(), context));
-			} else if (context instanceof ClassRefWithMulti) {
-				ClassDecl cls = (ClassDecl)context.eContainer().eContainer();
+			} else if (context instanceof BoundClassExceptWildcard || context instanceof Reference) {
+				var owner = context.eContainer();
+				while (!(owner instanceof ClassDecl)) {
+					owner = owner.eContainer();
+				}
+				var cls = (ClassDecl)owner;
 				// ClassDecl and TypeParameters
 				List<TypeParam> candidates = cls.getTypeParamsInfo() == null ? 
 						new ArrayList<>() : cls.getTypeParamsInfo().getTp();
