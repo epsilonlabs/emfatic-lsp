@@ -186,7 +186,7 @@ public class Structure extends EmfaticSwitch<Object> {
 		if (source.getTypeParamsInfo() != null) {
 			source.getTypeParamsInfo().getTp().forEach(this::doSwitch);
 		}
-		this.doSwitch(source.getResType());
+		this.doSwitch(source.getResultType());
 		source.getParams().forEach(this::doSwitch);
 		source.getExceptions().forEach(this::doSwitch);
 		return result;

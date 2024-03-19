@@ -56,12 +56,12 @@ class StructureForOperationsTest {
 		Assertions.assertNotNull(output)
 		Assertions.assertInstanceOf(EOperation, output);
 		output = cache.get(
-			operation.resType,
+			operation.resultType,
 			result.eResource,
 			[null])
 		Assertions.assertNotNull(output)
 		output = cache.get(
-			operation.resType.type,
+			operation.resultType.type,
 			result.eResource,
 			[null])
 		Assertions.assertNotNull(output)
@@ -171,12 +171,12 @@ class StructureForOperationsTest {
 		Assertions.assertNotNull(output)
 		Assertions.assertInstanceOf(EOperation, output);
 		output = cache.get(
-			operation.resType,
+			operation.resultType,
 			result.eResource,
 			[null])
 		Assertions.assertNotNull(output)
 		output = cache.get(
-			operation.resType.type,
+			operation.resultType.type,
 			result.eResource,
 			[null])
 		Assertions.assertNotNull(output)

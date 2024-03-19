@@ -293,15 +293,15 @@ ClassMember:
  * but improves "out of the box" validation and content assist.
  */
 FeatureDecl:
-  (readonly?=Readonly?   	// EStructuralFeature.changeable = false
-& volatile?=Volatile?  		// EStructuralFeature.volatile   = true
-& transient?=Transient?  	// EStructuralFeature.transient  = true
-& unsettable?=Unsettable?	// EStructuralFeature.unsettable = true
-& derived?=Derived?    		// EStructuralFeature.derived    = true
-& unique?=Unique?     		// *ETypedElement.unique         = true  -- bag?
-& ordered?=Ordered?    		// *ETypedElement.ordered        = true  -- random?
-& resolve?=Resolve?    		// *EReference.resolveProxies    = true  -- local?
-& id?=IdModifier? )     	// EAttribute.id                 = true
+  (readonly=Readonly?   	// EStructuralFeature.changeable = false
+ & volatile=Volatile?  		// EStructuralFeature.volatile   = true
+ & transient=Transient?  	// EStructuralFeature.transient  = true
+ & unsettable=Unsettable?	// EStructuralFeature.unsettable = true
+ & derived=Derived?    		// EStructuralFeature.derived    = true
+ & unique=Unique?     		// *ETypedElement.unique         = true  -- bag?
+ & ordered=Ordered?)    		// *ETypedElement.ordered        = true  -- random?
+//& resolve?=Resolve?    		// *EReference.resolveProxies    = true  -- local?
+//& id?=IdModifier?     	// EAttribute.id                 = true
   feature=StructuralFeature
 ;
 
@@ -315,8 +315,8 @@ StructuralFeature:
  * we introduce the new BoundDataTypeWithMulti, so attributes can only have DataType
  * types.
  */
-Attribute:
-	"attr" typeWithMulti=BoundDataTypeWithMulti name=ID (EQUALS defValue=DefaultValueExpr)? SEMI
+Attribute:	// EAttribute.id                 = true
+	id=IdModifier? "attr" typeWithMulti=BoundDataTypeWithMulti name=ID (EQUALS defValue=DefaultValueExpr)? SEMI
 ; 
 
 /**
@@ -342,8 +342,8 @@ SimpleMultiplicityExpr:
 /**
  * sequence reference : referenceKind typeWithMulti (HASH oppositeName=ID)? name=ID SEMI ;
  */
-Reference:
-	kind=ReferenceKind typeWithMulti=ClassRefWithMulti (HASH opposite=[Reference|ID])? name=ID SEMI
+Reference: // *EReference.resolveProxies    = true  -- local?
+	resolve=Resolve? kind=ReferenceKind typeWithMulti=ClassRefWithMulti (HASH opposite=[Reference|ID])? name=ID SEMI
 ;
 
 /**
@@ -383,47 +383,47 @@ ReferenceKind:
 //| "id"         // EAttribute.id                 = true
 //;
 
-Readonly:
-	{Readonly} (negated?=BANG)? "readonly"
+Readonly returns Modifier:
+	{Modifier} (negated?=BANG)? "readonly"
 ;
 
-Volatile:
-	{Volatile} (negated?=BANG)? "volatile"
+Volatile returns Modifier:
+	{Modifier} (negated?=BANG)? "volatile"
 ;
 
-Transient:
-	{Transient} (negated?=BANG)? "transient"
+Transient returns Modifier:
+	{Modifier} (negated?=BANG)? "transient"
 ;
 
-Unsettable:
-	{Unsettable} (negated?=BANG)? "unsettable"
+Unsettable returns Modifier:
+	{Modifier} (negated?=BANG)? "unsettable"
 ;
 
-Derived:
-	{Derived} (negated?=BANG)? "derived"
+Derived returns Modifier:
+	{Modifier} (negated?=BANG)? "derived"
 ;
 
-Unique:
-	{Unique} (negated?=BANG)? "unique"
+Unique returns Modifier:
+	{Modifier} (negated?=BANG)? "unique"
 ;
 
-Ordered:
-	{Ordered} (negated?=BANG)? "ordered"
+Ordered returns Modifier:
+	{Modifier} (negated?=BANG)? "ordered"
 ;
 
-Resolve:
-	{Resolve} (negated?=BANG)? "resolve"
+Resolve returns Modifier:
+	{Modifier} (negated?=BANG)? "resolve"
 ;
 
-IdModifier:
-	{IdModifier} (negated?=BANG)? "id"
+IdModifier returns Modifier:
+	{Modifier} (negated?=BANG)? "id"
 ;
 
 /**
  * abstract defaultValueExpr : boolExpr | intExpr | stringExpr | charExpr ;
  */
 DefaultValueExpr returns Expr:
-	BoolExpr | IntExpr | StringExpr | CharExpr
+	BoolExpr | IntExpr | FloatExpr | StringExpr | CharExpr
 ;
 
 /**
@@ -443,6 +443,14 @@ TrueOrFalse : "true" | "false" ;
  */
 IntExpr:
 	(negative?=MINUS)? value=INT
+;
+
+FloatExpr:
+	(negative?=MINUS)? value=Float
+;
+
+Float returns ecore::EFloat:
+	INT '.' INT
 ;
 
 /**

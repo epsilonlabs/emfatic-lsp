@@ -26,12 +26,15 @@ public class MultiplicityCopier {
 				case "?":
 					lb = 0;
 					ub = 1;
+					break;
 				case "*":
 					lb = 0;
 					ub = -1;
+					break;
 				case "+":
 					lb = 1;
 					ub = -1;
+					break;
 				default:
 					lb = Integer.valueOf(this.source.getLowerBound());
 					ub = Integer.valueOf(this.source.getUpperBound());
@@ -41,9 +44,11 @@ public class MultiplicityCopier {
 				case "?":
 					lb = Integer.valueOf(this.source.getLowerBound());
 					ub =  -1;
+					break;
 				case "*":
 					lb = Integer.valueOf(this.source.getLowerBound());
 					ub =  -1;
+					break;
 				default:
 					lb = Integer.valueOf(this.source.getLowerBound());
 					ub = Integer.valueOf(this.source.getLowerBound());

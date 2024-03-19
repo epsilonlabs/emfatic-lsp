@@ -31,17 +31,24 @@ class ContentForFeaturesTest extends ContentTest {
 			}
 		''')
 		process(result)
-		val classDecl = result.declarations.head.declaration as ClassDecl
-		val attribute = (classDecl).members.head.member as FeatureDecl
 		var output = cache.get(
-			attribute.feature,
+			((result.declarations.head.declaration as ClassDecl).members.head.member as FeatureDecl).feature,
 			result.eResource,
 			[null])
 		Assertions.assertNotNull(output)
 		Assertions.assertInstanceOf(EAttribute, output);
-		Assertions.assertEquals("b", (output as EAttribute).name)
-		Assertions.assertEquals("EString", (output as EAttribute).EAttributeType.name)
-		Assertions.assertFalse((output as EAttribute).isMany)
+		var eAttribute = output as EAttribute;
+		Assertions.assertEquals("b", eAttribute.name)
+		Assertions.assertEquals("EString", eAttribute.EAttributeType.name)
+		Assertions.assertFalse(eAttribute.isMany)
+		Assertions.assertTrue(eAttribute.changeable)
+		Assertions.assertFalse(eAttribute.volatile)
+		Assertions.assertFalse(eAttribute.transient)
+		Assertions.assertFalse(eAttribute.unsettable)
+		Assertions.assertFalse(eAttribute.derived)
+		Assertions.assertFalse(eAttribute.unique)
+		Assertions.assertFalse(eAttribute.ordered)
+		Assertions.assertFalse(eAttribute.ID)
 	}
 	
 	@Test
@@ -67,7 +74,7 @@ class ContentForFeaturesTest extends ContentTest {
 		Assertions.assertTrue((output as EAnnotation).details.containsKey("k"))
 		Assertions.assertEquals("v", (output as EAnnotation).details.get("k"))
 	}
-/*	
+
 	@Test
 	def void classWithAttributeMulti() {
 		val result = parseHelper.parse('''
@@ -77,33 +84,139 @@ class ContentForFeaturesTest extends ContentTest {
 			}
 		''')
 		process(result)
-		val classDecl = result.declarations.head.declaration as ClassDecl
-		val attribute = (classDecl).members.head.member as FeatureDecl
-		val output = cache.get(
-			(attribute.feature as Attribute).typeWithMulti.multiplicity,
+		var output = cache.get(
+			((result.declarations.head.declaration as ClassDecl).members.head.member as FeatureDecl).feature,
 			result.eResource,
 			[null])
 		Assertions.assertNotNull(output)
+		Assertions.assertInstanceOf(EAttribute, output);
+		var eAttribute = output as EAttribute;
+		Assertions.assertTrue(eAttribute.isMany)
 	}
-	
+		
 	@Test
-	def void classWithAttributeDefault() {
-		val result = parseHelper.parse('''
+	def void classWithStringAttributeDefault() {
+		var result = parseHelper.parse('''
 			package test;
 			class A {
 				attr String b = "DefValue";
 			}
 		''')
 		process(result)
-		val classDecl = result.declarations.head.declaration as ClassDecl
-		val attribute = (classDecl).members.head.member as FeatureDecl
-		val output = cache.get(
-			(attribute.feature as Attribute).defValue,
+		var output = cache.get(
+			((result.declarations.head.declaration as ClassDecl).members.head.member as FeatureDecl).feature,
 			result.eResource,
 			[null])
 		Assertions.assertNotNull(output)
+		Assertions.assertInstanceOf(EAttribute, output);
+		var eAttribute = output as EAttribute;
+		Assertions.assertEquals("DefValue", eAttribute.defaultValue)
+		result = parseHelper.parse('''
+			package test;
+			class A {
+				attr String b;
+			}
+		''')
+		process(result)
+		output = cache.get(
+			((result.declarations.head.declaration as ClassDecl).members.head.member as FeatureDecl).feature,
+			result.eResource,
+			[null])
+		eAttribute = output as EAttribute;
+		Assertions.assertNull(eAttribute.defaultValue)
 	}
-	//val EPackage[*]#eSuperPackage eSubpackages;
+	
+	@Test
+	def void classWithBooleanAttributeDefault() {
+		var result = parseHelper.parse('''
+			package test;
+			class A {
+				attr boolean b = true;
+			}
+		''')
+		process(result)
+		var output = cache.get(
+			((result.declarations.head.declaration as ClassDecl).members.head.member as FeatureDecl).feature,
+			result.eResource,
+			[null])
+		Assertions.assertNotNull(output)
+		Assertions.assertInstanceOf(EAttribute, output);
+		var eAttribute = output as EAttribute;
+		Assertions.assertTrue(eAttribute.defaultValue as Boolean)
+		result = parseHelper.parse('''
+			package test;
+			class A {
+				attr boolean b = false;
+			}
+		''')
+		process(result)
+		output = cache.get(
+			((result.declarations.head.declaration as ClassDecl).members.head.member as FeatureDecl).feature,
+			result.eResource,
+			[null])
+		eAttribute = output as EAttribute;
+		Assertions.assertFalse(eAttribute.defaultValue as Boolean)
+		result = parseHelper.parse('''
+			package test;
+			class A {
+				attr boolean b;
+			}
+		''')
+		process(result)
+		output = cache.get(
+			((result.declarations.head.declaration as ClassDecl).members.head.member as FeatureDecl).feature,
+			result.eResource,
+			[null])
+		eAttribute = output as EAttribute;
+		Assertions.assertFalse(eAttribute.defaultValue as Boolean)
+	}
+	
+	@Test
+	def void classWithIntegerAttributeDefault() {
+		var result = parseHelper.parse('''
+			package test;
+			class A {
+				attr int b = 2;
+			}
+		''')
+		process(result)
+		var output = cache.get(
+			((result.declarations.head.declaration as ClassDecl).members.head.member as FeatureDecl).feature,
+			result.eResource,
+			[null])
+		Assertions.assertNotNull(output)
+		Assertions.assertInstanceOf(EAttribute, output);
+		var eAttribute = output as EAttribute;
+		Assertions.assertEquals(2, eAttribute.defaultValue)
+		result = parseHelper.parse('''
+			package test;
+			class A {
+				attr int b = -2;
+			}
+		''')
+		process(result)
+		output = cache.get(
+			((result.declarations.head.declaration as ClassDecl).members.head.member as FeatureDecl).feature,
+			result.eResource,
+			[null])
+		eAttribute = output as EAttribute;
+		Assertions.assertEquals(-2, eAttribute.defaultValue)
+		result = parseHelper.parse('''
+			package test;
+			class A {
+				attr int b;
+			}
+		''')
+		process(result)
+		output = cache.get(
+			((result.declarations.head.declaration as ClassDecl).members.head.member as FeatureDecl).feature,
+			result.eResource,
+			[null])
+		eAttribute = output as EAttribute;
+		Assertions.assertFalse(eAttribute.defaultValue as Boolean)
+	}
+	
+	/*
 	@Test
 	def void classWithRefernce() {
 		val result = parseHelper.parse('''

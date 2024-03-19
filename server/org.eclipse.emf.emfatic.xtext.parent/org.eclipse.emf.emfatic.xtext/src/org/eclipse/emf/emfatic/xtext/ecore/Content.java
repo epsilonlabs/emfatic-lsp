@@ -10,7 +10,6 @@ import org.eclipse.emf.ecore.EDataType;
 import org.eclipse.emf.ecore.EModelElement;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EPackage;
-import org.eclipse.emf.ecore.EReference;
 import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.emf.ecore.ETypeParameter;
 import org.eclipse.emf.ecore.EcoreFactory;
@@ -30,8 +29,10 @@ import org.eclipse.emf.emfatic.xtext.emfatic.Declaration;
 import org.eclipse.emf.emfatic.xtext.emfatic.Details;
 import org.eclipse.emf.emfatic.xtext.emfatic.EmfaticPackage;
 import org.eclipse.emf.emfatic.xtext.emfatic.FeatureDecl;
+import org.eclipse.emf.emfatic.xtext.emfatic.FloatExpr;
 import org.eclipse.emf.emfatic.xtext.emfatic.IntExpr;
 import org.eclipse.emf.emfatic.xtext.emfatic.MapEntryDecl;
+import org.eclipse.emf.emfatic.xtext.emfatic.Modifier;
 import org.eclipse.emf.emfatic.xtext.emfatic.PackageDecl;
 import org.eclipse.emf.emfatic.xtext.emfatic.StringExpr;
 import org.eclipse.emf.emfatic.xtext.emfatic.SubPackageDecl;
@@ -143,19 +144,16 @@ public class Content extends EmfaticSwitch<Object> {
 	@Override
 	public Object caseFeatureDecl(FeatureDecl source) {
 		EStructuralFeature target = (EStructuralFeature) this.doSwitch(source.getFeature());
-		target.setChangeable(source.isReadonly());
-		target.setVolatile(source.isVolatile());
-		target.setTransient(source.isTransient());
-		target.setUnsettable(source.isUnsettable());
-		target.setDerived(source.isDerived());
-		target.setUnique(source.isUnique());
-		target.setOrdered(source.isOrdered());
-		if (target instanceof EReference) {
-			((EReference) target).setResolveProxies(source.isResolve());
-		}
-		if (target instanceof EAttribute) {
-			((EAttribute) target).setID(source.isId());
-		}
+		target.setChangeable(this.applyNegativeModifier(source.getReadonly()));
+		target.setVolatile(this.applyModifier(source.getVolatile()));
+		target.setTransient(this.applyModifier(source.getTransient()));
+		target.setUnsettable(this.applyModifier(source.getUnsettable()));
+		target.setDerived(this.applyModifier(source.getDerived()));
+		target.setUnique(this.applyModifier(source.getUnique()));
+		target.setOrdered(this.applyModifier(source.getOrdered()));
+//		if (target instanceof EReference) {
+//			((EReference) target).setResolveProxies(source.isResolve());
+//		}
 		return target;
 	}
 
@@ -187,10 +185,20 @@ public class Content extends EmfaticSwitch<Object> {
 				}
 				target.setDefaultValueLiteral(Integer.toString(value));
 				break;
+			case EmfaticPackage.FLOAT_EXPR:
+				FloatExpr floatExpr = (FloatExpr)source.getDefValue();
+				float fvalue = floatExpr.getValue();
+				if (floatExpr.isNegative()) {
+					fvalue *= -1;
+				}
+				target.setDefaultValueLiteral(Float.toString(fvalue));
+				break;
 			}
 		}
+		target.setID(this.applyModifier(source.getId()));
 		return target;
 	}
+
 
 	@Override
 	public Object caseDataTypeDecl(DataTypeDecl source) {
@@ -257,7 +265,20 @@ public class Content extends EmfaticSwitch<Object> {
 		return emfAnnt;
 	}
 
-
+	private boolean applyModifier(Modifier modifier) {
+		if (modifier == null) {
+			return false;
+		}
+		return !modifier.isNegated();
+	}
+	
+	private boolean applyNegativeModifier(Modifier modifier) {
+		if (modifier == null) {
+			return true;
+		}
+		return modifier.isNegated();
+	}
+	
 	private <T> T equivalent(EObject source) {
 		var target = this.cache.get(source, source.eResource(), () -> (T) null);
 		if (target == null) {

@@ -309,46 +309,32 @@ public class EmfaticValidator extends AbstractEmfaticValidator {
 					IssueCodes.E_BOUND_TYPEPARAM_WITH_TYPE_ARGS); 
 		}
 	}
-	
-	@Check
-	public void checkModifiers(FeatureDecl entry) {
-		if (!(entry.getFeature() instanceof Attribute) && entry.isId()) {
-			error(
-					"'id' modifier can only be used in Attribute declarations",
-					EmfaticPackage.Literals.FEATURE_DECL__ID,
-					IssueCodes.E_REFERENCE_AS_ID); 
-		}
-		if (entry.getFeature() instanceof Attribute && entry.isResolve()) {
-			error(
-					"'resolve' modifier can only be used in Reference declarations",
-					EmfaticPackage.Literals.FEATURE_DECL__RESOLVE,
-					IssueCodes.E_ATTRIBUTE_IS_RESOLVABLE); 
-		}
-	}
+
 	
 	/**
 	 * Check that only one Attribtue is ID
 	 * @param entry
 	 */
 	@Check
-	public void onlyOneId(FeatureDecl entry) {
-		if (!entry.isId()) {
+	public void onlyOneId(Attribute entry) {
+		if (entry.getId() == null || entry.getId().isNegated()) {
 			return;
 		}
 		ClassMemberDecl decl = (ClassMemberDecl) entry.eContainer();
 		ClassDecl classDecl = (ClassDecl) decl.eContainer();
 		var idAttrs = classDecl.getMembers().stream()
 				.map(cm -> cm.getMember())
-				.filter(cm -> (cm instanceof FeatureDecl) 
-						&& cm != entry
-						&& ((FeatureDecl)cm).isId())
+				.filter(cm -> (cm instanceof Attribute) 
+						&& cm != entry)
+				.map(Attribute.class::cast)
+				.filter(a -> a.getId() != null && !a.getId().isNegated())
 				.toList();
 		idAttrs.forEach(ida -> {
 			error(
 					"Duplicate ID attribute: " + ((FeatureDecl) ida).getFeature().getName(),
-					EmfaticPackage.Literals.FEATURE_DECL__ID,
+					EmfaticPackage.Literals.ATTRIBUTE__ID,
 					IssueCodes.E_DUPLICATE_ID_ATTRIBUTE,
-					entry.getFeature().getName());
+					entry.getName());
 		});
 	}
 	
