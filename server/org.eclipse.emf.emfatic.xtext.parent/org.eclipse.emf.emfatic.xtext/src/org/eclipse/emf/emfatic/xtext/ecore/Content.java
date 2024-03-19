@@ -175,7 +175,7 @@ public class Content extends EmfaticSwitch<Object> {
 				break;
 			case EmfaticPackage.CHAR_EXPR:
 				CharExpr charExpr = (CharExpr)source.getDefValue();
-				target.setDefaultValueLiteral(charExpr.getValue());
+				target.setDefaultValueLiteral(Character.toString(charExpr.getValue()));
 				break;
 			case EmfaticPackage.INT_EXPR:
 				IntExpr intExpr = (IntExpr)source.getDefValue();

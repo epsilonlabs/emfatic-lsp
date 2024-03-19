@@ -36,8 +36,8 @@ class ContentForFeaturesTest extends ContentTest {
 			result.eResource,
 			[null])
 		Assertions.assertNotNull(output)
-		Assertions.assertInstanceOf(EAttribute, output);
-		var eAttribute = output as EAttribute;
+		Assertions.assertInstanceOf(EAttribute, output)
+		var eAttribute = output as EAttribute
 		Assertions.assertEquals("b", eAttribute.name)
 		Assertions.assertEquals("EString", eAttribute.EAttributeType.name)
 		Assertions.assertFalse(eAttribute.isMany)
@@ -89,8 +89,8 @@ class ContentForFeaturesTest extends ContentTest {
 			result.eResource,
 			[null])
 		Assertions.assertNotNull(output)
-		Assertions.assertInstanceOf(EAttribute, output);
-		var eAttribute = output as EAttribute;
+		Assertions.assertInstanceOf(EAttribute, output)
+		var eAttribute = output as EAttribute
 		Assertions.assertTrue(eAttribute.isMany)
 	}
 		
@@ -122,7 +122,7 @@ class ContentForFeaturesTest extends ContentTest {
 			((result.declarations.head.declaration as ClassDecl).members.head.member as FeatureDecl).feature,
 			result.eResource,
 			[null])
-		eAttribute = output as EAttribute;
+		eAttribute = output as EAttribute
 		Assertions.assertNull(eAttribute.defaultValue)
 	}
 	
@@ -167,7 +167,7 @@ class ContentForFeaturesTest extends ContentTest {
 			((result.declarations.head.declaration as ClassDecl).members.head.member as FeatureDecl).feature,
 			result.eResource,
 			[null])
-		eAttribute = output as EAttribute;
+		eAttribute = output as EAttribute
 		Assertions.assertFalse(eAttribute.defaultValue as Boolean)
 	}
 	
@@ -212,8 +212,155 @@ class ContentForFeaturesTest extends ContentTest {
 			((result.declarations.head.declaration as ClassDecl).members.head.member as FeatureDecl).feature,
 			result.eResource,
 			[null])
+		eAttribute = output as EAttribute
+		Assertions.assertEquals(0, eAttribute.defaultValue)
+	}
+	
+	@Test
+	def void classWithFloatAttributeDefault() {
+		var result = parseHelper.parse('''
+			package test;
+			class A {
+				attr float b = 2.0;
+			}
+		''')
+		process(result)
+		var output = cache.get(
+			((result.declarations.head.declaration as ClassDecl).members.head.member as FeatureDecl).feature,
+			result.eResource,
+			[null])
+		Assertions.assertNotNull(output)
+		Assertions.assertInstanceOf(EAttribute, output);
+		var eAttribute = output as EAttribute;
+		Assertions.assertEquals(2.0f, eAttribute.defaultValue)
+		result = parseHelper.parse('''
+			package test;
+			class A {
+				attr float b = -2.0;
+			}
+		''')
+		process(result)
+		output = cache.get(
+			((result.declarations.head.declaration as ClassDecl).members.head.member as FeatureDecl).feature,
+			result.eResource,
+			[null])
 		eAttribute = output as EAttribute;
-		Assertions.assertFalse(eAttribute.defaultValue as Boolean)
+		Assertions.assertEquals(-2.0f, eAttribute.defaultValue)
+		result = parseHelper.parse('''
+			package test;
+			class A {
+				attr float b;
+			}
+		''')
+		process(result)
+		output = cache.get(
+			((result.declarations.head.declaration as ClassDecl).members.head.member as FeatureDecl).feature,
+			result.eResource,
+			[null])
+		eAttribute = output as EAttribute
+		Assertions.assertEquals(0.0f, eAttribute.defaultValue)
+	}
+	
+	@Test
+	def void classWithCharAttributeDefault() {
+		var result = parseHelper.parse('''
+			package test;
+			class A {
+				attr char b = 'c';
+			}
+		''')
+		process(result)
+		var output = cache.get(
+			((result.declarations.head.declaration as ClassDecl).members.head.member as FeatureDecl).feature,
+			result.eResource,
+			[null])
+		Assertions.assertNotNull(output)
+		Assertions.assertInstanceOf(EAttribute, output);
+		var eAttribute = output as EAttribute;
+		var char expected = 'c'
+		Assertions.assertEquals(expected, eAttribute.defaultValue)
+		result = parseHelper.parse('''
+			package test;
+			class A {
+				attr char b;
+			}
+		''')
+		process(result)
+		output = cache.get(
+			((result.declarations.head.declaration as ClassDecl).members.head.member as FeatureDecl).feature,
+			result.eResource,
+			[null])
+		eAttribute = output as EAttribute
+		expected = '\u0000'
+		Assertions.assertEquals(expected, eAttribute.defaultValue)
+	}
+	
+	@Test
+	def void classWithAttributeModifiers() {
+		val result = parseHelper.parse('''
+			package test;
+			class A {
+				readonly attr String b;
+				volatile attr String c;
+				transient attr String d;
+				unsettable attr String e;
+				derived attr String f;
+				unique attr String g;
+				ordered attr String[*] h;
+				id attr String i;
+				volatile transient unsettable derived attr String j;
+			}
+		''')
+		process(result)
+		var eAttribute = cache.get(
+			((result.declarations.head.declaration as ClassDecl).members.get(0).member as FeatureDecl).feature,
+			result.eResource,
+			[null]) as EAttribute
+		Assertions.assertEquals("EString", eAttribute.EAttributeType.name)
+		Assertions.assertFalse(eAttribute.changeable)
+		eAttribute = cache.get(
+			((result.declarations.head.declaration as ClassDecl).members.get(1).member as FeatureDecl).feature,
+			result.eResource,
+			[null])
+		Assertions.assertTrue(eAttribute.volatile)
+		eAttribute = cache.get(
+			((result.declarations.head.declaration as ClassDecl).members.get(2).member as FeatureDecl).feature,
+			result.eResource,
+			[null])
+		Assertions.assertTrue(eAttribute.transient)
+		eAttribute = cache.get(
+			((result.declarations.head.declaration as ClassDecl).members.get(3).member as FeatureDecl).feature,
+			result.eResource,
+			[null])
+		Assertions.assertTrue(eAttribute.unsettable)
+		eAttribute = cache.get(
+			((result.declarations.head.declaration as ClassDecl).members.get(4).member as FeatureDecl).feature,
+			result.eResource,
+			[null])
+		Assertions.assertTrue(eAttribute.derived)
+		eAttribute = cache.get(
+			((result.declarations.head.declaration as ClassDecl).members.get(5).member as FeatureDecl).feature,
+			result.eResource,
+			[null])
+		Assertions.assertTrue(eAttribute.unique)
+		eAttribute = cache.get(
+			((result.declarations.head.declaration as ClassDecl).members.get(6).member as FeatureDecl).feature,
+			result.eResource,
+			[null])
+		Assertions.assertTrue(eAttribute.ordered)
+		eAttribute = cache.get(
+			((result.declarations.head.declaration as ClassDecl).members.get(7).member as FeatureDecl).feature,
+			result.eResource,
+			[null])
+		Assertions.assertTrue(eAttribute.ID)
+		eAttribute = cache.get(
+			((result.declarations.head.declaration as ClassDecl).members.get(8).member as FeatureDecl).feature,
+			result.eResource,
+			[null])
+		Assertions.assertTrue(eAttribute.volatile)
+		Assertions.assertTrue(eAttribute.transient)
+		Assertions.assertTrue(eAttribute.unsettable)
+		Assertions.assertTrue(eAttribute.derived)
 	}
 	
 	/*

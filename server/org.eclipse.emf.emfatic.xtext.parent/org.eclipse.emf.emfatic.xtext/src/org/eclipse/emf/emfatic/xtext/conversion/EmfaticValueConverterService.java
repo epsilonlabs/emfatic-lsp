@@ -10,14 +10,27 @@ import com.google.inject.Inject;
 
 public class EmfaticValueConverterService extends DefaultTerminalConverters implements IValueConverterService {
 	
-	
+	@Inject
+	public EmfaticValueConverterService(AbstractIDValueConverter idValueConverter,
+			CHARValueConverter charValueConverter) {
+		super();
+		this.idValueConverter = idValueConverter;
+		this.charValueConverter = charValueConverter;
+	}
+
 	@ValueConverter(rule = "ID")
 	public IValueConverter<String> ID() {
 		return idValueConverter;
 	}
 	
-	@Inject
-	private AbstractIDValueConverter idValueConverter;
+	@ValueConverter(rule = "CHAR")
+	public IValueConverter<Character> CHAR() {
+		return charValueConverter;
+	}
+	
+	private final AbstractIDValueConverter idValueConverter;
+	
+	private final CHARValueConverter charValueConverter;
 	
 
 }

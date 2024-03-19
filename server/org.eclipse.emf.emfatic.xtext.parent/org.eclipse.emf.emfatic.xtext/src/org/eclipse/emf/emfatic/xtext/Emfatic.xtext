@@ -422,6 +422,8 @@ IdModifier returns Modifier:
 /**
  * abstract defaultValueExpr : boolExpr | intExpr | stringExpr | charExpr ;
  */
+ // TODO Should we handle BigInt, Long, Short, and other possible primitive datatypes?
+ // E.g. If someone defines a BigInteger attribute, it can only assign int default values
 DefaultValueExpr returns Expr:
 	BoolExpr | IntExpr | FloatExpr | StringExpr | CharExpr
 ;
@@ -615,6 +617,6 @@ terminal STRING:
 	'"' ( '\\' . /* 'b'|'t'|'n'|'f'|'r'|'u'|'"'|"'"|'\\' */ | !('\\'|'"') )* '"'
 ;
 			
-terminal CHAR:
+terminal CHAR returns ecore::EChar:
 	"'" ( '\\' . /* 'b'|'t'|'n'|'f'|'r'|'u'|'"'|"'"|'\\' */ | !('\\'|"'") ) "'"
 ;
