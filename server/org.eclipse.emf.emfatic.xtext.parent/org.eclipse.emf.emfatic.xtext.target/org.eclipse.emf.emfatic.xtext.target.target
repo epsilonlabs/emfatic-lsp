@@ -37,6 +37,7 @@
 			<unit id="org.opentest4j" version="1.2.0.v20211018-1956"/>
 			<unit id="org.objectweb.asm" version="9.3.0.v20220409-0157"/>
 			<unit id="io.github.classgraph" version="4.8.138.v20211212-1642"/>
+			<unit id="com.google.inject.assistedinject" version="5.0.1.v20210324-2015"/>
 		</location>
 		<location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
 			<repository location="https://download.eclipse.org/lsp4e/releases/0.21.0"/>

@@ -2,6 +2,7 @@ package org.eclipse.emf.emfatic.xtext.ecore;
 
 import org.eclipse.emf.ecore.EAttribute;
 import org.eclipse.emf.ecore.EClass;
+import org.eclipse.emf.ecore.EDataType;
 import org.eclipse.emf.ecore.EEnum;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EPackage;
@@ -173,8 +174,7 @@ public class Structure extends EmfaticSwitch<Object> {
 
 	@Override
 	public Object caseFeatureDecl(FeatureDecl source) {
-		this.doSwitch(source.getFeature());
-		return super.caseFeatureDecl(source);
+		return this.doSwitch(source.getFeature());
 	}
 
 	@Override
@@ -260,13 +260,16 @@ public class Structure extends EmfaticSwitch<Object> {
 
 	@Override
 	public Object caseDataTypeDecl(DataTypeDecl source) {
-		if (source.getTypeParamsInfo() != null) {
-			source.getTypeParamsInfo().getTp().forEach(this::doSwitch);
-		}
-		return this.cache.get(
+		EDataType result = this.cache.get(
 				source, 
 				source.eResource(),
 				EcoreFactory.eINSTANCE::createEDataType);
+		if (source.getTypeParamsInfo() != null) {
+			source.getTypeParamsInfo().getTp().forEach(this::doSwitch);
+		}
+		EPackage parent = this.equivalent(((CompUnit)source.eContainer().eContainer()).getPackage());
+		parent.getEClassifiers().add(result);
+		return result;
 	}
 	
 	@Override
@@ -276,6 +279,8 @@ public class Structure extends EmfaticSwitch<Object> {
 				source.eResource(),
 				EcoreFactory.eINSTANCE::createEEnum);
 		source.getEnumLiterals().forEach(this::doSwitch);
+		EPackage parent = this.equivalent(((CompUnit)source.eContainer().eContainer()).getPackage());
+		parent.getEClassifiers().add(result);	
 		return result;
 	}
 	
@@ -324,7 +329,7 @@ public class Structure extends EmfaticSwitch<Object> {
 		var result = this.cache.get(
 				source, 
 				source.eResource(),
-				() -> new BoundDataTypeWithMultiCopier(source));
+				() -> new BoundDataTypeWithMultiCopier(source, this.emfaticImport));
 		this.doSwitch(source.getMultiplicity());
 		return result;
 	}

@@ -77,4 +77,5 @@ public class EmfaticRuntimeModule extends AbstractEmfaticRuntimeModule {
 	public Class<? extends AbstractIDValueConverter> bindAbstractIDValueConverter() {
 		return EmfaticIDValueConverter.class;
 	}
+	
 }

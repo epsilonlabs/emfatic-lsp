@@ -10,7 +10,7 @@ public class TypeWithMultiCopier {
 		this(twm, null, null);
 	}
 	
-	void configure(EStructuralFeature target) {
+	public void configure(EStructuralFeature target) {
 		if (this.cCopier == null) {
 			throw new IllegalStateException("Call to configure before calling load.");
 		}

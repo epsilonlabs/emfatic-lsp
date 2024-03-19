@@ -58,6 +58,10 @@ class ContentForClassTest extends ContentTest {
 			[null])
 		Assertions.assertNotNull(output)
 		Assertions.assertInstanceOf(EAnnotation, output);
+		Assertions.assertEquals("http://class/annotation", (output as EAnnotation).source)
+		Assertions.assertEquals(1, (output as EAnnotation).details.size)
+		Assertions.assertTrue((output as EAnnotation).details.containsKey("k"))
+		Assertions.assertEquals("v", (output as EAnnotation).details.get("k"))
 	}
 	
 	@Test
@@ -92,7 +96,6 @@ class ContentForClassTest extends ContentTest {
 		Assertions.assertTrue((output as EClass).interface);	
 	}
 	
-
 	@Test
 	def void emptyClassWithGenerics() {
 		val result = parseHelper.parse('''
@@ -108,7 +111,7 @@ class ContentForClassTest extends ContentTest {
 		Assertions.assertInstanceOf(ETypeParameter, output);
 		Assertions.assertEquals("T", (output as ETypeParameter).name);
 	}
-	
+
 
 	@Test
 	def void emptyClassWithGenericsBound() {
@@ -146,7 +149,6 @@ class ContentForClassTest extends ContentTest {
 		Assertions.assertEquals("B", (output as EClass).ESuperTypes.head.name);
 	}
 
-	
 	@Test
 	def void emptyClassWithSuperWildcard() {
 		val result = parseHelper.parse('''
@@ -165,7 +167,6 @@ class ContentForClassTest extends ContentTest {
 		Assertions.assertEquals(1, genSuperType.ETypeArguments.size);
 		Assertions.assertNull(genSuperType.ETypeParameter);
 	}
-	
 	
 	@Test
 	def void emptyClassWithSuperWildcardBound() {

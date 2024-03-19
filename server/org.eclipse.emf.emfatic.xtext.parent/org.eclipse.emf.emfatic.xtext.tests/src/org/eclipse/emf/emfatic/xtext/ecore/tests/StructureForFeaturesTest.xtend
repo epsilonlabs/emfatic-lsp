@@ -4,6 +4,7 @@ import com.google.inject.Inject
 import org.eclipse.emf.ecore.EAttribute
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.EReference
+import org.eclipse.emf.emfatic.xtext.ecore.Structure
 import org.eclipse.emf.emfatic.xtext.emfatic.Annotation
 import org.eclipse.emf.emfatic.xtext.emfatic.Attribute
 import org.eclipse.emf.emfatic.xtext.emfatic.ClassDecl
@@ -19,7 +20,6 @@ import org.eclipse.xtext.util.OnChangeEvictingCache
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.^extension.ExtendWith
-import org.eclipse.emf.emfatic.xtext.ecore.Structure
 
 @ExtendWith(InjectionExtension)
 @InjectWith(EmfaticInjectorProvider)
@@ -117,7 +117,7 @@ class StructureForFeaturesTest {
 			[null])
 		Assertions.assertNotNull(output)
 	}
-	//val EPackage[*]#eSuperPackage eSubpackages;
+
 	@Test
 	def void classWithRefernce() {
 		val result = parseHelper.parse('''

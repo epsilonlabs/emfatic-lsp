@@ -13,7 +13,7 @@ import org.junit.platform.suite.api.Suite;
 		StructureForMapEntryTest.class,
 		StructureForOperationsTest.class,
 		StructureForPackageTest.class,
-		StrucutreForEnumTest.class })
+		StructureForEnumTest.class })
 public class StructureTestsSuite {
 
 }

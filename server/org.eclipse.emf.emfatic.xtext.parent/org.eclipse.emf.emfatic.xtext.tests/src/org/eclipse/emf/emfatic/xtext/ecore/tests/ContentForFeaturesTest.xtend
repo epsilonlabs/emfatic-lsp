@@ -2,7 +2,6 @@ package org.eclipse.emf.emfatic.xtext.ecore.tests
 
 import com.google.inject.Inject
 import org.eclipse.emf.ecore.EAttribute
-import org.eclipse.emf.emfatic.xtext.emfatic.Attribute
 import org.eclipse.emf.emfatic.xtext.emfatic.ClassDecl
 import org.eclipse.emf.emfatic.xtext.emfatic.CompUnit
 import org.eclipse.emf.emfatic.xtext.emfatic.FeatureDecl
@@ -13,6 +12,8 @@ import org.eclipse.xtext.testing.util.ParseHelper
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.^extension.ExtendWith
+import org.eclipse.emf.emfatic.xtext.emfatic.Annotation
+import org.eclipse.emf.ecore.EAnnotation
 
 @ExtendWith(InjectionExtension)
 @InjectWith(EmfaticInjectorProvider)
@@ -39,14 +40,10 @@ class ContentForFeaturesTest extends ContentTest {
 		Assertions.assertNotNull(output)
 		Assertions.assertInstanceOf(EAttribute, output);
 		Assertions.assertEquals("b", (output as EAttribute).name)
-		val type = cache.get(
-			(attribute.feature as Attribute).typeWithMulti,
-			result.eResource,
-			[null])
-		Assertions.assertNotNull(type)
-		
+		Assertions.assertEquals("EString", (output as EAttribute).EAttributeType.name)
+		Assertions.assertFalse((output as EAttribute).isMany)
 	}
-	/*
+	
 	@Test
 	def void classWithAttributeWithAnnotation() {
 		val result = parseHelper.parse('''
@@ -64,8 +61,13 @@ class ContentForFeaturesTest extends ContentTest {
 			result.eResource,
 			[null])
 		Assertions.assertNotNull(output)
+		Assertions.assertInstanceOf(EAnnotation, output);
+		Assertions.assertEquals("http://class/annotation", (output as EAnnotation).source)
+		Assertions.assertEquals(1, (output as EAnnotation).details.size)
+		Assertions.assertTrue((output as EAnnotation).details.containsKey("k"))
+		Assertions.assertEquals("v", (output as EAnnotation).details.get("k"))
 	}
-	
+/*	
 	@Test
 	def void classWithAttributeMulti() {
 		val result = parseHelper.parse('''

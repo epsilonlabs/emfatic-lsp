@@ -67,7 +67,6 @@ class StructureForClassTest {
 			[null])
 		Assertions.assertNotNull(output)
 		Assertions.assertInstanceOf(EAnnotation, output);
-		
 	}
 	
 	@Test
