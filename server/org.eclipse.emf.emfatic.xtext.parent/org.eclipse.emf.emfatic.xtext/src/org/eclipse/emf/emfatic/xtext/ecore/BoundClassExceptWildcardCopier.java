@@ -52,11 +52,11 @@ class BoundClassExceptWildcardCopier extends AbstractClassifierCopier<BoundClass
 	}
 	
 	public void configure(EReference target) {
-		if (this.targetTypeArgs.isEmpty()) {
+		if (this.targetEClassifier != null) {
 			target.setEType(targetEClassifier);
-		} else {
+		} else if (this.targetTypeParamter != null) {
 			var gt = EcoreFactory.eINSTANCE.createEGenericType();
-			gt.setEClassifier(this.targetEClassifier);
+			gt.setETypeParameter(this.targetTypeParamter);
 			this.targetTypeArgs.forEach(ta -> {
 				var taGt = EcoreFactory.eINSTANCE.createEGenericType();
 				ta.configure(taGt);

@@ -364,7 +364,6 @@ class ContentForFeaturesTest extends ContentTest {
 		Assertions.assertTrue(eAttribute.derived)
 	}
 	
-
 	@Test
 	def void classWithRefernce() {
 		val result = parseHelper.parse('''
@@ -384,7 +383,7 @@ class ContentForFeaturesTest extends ContentTest {
 		Assertions.assertNotNull(output)
 		Assertions.assertInstanceOf(EReference, output);
 		val eReference = output as EReference
-		Assertions.assertEquals("b", eReference.name)
+		Assertions.assertEquals("bs", eReference.name)
 		Assertions.assertEquals("B", eReference.EReferenceType.name)
 		Assertions.assertFalse(eReference.isMany)
 		Assertions.assertTrue(eReference.changeable)
@@ -396,7 +395,29 @@ class ContentForFeaturesTest extends ContentTest {
 		Assertions.assertFalse(eReference.ordered)
 		Assertions.assertFalse(eReference.resolveProxies)
 	}
-	/*	
+	
+	@Test
+	def void classWithRefernceWithTypeParamType() {
+		val result = parseHelper.parse('''
+			package test;
+			class A<T> {
+				val T bs;
+			}
+		''')
+		process(result)
+		val classDecl = result.declarations.head.declaration as ClassDecl
+		val attribute = (classDecl).members.head.member as FeatureDecl
+		var output = cache.get(
+			attribute.feature,
+			result.eResource,
+			[null])
+		Assertions.assertNotNull(output)
+		Assertions.assertInstanceOf(EReference, output);
+		val eReference = output as EReference
+		Assertions.assertEquals("bs", eReference.name)
+		Assertions.assertEquals("T", eReference.EGenericType.ETypeParameter.name)
+	}
+
 	@Test
 	def void classWithRefernceWithAnnotation() {
 		val result = parseHelper.parse('''
@@ -405,6 +426,7 @@ class ContentForFeaturesTest extends ContentTest {
 				@"http://class/annotation"(k="v")
 				val B bs;
 			}
+			class B {}
 		''')
 		process(result)
 		val classDecl = result.declarations.head.declaration as ClassDecl
@@ -414,24 +436,123 @@ class ContentForFeaturesTest extends ContentTest {
 			result.eResource,
 			[null])
 		Assertions.assertNotNull(output)
+		Assertions.assertInstanceOf(EAnnotation, output);
+		Assertions.assertEquals("http://class/annotation", (output as EAnnotation).source)
+		Assertions.assertEquals(1, (output as EAnnotation).details.size)
+		Assertions.assertTrue((output as EAnnotation).details.containsKey("k"))
+		Assertions.assertEquals("v", (output as EAnnotation).details.get("k"))
 	}
-	
+		
 	@Test
 	def void classWithRefernceMulti() {
 		val result = parseHelper.parse('''
 			package test;
 			class A {
-				val B[1] bs;
+				val B[*] bs;
 			}
+			class B {}
 		''')
 		process(result)
 		val classDecl = result.declarations.head.declaration as ClassDecl
 		val attribute = (classDecl).members.head.member as FeatureDecl
-		val output = cache.get(
-			(attribute.feature as Reference).typeWithMulti.multiplicity,
+		var output = cache.get(
+			attribute.feature,
 			result.eResource,
 			[null])
 		Assertions.assertNotNull(output)
+		Assertions.assertInstanceOf(EReference, output);
+		val eReference = output as EReference
+		Assertions.assertTrue(eReference.isMany)
 	}
-	 */
+	
+	@Test
+	def void classWithRefernceMultiLimits() {
+		val result = parseHelper.parse('''
+			package test;
+			class A {
+				val B[2..4] bs;
+			}
+			class B {}
+		''')
+		process(result)
+		val classDecl = result.declarations.head.declaration as ClassDecl
+		val attribute = (classDecl).members.head.member as FeatureDecl
+		var output = cache.get(
+			attribute.feature,
+			result.eResource,
+			[null])
+		Assertions.assertNotNull(output)
+		Assertions.assertInstanceOf(EReference, output);
+		val eReference = output as EReference
+		Assertions.assertEquals(2, eReference.lowerBound)
+		Assertions.assertEquals(4, eReference.upperBound)
+	}
+	
+	@Test
+	def void classWithReferenceModifiers() {
+		val result = parseHelper.parse('''
+			package test;
+			class A {
+				readonly val B b;
+				volatile val B c;
+				transient val B d;
+				unsettable val B e;
+				derived val B f;
+				unique val B g;
+				ordered val B[*] h;
+				resolve val B i;
+				volatile transient unsettable derived val B j;
+			}
+			class B {}
+		''')
+		process(result)
+		var eReference = cache.get(
+			((result.declarations.head.declaration as ClassDecl).members.get(0).member as FeatureDecl).feature,
+			result.eResource,
+			[null]) as EReference
+		Assertions.assertFalse(eReference.changeable)
+		eReference = cache.get(
+			((result.declarations.head.declaration as ClassDecl).members.get(1).member as FeatureDecl).feature,
+			result.eResource,
+			[null])
+		Assertions.assertTrue(eReference.volatile)
+		eReference = cache.get(
+			((result.declarations.head.declaration as ClassDecl).members.get(2).member as FeatureDecl).feature,
+			result.eResource,
+			[null])
+		Assertions.assertTrue(eReference.transient)
+		eReference = cache.get(
+			((result.declarations.head.declaration as ClassDecl).members.get(3).member as FeatureDecl).feature,
+			result.eResource,
+			[null])
+		Assertions.assertTrue(eReference.unsettable)
+		eReference = cache.get(
+			((result.declarations.head.declaration as ClassDecl).members.get(4).member as FeatureDecl).feature,
+			result.eResource,
+			[null])
+		Assertions.assertTrue(eReference.derived)
+		eReference = cache.get(
+			((result.declarations.head.declaration as ClassDecl).members.get(5).member as FeatureDecl).feature,
+			result.eResource,
+			[null])
+		Assertions.assertTrue(eReference.unique)
+		eReference = cache.get(
+			((result.declarations.head.declaration as ClassDecl).members.get(6).member as FeatureDecl).feature,
+			result.eResource,
+			[null])
+		Assertions.assertTrue(eReference.ordered)
+		eReference = cache.get(
+			((result.declarations.head.declaration as ClassDecl).members.get(7).member as FeatureDecl).feature,
+			result.eResource,
+			[null])
+		Assertions.assertTrue(eReference.resolveProxies)
+		eReference = cache.get(
+			((result.declarations.head.declaration as ClassDecl).members.get(8).member as FeatureDecl).feature,
+			result.eResource,
+			[null])
+		Assertions.assertTrue(eReference.volatile)
+		Assertions.assertTrue(eReference.transient)
+		Assertions.assertTrue(eReference.unsettable)
+		Assertions.assertTrue(eReference.derived)
+	}
 }

@@ -14,7 +14,6 @@ import org.eclipse.emf.emfatic.xtext.emfatic.Attribute;
 import org.eclipse.emf.emfatic.xtext.emfatic.BoundClassExceptWildcard;
 import org.eclipse.emf.emfatic.xtext.emfatic.BoundDataTypeWithMulti;
 import org.eclipse.emf.emfatic.xtext.emfatic.ClassDecl;
-import org.eclipse.emf.emfatic.xtext.emfatic.ClassRefWithMulti;
 import org.eclipse.emf.emfatic.xtext.emfatic.EmfaticPackage;
 import org.eclipse.emf.emfatic.xtext.emfatic.FeatureDecl;
 import org.eclipse.emf.emfatic.xtext.emfatic.Reference;
@@ -54,19 +53,19 @@ public class EmfaticScopeProvider extends AbstractEmfaticScopeProvider {
 					(e) -> isSubType(e.getEClass(), EmfaticPackage.Literals.DATA_TYPE_DECL)));
 		}
 		if (reference == EmfaticPackage.Literals.BOUND_CLASS_EXCEPT_WILDCARD__BOUND) {
-			// Classes
 			if (context instanceof ClassDecl) {
+				// Classes
 				return new FilteringScope(
 						super.getScope(context, reference),
 						e -> isSubType(e.getEClass(), EmfaticPackage.Literals.CLASS_DECL)
 								&& !Objects.equal(e.getEObjectOrProxy(), context));
 			} else if (context instanceof BoundClassExceptWildcard || context instanceof Reference) {
+				// Classes and TypeParameters
 				var owner = context.eContainer();
 				while (!(owner instanceof ClassDecl)) {
 					owner = owner.eContainer();
 				}
 				var cls = (ClassDecl)owner;
-				// ClassDecl and TypeParameters
 				List<TypeParam> candidates = cls.getTypeParamsInfo() == null ? 
 						new ArrayList<>() : cls.getTypeParamsInfo().getTp();
 				return Scopes.scopeFor(candidates, new FilteringScope(

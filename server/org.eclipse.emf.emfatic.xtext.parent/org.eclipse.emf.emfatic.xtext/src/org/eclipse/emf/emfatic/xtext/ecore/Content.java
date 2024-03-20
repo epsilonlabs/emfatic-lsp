@@ -153,9 +153,6 @@ public class Content extends EmfaticSwitch<Object> {
 		target.setDerived(this.applyModifier(source.getDerived()));
 		target.setUnique(this.applyModifier(source.getUnique()));
 		target.setOrdered(this.applyModifier(source.getOrdered()));
-//		if (target instanceof EReference) {
-//			((EReference) target).setResolveProxies(source.isResolve());
-//		}
 		return target;
 	}
 
@@ -207,12 +204,11 @@ public class Content extends EmfaticSwitch<Object> {
 		EReference target = equivalent(source);
 		ClassRefWithMultiCopier type = equivalent(source.getTypeWithMulti());
 		type.load(this.cache).configure(target);
-		target.setName(source.getName()); 
+		target.setName(source.getName());
+		target.setResolveProxies(this.applyModifier(source.getResolve()));
 		return target;
 	}
 	
-	
-
 	@Override
 	public Object caseDataTypeDecl(DataTypeDecl source) {
 		EDataType target = equivalent(source);

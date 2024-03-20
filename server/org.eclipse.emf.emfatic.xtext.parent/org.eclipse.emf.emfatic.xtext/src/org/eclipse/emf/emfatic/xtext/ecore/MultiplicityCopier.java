@@ -37,7 +37,6 @@ public class MultiplicityCopier {
 					break;
 				default:
 					lb = Integer.valueOf(this.source.getLowerBound());
-					ub = Integer.valueOf(this.source.getUpperBound());
 				}
 			} else {
 				switch (this.source.getUpperBound()) {
@@ -51,7 +50,7 @@ public class MultiplicityCopier {
 					break;
 				default:
 					lb = Integer.valueOf(this.source.getLowerBound());
-					ub = Integer.valueOf(this.source.getLowerBound());
+					ub = Integer.valueOf(this.source.getUpperBound());
 				}
 			}
 		}
