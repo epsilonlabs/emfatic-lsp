@@ -10,7 +10,7 @@ import org.junit.platform.suite.api.Suite;
 		StructureForClassTest.class,
 		StructureForDataTypeTest.class,
 		StructureForFeaturesTest.class,
-		StructureForMapEntryTest.class,
+		ContentForMapEntryTest.class,
 		StructureForOperationsTest.class,
 		StructureForPackageTest.class,
 		StructureForEnumTest.class })

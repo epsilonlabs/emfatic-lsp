@@ -8,7 +8,7 @@ import org.junit.platform.suite.api.Suite;
 	ContentForClassTest.class,
 	ContentForDataTypeTest.class,
 	ContentForFeaturesTest.class,
-	//StructureForMapEntryTest.class,
+	ContentForMapEntryTest.class,
 	//StructureForOperationsTest.class,
 	//StructureForPackageTest.class,
 	//StrucutreForEnumTest.class
