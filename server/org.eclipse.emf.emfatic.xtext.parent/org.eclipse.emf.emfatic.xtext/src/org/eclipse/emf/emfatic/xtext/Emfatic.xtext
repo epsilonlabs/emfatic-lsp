@@ -505,7 +505,7 @@ Operation:
 )
 	"op" (typeParamsInfo=TypeParamsInfo)? 
 	resultType=ResultType name=ID LPAREN (params+=Param (COMMA params+=Param)*)? RPAREN 
-	("throws" exceptions+=BoundClassifierExceptWildcard (COMMA exceptions+=BoundClassifierExceptWildcard)*)? SEMI
+	("throws" exceptions+=BoundClassExceptWildcard (COMMA exceptions+=BoundClassExceptWildcard)*)? SEMI
 ;
 
 /**

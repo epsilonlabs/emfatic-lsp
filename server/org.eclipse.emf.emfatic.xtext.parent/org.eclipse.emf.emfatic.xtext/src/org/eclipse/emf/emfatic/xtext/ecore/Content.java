@@ -1,6 +1,7 @@
 package org.eclipse.emf.emfatic.xtext.ecore;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.eclipse.emf.ecore.EAnnotation;
@@ -9,7 +10,9 @@ import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EDataType;
 import org.eclipse.emf.ecore.EModelElement;
 import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.ecore.EOperation;
 import org.eclipse.emf.ecore.EPackage;
+import org.eclipse.emf.ecore.EParameter;
 import org.eclipse.emf.ecore.EReference;
 import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.emf.ecore.ETypeParameter;
@@ -26,7 +29,6 @@ import org.eclipse.emf.emfatic.xtext.emfatic.ClassDecl;
 import org.eclipse.emf.emfatic.xtext.emfatic.ClassMemberDecl;
 import org.eclipse.emf.emfatic.xtext.emfatic.CompUnit;
 import org.eclipse.emf.emfatic.xtext.emfatic.DataTypeDecl;
-import org.eclipse.emf.emfatic.xtext.emfatic.Declaration;
 import org.eclipse.emf.emfatic.xtext.emfatic.Details;
 import org.eclipse.emf.emfatic.xtext.emfatic.EmfaticPackage;
 import org.eclipse.emf.emfatic.xtext.emfatic.FeatureDecl;
@@ -34,7 +36,9 @@ import org.eclipse.emf.emfatic.xtext.emfatic.FloatExpr;
 import org.eclipse.emf.emfatic.xtext.emfatic.IntExpr;
 import org.eclipse.emf.emfatic.xtext.emfatic.MapEntryDecl;
 import org.eclipse.emf.emfatic.xtext.emfatic.Modifier;
+import org.eclipse.emf.emfatic.xtext.emfatic.Operation;
 import org.eclipse.emf.emfatic.xtext.emfatic.PackageDecl;
+import org.eclipse.emf.emfatic.xtext.emfatic.Param;
 import org.eclipse.emf.emfatic.xtext.emfatic.Reference;
 import org.eclipse.emf.emfatic.xtext.emfatic.StringExpr;
 import org.eclipse.emf.emfatic.xtext.emfatic.SubPackageDecl;
@@ -71,7 +75,7 @@ public class Content extends EmfaticSwitch<Object> {
 			target.setNsPrefix(source.getNs().getPrefix());
 			target.setNsURI(source.getNs().getUri());
 		}
-		processAnnotations(target, source);
+		processAnnotations(target, source.getAnnotations(), source.eResource());
 		return target;
 	}
 	
@@ -128,18 +132,19 @@ public class Content extends EmfaticSwitch<Object> {
 		for (BoundClassExceptWildcard st : source.getSuperTypes()) {
 			BoundClassExceptWildcardCopier cp = equivalent(st);
 			cp.load(this.cache).configure(target);
+			
 		}
 		source.getMembers().forEach(m -> {
 			this.doSwitch(m);
 		});
-		processAnnotations(target, source);
+		processAnnotations(target, ((TopLevelDecl)source.eContainer()).getAnnotations(), source.eResource());
 		return target;
 	}
-	
+
 	@Override
 	public Object caseClassMemberDecl(ClassMemberDecl source) {
 		EModelElement target =  (EModelElement) this.doSwitch(source.getMember());
-		processAnnotations(target, source);
+		processAnnotations(target, source.getAnnotations(), source.eResource());
 		return target;
 	}
 
@@ -209,6 +214,47 @@ public class Content extends EmfaticSwitch<Object> {
 		return target;
 	}
 	
+	
+	
+	@Override
+	public Object caseOperation(Operation source) {
+		EOperation target = equivalent(source);
+		target.setName(source.getName());
+		if (source.getTypeParamsInfo() != null) {
+			for (TypeParam tp : source.getTypeParamsInfo().getTp()) {
+				ETypeParameter targetTp = equivalent(tp);
+				if (tp.getTypeBoundsInfo() != null) {
+					for (BoundClassifierExceptWildcard tb : tp.getTypeBoundsInfo().getTb()) {
+						var gt = EcoreFactory.eINSTANCE.createEGenericType();
+						BoundClassifierExceptWildcardCopier cp = equivalent(tb);
+						cp.load(this.cache)
+							.configure(gt);
+						targetTp.getEBounds().add(gt);
+					}
+				}
+				targetTp.setName(tp.getName());
+				target.getETypeParameters().add(targetTp);
+			}
+		}
+		source.getParams().forEach(this::doSwitch);
+		ResultTypeCopier type = equivalent(source.getResultType());
+		type.load(this.cache).configure(target);
+		return target;
+	}
+	
+	
+
+	@Override
+	public Object caseParam(Param source) {
+		EParameter target = equivalent(source);
+		processAnnotations(target, source.getLeadingAnnotations(), source.eResource());
+		TypeWithMultiCopier tc = ((TypeWithMultiCopier) equivalent(source.getTypeWithMulti()));
+		tc.load(this.cache).configure(target);
+		target.setName(source.getName());
+		processAnnotations(target, source.getTrailingAnnotations(), source.eResource());		
+		return target;
+	}
+
 	@Override
 	public Object caseDataTypeDecl(DataTypeDecl source) {
 		EDataType target = equivalent(source);
@@ -244,22 +290,13 @@ public class Content extends EmfaticSwitch<Object> {
 	private final OnChangeEvictingCache cache;
 	
 	private Set<EClass> mapEntries = new HashSet<>();
-
-	private void processAnnotations(EModelElement target, PackageDecl source) {
-		for (Annotation annt : source.getAnnotations()) {
-			target.getEAnnotations().add(processAnnotation(annt, source.eResource()));
-		}
-	}
 	
-	private void processAnnotations(EModelElement target, Declaration source) {
-		for (Annotation annt : ((TopLevelDecl)source.eContainer()).getAnnotations()) {
-			target.getEAnnotations().add(processAnnotation(annt, source.eResource()));
-		}
-	}
-	
-	private void processAnnotations(EModelElement target, ClassMemberDecl source) {
-		for (Annotation annt : source.getAnnotations()) {
-			target.getEAnnotations().add(processAnnotation(annt, source.eResource()));
+	private void processAnnotations(
+		EModelElement target,
+		List<Annotation> annotations,
+		Resource eResource) {
+		for (Annotation annt : annotations) {
+			target.getEAnnotations().add(processAnnotation(annt, eResource));
 		}
 	}
 

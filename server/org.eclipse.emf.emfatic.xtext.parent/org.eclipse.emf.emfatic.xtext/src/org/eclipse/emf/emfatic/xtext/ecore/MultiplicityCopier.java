@@ -1,6 +1,6 @@
 package org.eclipse.emf.emfatic.xtext.ecore;
 
-import org.eclipse.emf.ecore.EStructuralFeature;
+import org.eclipse.emf.ecore.ETypedElement;
 import org.eclipse.emf.emfatic.xtext.emfatic.Multiplicity;
 import org.eclipse.xtext.util.OnChangeEvictingCache;
 
@@ -57,7 +57,7 @@ public class MultiplicityCopier {
 		return new MultiplicityCopier(this.source, lb, ub);
 	}
 	
-	public void configure(EStructuralFeature target) {
+	public void configure(ETypedElement target) {
 		target.setLowerBound(this.lowerBound);
 		target.setUpperBound(this.upperBound);
 	}

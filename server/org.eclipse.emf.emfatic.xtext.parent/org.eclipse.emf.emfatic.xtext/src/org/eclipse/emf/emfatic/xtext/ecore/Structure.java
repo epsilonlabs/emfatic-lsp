@@ -213,6 +213,8 @@ public class Structure extends EmfaticSwitch<Object> {
 		source.getLeadingAnnotations().forEach(this::doSwitch);
 		this.doSwitch(source.getTypeWithMulti());
 		source.getTrailingAnnotations().forEach(this::doSwitch);
+		EOperation parent = this.equivalent(source.eContainer().eContainer().eContainer());
+		parent.getEParameters().add(result);
 		return result;
 	}
 
@@ -224,6 +226,8 @@ public class Structure extends EmfaticSwitch<Object> {
 				EcoreFactory.eINSTANCE::createEAttribute);
 		this.doSwitch(source.getTypeWithMulti());
 		this.doSwitch(source.getDefValue());
+		EClass parent = this.equivalent(((ClassDecl)source.eContainer().eContainer().eContainer()));
+		parent.getEStructuralFeatures().add(result);
 		return result;
 	}
 	
@@ -242,6 +246,8 @@ public class Structure extends EmfaticSwitch<Object> {
 				source.eResource(),
 				EcoreFactory.eINSTANCE::createEReference);
 		this.doSwitch(source.getTypeWithMulti());
+		EClass parent = this.equivalent(((ClassDecl)source.eContainer().eContainer().eContainer()));
+		parent.getEStructuralFeatures().add(result);
 		return result;
 	}
 	

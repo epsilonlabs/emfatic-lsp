@@ -1,12 +1,12 @@
 package org.eclipse.emf.emfatic.xtext.ecore;
 
-import org.eclipse.emf.ecore.EStructuralFeature;
+import org.eclipse.emf.ecore.ETypedElement;
 import org.eclipse.emf.emfatic.xtext.emfatic.TypeWithMulti;
 import org.eclipse.xtext.util.OnChangeEvictingCache;
 
 public class TypeWithMultiCopier {
 		
-	public void configure(EStructuralFeature target) {
+	public void configure(ETypedElement target) {
 		if (this.cCopier == null) {
 			throw new IllegalStateException("Call to configure before calling load.");
 		}

@@ -36,7 +36,7 @@ class BoundClassExceptWildcardCopier extends AbstractClassifierCopier<BoundClass
 		return new BoundClassExceptWildcardCopier(this.source, targetEClass, targetTypeParameter, tArgs, this.emfaticImport);
 	}
 
-	public void configure(EClass target) {
+	void configure(EClass target) {
 		if (this.targetTypeArgs.isEmpty()) {
 			target.getESuperTypes().add((EClass) this.targetEClassifier);
 		} else {
@@ -51,7 +51,7 @@ class BoundClassExceptWildcardCopier extends AbstractClassifierCopier<BoundClass
 		}
 	}
 	
-	public void configure(EReference target) {
+	void configure(EReference target) {
 		if (this.targetEClassifier != null) {
 			target.setEType(targetEClassifier);
 		} else if (this.targetTypeParamter != null) {
