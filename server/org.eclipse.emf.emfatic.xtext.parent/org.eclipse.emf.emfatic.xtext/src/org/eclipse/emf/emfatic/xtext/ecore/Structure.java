@@ -156,14 +156,13 @@ public class Structure extends EmfaticSwitch<Object> {
 
 	@Override
 	public Object caseClassDecl(ClassDecl source) {
-		var result = this.cache.get(
+		EClass result = this.cache.get(
 				source, 
 				source.eResource(),
 				EcoreFactory.eINSTANCE::createEClass);
 		if (source.getTypeParamsInfo() != null) {
 			source.getTypeParamsInfo().getTp()
-				.forEach(tp -> ((EClass)result)
-						.getETypeParameters().add((ETypeParameter) this.doSwitch(tp)));
+				.forEach(tp -> result.getETypeParameters().add((ETypeParameter) this.doSwitch(tp)));
 		}
 		source.getSuperTypes().forEach(this::doSwitch);
 		source.getMembers().forEach(this::doSwitch);
@@ -179,7 +178,8 @@ public class Structure extends EmfaticSwitch<Object> {
 				source.eResource(),
 				EcoreFactory.eINSTANCE::createEDataType);
 		if (source.getTypeParamsInfo() != null) {
-			source.getTypeParamsInfo().getTp().forEach(this::doSwitch);
+			source.getTypeParamsInfo().getTp()
+				.forEach(tp -> result.getETypeParameters().add((ETypeParameter) this.doSwitch(tp)));
 		}
 		EPackage parent = this.equivalent(((CompUnit)source.eContainer().eContainer()).getPackage());
 		parent.getEClassifiers().add(result);
