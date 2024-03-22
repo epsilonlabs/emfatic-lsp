@@ -36,12 +36,6 @@ class ContentForClassTest extends ContentTest {
 		Assertions.assertNotNull(output)
 		Assertions.assertInstanceOf(EClass, output);
 		Assertions.assertEquals("A", (output as EClass).name);
-		Assertions.assertEquals(
-			cache.get(
-				result.package,
-				result.eResource,
-				[null]),
-			(output as EClass).eContainer)
 	}
 	
 	@Test

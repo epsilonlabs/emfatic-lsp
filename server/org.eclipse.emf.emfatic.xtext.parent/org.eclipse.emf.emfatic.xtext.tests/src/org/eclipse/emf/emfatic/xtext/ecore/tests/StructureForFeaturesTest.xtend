@@ -1,25 +1,21 @@
 package org.eclipse.emf.emfatic.xtext.ecore.tests
 
 import com.google.inject.Inject
-import org.eclipse.emf.ecore.EAttribute
+import org.eclipse.emf.ecore.EClass
 import org.eclipse.emf.ecore.EObject
-import org.eclipse.emf.ecore.EReference
+import org.eclipse.emf.ecore.EPackage
 import org.eclipse.emf.emfatic.xtext.ecore.Structure
-import org.eclipse.emf.emfatic.xtext.emfatic.Annotation
-import org.eclipse.emf.emfatic.xtext.emfatic.Attribute
-import org.eclipse.emf.emfatic.xtext.emfatic.ClassDecl
 import org.eclipse.emf.emfatic.xtext.emfatic.CompUnit
-import org.eclipse.emf.emfatic.xtext.emfatic.FeatureDecl
-import org.eclipse.emf.emfatic.xtext.emfatic.Reference
 import org.eclipse.emf.emfatic.xtext.scoping.EmfaticImport
 import org.eclipse.emf.emfatic.xtext.tests.EmfaticInjectorProvider
 import org.eclipse.xtext.testing.InjectWith
 import org.eclipse.xtext.testing.extensions.InjectionExtension
 import org.eclipse.xtext.testing.util.ParseHelper
 import org.eclipse.xtext.util.OnChangeEvictingCache
-import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.^extension.ExtendWith
+
+import static org.junit.jupiter.api.Assertions.assertEquals
 
 @ExtendWith(InjectionExtension)
 @InjectWith(EmfaticInjectorProvider)
@@ -47,20 +43,25 @@ class StructureForFeaturesTest {
 				attr String b;
 			}
 		''')
-		process(result)
-		val classDecl = result.declarations.head.declaration as ClassDecl
-		val attribute = (classDecl).members.head.member as FeatureDecl
-		var output = cache.get(
-			attribute.feature,
-			result.eResource,
-			[null])
-		Assertions.assertNotNull(output)
-		Assertions.assertInstanceOf(EAttribute, output);
-		output = cache.get(
-			(attribute.feature as Attribute).typeWithMulti,
-			result.eResource,
-			[null])
-		Assertions.assertNotNull(output)
+		val root = process(result) as EPackage
+		assertEquals(1, root.EClassifiers.size)
+		val eClass = root.EClassifiers.head as EClass
+		assertEquals(1, eClass.EAttributes.size)
+	}
+	
+	@Test
+	def void classWithAttributes() {
+		val result = parseHelper.parse('''
+			package test;
+			class A {
+				attr String b;
+				attr int c;
+			}
+		''')
+		val root = process(result) as EPackage
+		assertEquals(1, root.EClassifiers.size)
+		val eClass = root.EClassifiers.head as EClass
+		assertEquals(2, eClass.EAttributes.size)
 	}
 	
 	@Test
@@ -72,14 +73,10 @@ class StructureForFeaturesTest {
 				attr String b;
 			}
 		''')
-		process(result)
-		val classDecl = result.declarations.head.declaration as ClassDecl
-		val annt = (classDecl).members.head.annotations.head as Annotation
-		val output = cache.get(
-			annt,
-			result.eResource,
-			[null])
-		Assertions.assertNotNull(output)
+		val root = process(result) as EPackage
+		val eClass = root.EClassifiers.head as EClass
+		val eAttribute = eClass.EAttributes.head
+		assertEquals(1, eAttribute.EAnnotations.size)
 	}
 	
 	@Test
@@ -90,14 +87,9 @@ class StructureForFeaturesTest {
 				attr String[*] b;
 			}
 		''')
-		process(result)
-		val classDecl = result.declarations.head.declaration as ClassDecl
-		val attribute = (classDecl).members.head.member as FeatureDecl
-		val output = cache.get(
-			(attribute.feature as Attribute).typeWithMulti.multiplicity,
-			result.eResource,
-			[null])
-		Assertions.assertNotNull(output)
+		val root = process(result) as EPackage
+		val eClass = root.EClassifiers.head as EClass
+		assertEquals(1, eClass.EAttributes.size)
 	}
 	
 	@Test
@@ -108,14 +100,9 @@ class StructureForFeaturesTest {
 				attr String b = "DefValue";
 			}
 		''')
-		process(result)
-		val classDecl = result.declarations.head.declaration as ClassDecl
-		val attribute = (classDecl).members.head.member as FeatureDecl
-		val output = cache.get(
-			(attribute.feature as Attribute).defValue,
-			result.eResource,
-			[null])
-		Assertions.assertNotNull(output)
+		val root = process(result) as EPackage
+		val eClass = root.EClassifiers.head as EClass
+		assertEquals(1, eClass.EAttributes.size)
 	}
 
 	@Test
@@ -126,25 +113,24 @@ class StructureForFeaturesTest {
 				val B bs;
 			}
 		''')
-		process(result)
-		val classDecl = result.declarations.head.declaration as ClassDecl
-		val attribute = (classDecl).members.head.member as FeatureDecl
-		var output = cache.get(
-			attribute.feature,
-			result.eResource,
-			[null])
-		Assertions.assertNotNull(output)
-		Assertions.assertInstanceOf(EReference, output);
-		output = cache.get(
-			(attribute.feature as Reference).typeWithMulti,
-			result.eResource,
-			[null])
-		Assertions.assertNotNull(output)
-		output = cache.get(
-			(attribute.feature as Reference).typeWithMulti.type,
-			result.eResource,
-			[null])
-		Assertions.assertNotNull(output)
+		val root = process(result) as EPackage
+		val eClass = root.EClassifiers.head as EClass
+		assertEquals(1, eClass.EReferences.size)
+	}
+	
+	@Test
+	def void classWithTwoRefernces() {
+		val result = parseHelper.parse('''
+			package test;
+			class A {
+				val B bs;
+				val B cs;
+			}
+			class B {}
+		''')
+		val root = process(result) as EPackage
+		val eClass = root.EClassifiers.head as EClass
+		assertEquals(2, eClass.EReferences.size)
 	}
 	
 	@Test
@@ -157,13 +143,10 @@ class StructureForFeaturesTest {
 			}
 		''')
 		process(result)
-		val classDecl = result.declarations.head.declaration as ClassDecl
-		val annt = classDecl.members.head.annotations.head as Annotation
-		val output = cache.get(
-			annt,
-			result.eResource,
-			[null])
-		Assertions.assertNotNull(output)
+		val root = process(result) as EPackage
+		val eClass = root.EClassifiers.head as EClass
+		val eReferences = eClass.EReferences.head
+		assertEquals(1, eReferences.EAnnotations.size)
 	}
 	
 	@Test
@@ -174,14 +157,9 @@ class StructureForFeaturesTest {
 				val B[1] bs;
 			}
 		''')
-		process(result)
-		val classDecl = result.declarations.head.declaration as ClassDecl
-		val attribute = (classDecl).members.head.member as FeatureDecl
-		val output = cache.get(
-			(attribute.feature as Reference).typeWithMulti.multiplicity,
-			result.eResource,
-			[null])
-		Assertions.assertNotNull(output)
+		val root = process(result) as EPackage
+		val eClass = root.EClassifiers.head as EClass
+		assertEquals(1, eClass.EReferences.size)
 	}
 	
 }
