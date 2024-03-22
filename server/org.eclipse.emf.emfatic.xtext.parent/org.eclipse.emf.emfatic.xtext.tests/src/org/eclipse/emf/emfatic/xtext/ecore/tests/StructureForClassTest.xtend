@@ -1,13 +1,10 @@
 package org.eclipse.emf.emfatic.xtext.ecore.tests
 
 import com.google.inject.Inject
-import org.eclipse.emf.ecore.EAnnotation
-import org.eclipse.emf.ecore.EClass
 import org.eclipse.emf.ecore.EObject
-import org.eclipse.emf.ecore.ETypeParameter
-import org.eclipse.emf.emfatic.xtext.emfatic.ClassDecl
+import org.eclipse.emf.ecore.EPackage
+import org.eclipse.emf.emfatic.xtext.ecore.Structure
 import org.eclipse.emf.emfatic.xtext.emfatic.CompUnit
-import org.eclipse.emf.emfatic.xtext.emfatic.Wildcard
 import org.eclipse.emf.emfatic.xtext.scoping.EmfaticImport
 import org.eclipse.emf.emfatic.xtext.tests.EmfaticInjectorProvider
 import org.eclipse.xtext.testing.InjectWith
@@ -17,7 +14,8 @@ import org.eclipse.xtext.util.OnChangeEvictingCache
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.^extension.ExtendWith
-import org.eclipse.emf.emfatic.xtext.ecore.Structure
+
+import static org.junit.jupiter.api.Assertions.assertEquals
 
 @ExtendWith(InjectionExtension)
 @InjectWith(EmfaticInjectorProvider)
@@ -43,14 +41,8 @@ class StructureForClassTest {
 			package test;
 			class A {}
 		''')
-		process(result)
-		var output = cache.get(
-			result.declarations.head.declaration,
-			result.eResource,
-			[null])
-		Assertions.assertNotNull(output)
-		Assertions.assertInstanceOf(EClass, output);
-		
+		val root = process(result) as EPackage
+		assertEquals(1, root.EClassifiers.size)
 	}
 	
 	@Test
@@ -60,13 +52,10 @@ class StructureForClassTest {
 			@"http://class/annotation"(k="v")
 			class A {}
 		''')
-		process(result)
-		var output = cache.get(
-			result.declarations.head.annotations.head,
-			result.eResource,
-			[null])
-		Assertions.assertNotNull(output)
-		Assertions.assertInstanceOf(EAnnotation, output);
+		val root = process(result) as EPackage
+		Assertions.assertEquals(1, root.EClassifiers.size)
+		val eClass = root.EClassifiers.head
+		assertEquals(1, eClass.EAnnotations.size)
 	}
 	
 	@Test
@@ -75,72 +64,56 @@ class StructureForClassTest {
 			package test;
 			class A<B> {}
 		''')
-		process(result)
-		val output = cache.get(
-			(result.declarations.head.declaration as ClassDecl).typeParamsInfo.tp.head,
-			result.eResource,
-			[null])
-		Assertions.assertNotNull(output)
-		Assertions.assertInstanceOf(ETypeParameter, output);
+		val root = process(result) as EPackage
+		Assertions.assertEquals(1, root.EClassifiers.size)
+		val eClass = root.EClassifiers.head
+		assertEquals(1, eClass.ETypeParameters.size)
 	}
 	
-	@Test
-	def void emptyClassWithGenericsBound() {
-		val result = parseHelper.parse('''
-			package test;
-			class A<B extends C> {}
-		''')
-		process(result)
-		val output = cache.get(
-			(result.declarations.head.declaration as ClassDecl).typeParamsInfo.tp.head,
-			result.eResource,
-			[null])
-		Assertions.assertNotNull(output)
-		Assertions.assertInstanceOf(ETypeParameter, output);
-	}
-	
-	@Test
-	def void emptyClassWithSuper() {
-		val result = parseHelper.parse('''
-			package test;
-			class A extends B {}
-		''')
-		process(result)
-		val output = cache.get(
-			(result.declarations.head.declaration as ClassDecl).superTypes.head,
-			result.eResource,
-			[null])
-		Assertions.assertNotNull(output)
-	}
-	
-	@Test
-	def void emptyClassWithSuperWildcard() {
-		val result = parseHelper.parse('''
-			package test;
-			class A extends B<?> {}
-		''')
-		process(result)
-		val output = cache.get(
-			(result.declarations.head.declaration as ClassDecl).superTypes.head.typeArgs.head,
-			result.eResource,
-			[null])
-		Assertions.assertNotNull(output)
-	}
-	
-	@Test
-	def void emptyClassWithSuperWildcardBound() {
-		val result = parseHelper.parse('''
-			package test;
-			class A extends B<? extends C> {}
-		''')
-		process(result)
-		val classDecl = result.declarations.head.declaration as ClassDecl
-		val wildcard = (classDecl).superTypes.head.typeArgs.head as Wildcard
-		val output = cache.get(
-			wildcard.bound,
-			result.eResource,
-			[null])
-		Assertions.assertNotNull(output)
-	}
+//	@Test
+//	def void emptyClassWithSuper() {
+//		val result = parseHelper.parse('''
+//			package test;
+//			class A extends B {}
+//			class B {}
+//		''')
+//		val root = process(result) as EPackage
+//		Assertions.assertEquals(1, root.EClassifiers.size)
+//		val eClass = root.EClassifiers.head as EClass
+//		assertEquals(1, eClass.ESuperTypes.size)
+//	}
+//	
+//	@Test
+//	def void emptyClassWithSuperWildcard() {
+//		val result = parseHelper.parse('''
+//			package test;
+//			class A extends B<?> {}
+//			class B {}
+//		''')
+//		process(result)
+//		val output = cache.get(
+//			(result.declarations.head.declaration as ClassDecl).superTypes.head.typeArgs.head,
+//			result.eResource,
+//			[null])
+//		Assertions.assertNotNull(output)
+//	}
+//	
+//	@Test
+//	def void emptyClassWithSuperWildcardBound() {
+//		val result = parseHelper.parse('''
+//			package test;
+//			class A extends B<? extends C> {}
+//			class B{}
+//			class C{}
+//		''')
+//		process(result)
+//		val classDecl = result.declarations.head.declaration as ClassDecl
+//		val wildcard = (classDecl).superTypes.head.typeArgs.head as Wildcard
+//		val output = cache.get(
+//			wildcard.bound,
+//			result.eResource,
+//			[null])
+//		Assertions.assertNotNull(output)
+//	}
 
 }

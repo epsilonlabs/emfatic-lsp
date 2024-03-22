@@ -161,7 +161,9 @@ public class Structure extends EmfaticSwitch<Object> {
 				source.eResource(),
 				EcoreFactory.eINSTANCE::createEClass);
 		if (source.getTypeParamsInfo() != null) {
-			source.getTypeParamsInfo().getTp().forEach(this::doSwitch);
+			source.getTypeParamsInfo().getTp()
+				.forEach(tp -> ((EClass)result)
+						.getETypeParameters().add((ETypeParameter) this.doSwitch(tp)));
 		}
 		source.getSuperTypes().forEach(this::doSwitch);
 		source.getMembers().forEach(this::doSwitch);
