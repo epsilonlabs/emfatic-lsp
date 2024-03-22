@@ -185,6 +185,18 @@ public class Structure extends EmfaticSwitch<Object> {
 		parent.getEClassifiers().add(result);
 		return result;
 	}
+	
+	@Override
+	public Object caseEnumDecl(EnumDecl source) {
+		EEnum result = this.cache.get(
+				source, 
+				source.eResource(),
+				EcoreFactory.eINSTANCE::createEEnum);
+		source.getEnumLiterals().forEach(this::doSwitch);
+		EPackage parent = this.equivalent(((CompUnit)source.eContainer().eContainer()).getPackage());
+		parent.getEClassifiers().add(result);	
+		return result;
+	}
 
 	@Override
 	public Object caseClassMemberDecl(ClassMemberDecl source) {
@@ -286,25 +298,17 @@ public class Structure extends EmfaticSwitch<Object> {
 	}
 	
 	@Override
-	public Object caseEnumDecl(EnumDecl source) {
-		EEnum result = this.cache.get(
-				source, 
-				source.eResource(),
-				EcoreFactory.eINSTANCE::createEEnum);
-		source.getEnumLiterals().forEach(this::doSwitch);
-		EPackage parent = this.equivalent(((CompUnit)source.eContainer().eContainer()).getPackage());
-		parent.getEClassifiers().add(result);	
-		return result;
-	}
-	
-	@Override
 	public Object caseEnumLiteral(EnumLiteral source) {
 		var result = this.cache.get(
 				source,
 				source.eResource(),
 				EcoreFactory.eINSTANCE::createEEnumLiteral);
-		source.getLeadingAnnotations().forEach(this::doSwitch);
-		source.getTrailingAnnotations().forEach(this::doSwitch);
+		source.getLeadingAnnotations().forEach(a -> {
+			((EModelElement)result).getEAnnotations().add((EAnnotation) this.doSwitch(a));
+		});
+		source.getTrailingAnnotations().forEach(a -> {
+			((EModelElement)result).getEAnnotations().add((EAnnotation) this.doSwitch(a));
+		});
 		((EEnum)this.equivalent(source.eContainer())).getELiterals().add(result);
 		return result;
 	}
