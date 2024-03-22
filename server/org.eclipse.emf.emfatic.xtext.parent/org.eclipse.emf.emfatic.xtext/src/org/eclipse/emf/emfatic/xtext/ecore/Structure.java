@@ -201,7 +201,9 @@ public class Structure extends EmfaticSwitch<Object> {
 	@Override
 	public Object caseClassMemberDecl(ClassMemberDecl source) {
 		Object result = this.doSwitch(source.getMember());
-		source.getAnnotations().forEach(this::doSwitch);
+		source.getAnnotations().forEach(a -> {
+			((EModelElement)result).getEAnnotations().add((EAnnotation) this.doSwitch(a));
+		});
 		return result;
 	}
 
@@ -217,11 +219,14 @@ public class Structure extends EmfaticSwitch<Object> {
 				source.eResource(),
 				EcoreFactory.eINSTANCE::createEOperation);
 		if (source.getTypeParamsInfo() != null) {
-			source.getTypeParamsInfo().getTp().forEach(this::doSwitch);
+			source.getTypeParamsInfo().getTp()
+				.forEach(tp -> result.getETypeParameters().add((ETypeParameter) this.doSwitch(tp)));
 		}
 		this.doSwitch(source.getResultType());
 		source.getParams().forEach(this::doSwitch);
 		source.getExceptions().forEach(this::doSwitch);
+		EClass parent = this.equivalent(((Operation)source).eContainer().eContainer());
+		parent.getEOperations().add(result);
 		return result;
 	}
 	
@@ -243,10 +248,15 @@ public class Structure extends EmfaticSwitch<Object> {
 				source,
 				source.eResource(),
 				EcoreFactory.eINSTANCE::createEParameter);
-		source.getLeadingAnnotations().forEach(this::doSwitch);
+		
+		source.getLeadingAnnotations().forEach(a -> {
+			((EModelElement)result).getEAnnotations().add((EAnnotation) this.doSwitch(a));
+		});
 		this.doSwitch(source.getTypeWithMulti());
-		source.getTrailingAnnotations().forEach(this::doSwitch);
-		EOperation parent = this.equivalent(source.eContainer().eContainer().eContainer());
+		source.getTrailingAnnotations().forEach(a -> {
+			((EModelElement)result).getEAnnotations().add((EAnnotation) this.doSwitch(a));
+		});
+		EOperation parent = this.equivalent(source.eContainer());
 		parent.getEParameters().add(result);
 		return result;
 	}

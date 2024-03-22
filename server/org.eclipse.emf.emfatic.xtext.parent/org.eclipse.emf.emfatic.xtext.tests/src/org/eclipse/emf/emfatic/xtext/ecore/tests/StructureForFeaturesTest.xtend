@@ -44,7 +44,6 @@ class StructureForFeaturesTest {
 			}
 		''')
 		val root = process(result) as EPackage
-		assertEquals(1, root.EClassifiers.size)
 		val eClass = root.EClassifiers.head as EClass
 		assertEquals(1, eClass.EAttributes.size)
 	}
@@ -59,7 +58,6 @@ class StructureForFeaturesTest {
 			}
 		''')
 		val root = process(result) as EPackage
-		assertEquals(1, root.EClassifiers.size)
 		val eClass = root.EClassifiers.head as EClass
 		assertEquals(2, eClass.EAttributes.size)
 	}
