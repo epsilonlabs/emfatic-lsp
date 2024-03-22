@@ -1,10 +1,13 @@
 package org.eclipse.emf.emfatic.xtext.ecore;
 
+import org.eclipse.emf.ecore.EAnnotation;
 import org.eclipse.emf.ecore.EAttribute;
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EDataType;
 import org.eclipse.emf.ecore.EEnum;
+import org.eclipse.emf.ecore.EModelElement;
 import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.ecore.EOperation;
 import org.eclipse.emf.ecore.EPackage;
 import org.eclipse.emf.ecore.EParameter;
 import org.eclipse.emf.ecore.EReference;
@@ -80,7 +83,9 @@ public class Structure extends EmfaticSwitch<Object> {
 	@Override
 	public Object caseTopLevelDecl(TopLevelDecl source) {
 		Object result = this.doSwitch(source.getDeclaration());
-		source.getAnnotations().forEach(this::doSwitch);
+		source.getAnnotations().forEach(a -> {
+			((EModelElement)result).getEAnnotations().add((EAnnotation) this.doSwitch(a));
+		});
 		return result;
 	}
 
@@ -160,6 +165,20 @@ public class Structure extends EmfaticSwitch<Object> {
 		}
 		source.getSuperTypes().forEach(this::doSwitch);
 		source.getMembers().forEach(this::doSwitch);
+		EPackage parent = this.equivalent(((CompUnit)source.eContainer().eContainer()).getPackage());
+		parent.getEClassifiers().add(result);
+		return result;
+	}
+	
+	@Override
+	public Object caseDataTypeDecl(DataTypeDecl source) {
+		EDataType result = this.cache.get(
+				source, 
+				source.eResource(),
+				EcoreFactory.eINSTANCE::createEDataType);
+		if (source.getTypeParamsInfo() != null) {
+			source.getTypeParamsInfo().getTp().forEach(this::doSwitch);
+		}
 		EPackage parent = this.equivalent(((CompUnit)source.eContainer().eContainer()).getPackage());
 		parent.getEClassifiers().add(result);
 		return result;
@@ -261,20 +280,6 @@ public class Structure extends EmfaticSwitch<Object> {
 		if (source.getMultiplicity() != null) {
 			this.doSwitch(source.getMultiplicity());
 		}
-		return result;
-	}
-
-	@Override
-	public Object caseDataTypeDecl(DataTypeDecl source) {
-		EDataType result = this.cache.get(
-				source, 
-				source.eResource(),
-				EcoreFactory.eINSTANCE::createEDataType);
-		if (source.getTypeParamsInfo() != null) {
-			source.getTypeParamsInfo().getTp().forEach(this::doSwitch);
-		}
-		EPackage parent = this.equivalent(((CompUnit)source.eContainer().eContainer()).getPackage());
-		parent.getEClassifiers().add(result);
 		return result;
 	}
 	
