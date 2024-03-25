@@ -8,6 +8,8 @@ import org.eclipse.emf.ecore.EAnnotation;
 import org.eclipse.emf.ecore.EAttribute;
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EDataType;
+import org.eclipse.emf.ecore.EEnum;
+import org.eclipse.emf.ecore.EEnumLiteral;
 import org.eclipse.emf.ecore.EModelElement;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EOperation;
@@ -31,6 +33,8 @@ import org.eclipse.emf.emfatic.xtext.emfatic.CompUnit;
 import org.eclipse.emf.emfatic.xtext.emfatic.DataTypeDecl;
 import org.eclipse.emf.emfatic.xtext.emfatic.Details;
 import org.eclipse.emf.emfatic.xtext.emfatic.EmfaticPackage;
+import org.eclipse.emf.emfatic.xtext.emfatic.EnumDecl;
+import org.eclipse.emf.emfatic.xtext.emfatic.EnumLiteral;
 import org.eclipse.emf.emfatic.xtext.emfatic.FeatureDecl;
 import org.eclipse.emf.emfatic.xtext.emfatic.FloatExpr;
 import org.eclipse.emf.emfatic.xtext.emfatic.IntExpr;
@@ -47,12 +51,11 @@ import org.eclipse.emf.emfatic.xtext.emfatic.TypeParam;
 import org.eclipse.emf.emfatic.xtext.emfatic.util.EmfaticSwitch;
 import org.eclipse.xtext.util.OnChangeEvictingCache;
 
-import com.google.inject.Inject;
-
 public class Content extends EmfaticSwitch<Object> {
 	
-	public Content(OnChangeEvictingCache cache) {
+	public Content(OnChangeEvictingCache cache, AnnotationMap annotations) {
 		this.cache = cache;
+		this.annotations = annotations;
 	}
 
 	@Override
@@ -104,6 +107,7 @@ public class Content extends EmfaticSwitch<Object> {
 		target.setInstanceClassName("java.util.Map$Entry");
 		target.setName(source.getName());
 		mapEntries.add(target);
+		processAnnotations(target, ((TopLevelDecl)source.eContainer()).getAnnotations(), source.eResource());
 		return target;
 	}
 
@@ -214,8 +218,6 @@ public class Content extends EmfaticSwitch<Object> {
 		return target;
 	}
 	
-	
-	
 	@Override
 	public Object caseOperation(Operation source) {
 		EOperation target = equivalent(source);
@@ -236,13 +238,17 @@ public class Content extends EmfaticSwitch<Object> {
 				target.getETypeParameters().add(targetTp);
 			}
 		}
-		source.getParams().forEach(this::doSwitch);
 		ResultTypeCopier type = equivalent(source.getResultType());
 		type.load(this.cache).configure(target);
+		source.getParams().forEach(this::doSwitch);
+		for (BoundClassifierExceptWildcard tb : source.getExceptions()) {
+			var gt = EcoreFactory.eINSTANCE.createEGenericType();
+			BoundClassifierExceptWildcardCopier cp = equivalent(tb);
+			cp.load(this.cache).configure(gt);
+			target.getEGenericExceptions().add(gt);
+		}
 		return target;
 	}
-	
-	
 
 	@Override
 	public Object caseParam(Param source) {
@@ -280,13 +286,41 @@ public class Content extends EmfaticSwitch<Object> {
 				target.getETypeParameters().add(targetTp);
 			}
 		}
+		processAnnotations(target, ((TopLevelDecl)source.eContainer()).getAnnotations(), source.eResource());
 		return target;
 	}
 	
-	
+	@Override
+	public Object caseEnumDecl(EnumDecl source) {
+		EEnum target = equivalent(source);
+		target.setName(source.getName());
+		source.getEnumLiterals().forEach(this::doSwitch);
+		processAnnotations(target, ((TopLevelDecl)source.eContainer()).getAnnotations(), source.eResource());
+		return target;
+	}
 
-	@Inject
-	private AnnotationMap annotations;
+	@Override
+	public Object caseEnumLiteral(EnumLiteral source) {
+		EEnumLiteral target = this.equivalent(source);
+		target.setName(source.getName());
+		processAnnotations(target, source.getLeadingAnnotations(), source.eResource());
+		var index = ((EEnum)target.eContainer()).getELiterals().indexOf(target);
+		if (index == 0) {
+			target.setValue(source.getVal());
+		} else {
+			if (source.getVal() == 0) {
+				var prevValue = ((EEnum)target.eContainer()).getELiterals().get(index -1).getValue();
+				target.setValue(prevValue+1);
+			} else {
+				target.setValue(source.getVal());
+			}
+		}
+		processAnnotations(target, source.getTrailingAnnotations(), source.eResource());	
+		return target;
+	}
+
+	private final AnnotationMap annotations;
+	
 	private final OnChangeEvictingCache cache;
 	
 	private Set<EClass> mapEntries = new HashSet<>();

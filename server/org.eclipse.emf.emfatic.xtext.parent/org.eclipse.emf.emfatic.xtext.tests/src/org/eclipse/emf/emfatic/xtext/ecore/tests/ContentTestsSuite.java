@@ -10,8 +10,8 @@ import org.junit.platform.suite.api.Suite;
 	ContentForFeaturesTest.class,
 	ContentForMapEntryTest.class,
 	ContentForOperationsTest.class,
+	ContentForEnumTest.class,
 	//StructureForPackageTest.class,
-	//StrucutreForEnumTest.class
 	})
 public class ContentTestsSuite {
 

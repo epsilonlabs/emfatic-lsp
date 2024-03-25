@@ -4,6 +4,7 @@ import org.apache.log4j.Logger;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EPackage;
 import org.eclipse.emf.ecore.resource.Resource;
+import org.eclipse.emf.emfatic.xtext.annotations.AnnotationMap;
 import org.eclipse.emf.emfatic.xtext.emfatic.CompUnit;
 import org.eclipse.emf.emfatic.xtext.scoping.EmfaticImport;
 import org.eclipse.xtext.util.OnChangeEvictingCache;
@@ -16,11 +17,14 @@ import com.google.inject.Singleton;
 public class Twin {
 
 	@Inject
-	public Twin(OnChangeEvictingCache cache, EmfaticImport emfaticImport) {
+	public Twin(
+		OnChangeEvictingCache cache,
+		EmfaticImport emfaticImport,
+		AnnotationMap annotations) {
 		super();
 		this.cache = cache;
 		this.structure = new Structure(cache, emfaticImport);
-		this.content = new Content(cache);
+		this.content = new Content(cache, annotations);
 	}
 
 	public EPackage copy(final CompUnit model) {

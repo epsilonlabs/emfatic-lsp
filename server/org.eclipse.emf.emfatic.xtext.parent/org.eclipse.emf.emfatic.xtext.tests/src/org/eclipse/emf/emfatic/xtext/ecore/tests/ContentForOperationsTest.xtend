@@ -1,19 +1,15 @@
 package org.eclipse.emf.emfatic.xtext.ecore.tests
 
 import com.google.inject.Inject
-import org.eclipse.emf.ecore.EOperation
-import org.eclipse.emf.emfatic.xtext.emfatic.ClassDecl
+import org.eclipse.emf.ecore.EClass
+import org.eclipse.emf.ecore.EPackage
 import org.eclipse.emf.emfatic.xtext.emfatic.CompUnit
 import org.eclipse.emf.emfatic.xtext.tests.EmfaticInjectorProvider
 import org.eclipse.xtext.testing.InjectWith
 import org.eclipse.xtext.testing.extensions.InjectionExtension
 import org.eclipse.xtext.testing.util.ParseHelper
-import org.eclipse.xtext.util.OnChangeEvictingCache
-import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.^extension.ExtendWith
-import org.eclipse.emf.ecore.EPackage
-import org.eclipse.emf.ecore.EClass
 
 import static org.junit.jupiter.api.Assertions.assertEquals
 import static org.junit.jupiter.api.Assertions.assertNull
@@ -25,9 +21,6 @@ class ContentForOperationsTest extends ContentTest {
 
 	@Inject
 	ParseHelper<CompUnit> parseHelper
-
-	@Inject
-	OnChangeEvictingCache cache
 	
 	@Test
 	def void classWithOperation() {
