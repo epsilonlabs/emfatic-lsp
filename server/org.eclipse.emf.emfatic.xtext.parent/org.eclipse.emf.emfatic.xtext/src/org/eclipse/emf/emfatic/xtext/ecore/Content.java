@@ -85,6 +85,7 @@ public class Content extends EmfaticSwitch<Object> {
 	@Override
 	public Object caseSubPackageDecl(SubPackageDecl source) {
 		EPackage target = equivalent(source);
+		target.setName(source.getName());
 		for (var d : source.getDeclarations()) {
 			this.doSwitch(d);
 		}

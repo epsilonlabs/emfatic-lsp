@@ -7,11 +7,11 @@ import org.junit.platform.suite.api.Suite;
 @SelectClasses({
 	ContentForClassTest.class,
 	ContentForDataTypeTest.class,
+	ContentForEnumTest.class,
 	ContentForFeaturesTest.class,
 	ContentForMapEntryTest.class,
 	ContentForOperationsTest.class,
-	ContentForEnumTest.class,
-	//StructureForPackageTest.class,
+	ContentForPackageTest.class,
 	})
 public class ContentTestsSuite {
 
