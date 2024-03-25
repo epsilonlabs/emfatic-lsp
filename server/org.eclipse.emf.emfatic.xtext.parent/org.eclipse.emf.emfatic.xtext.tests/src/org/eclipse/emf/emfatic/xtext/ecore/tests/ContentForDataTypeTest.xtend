@@ -1,10 +1,8 @@
 package org.eclipse.emf.emfatic.xtext.ecore.tests
 
 import com.google.inject.Inject
-import org.eclipse.emf.ecore.EDataType
-import org.eclipse.emf.ecore.ETypeParameter
+import org.eclipse.emf.ecore.EPackage
 import org.eclipse.emf.emfatic.xtext.emfatic.CompUnit
-import org.eclipse.emf.emfatic.xtext.emfatic.DataTypeDecl
 import org.eclipse.emf.emfatic.xtext.tests.EmfaticInjectorProvider
 import org.eclipse.xtext.testing.InjectWith
 import org.eclipse.xtext.testing.extensions.InjectionExtension
@@ -12,6 +10,8 @@ import org.eclipse.xtext.testing.util.ParseHelper
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.^extension.ExtendWith
+
+import static org.junit.jupiter.api.Assertions.assertEquals
 
 @ExtendWith(InjectionExtension)
 @InjectWith(EmfaticInjectorProvider)
@@ -26,15 +26,10 @@ class ContentForDataTypeTest extends ContentTest {
 			package test;
 			datatype EInt : int;
 		''')
-		process(result)
-		var output = cache.get(
-			result.declarations.head.declaration,
-			result.eResource,
-			[null])
-		Assertions.assertNotNull(output)
-		Assertions.assertInstanceOf(EDataType, output)
-		Assertions.assertEquals("EInt", (output as EDataType).name)
-		Assertions.assertEquals("int", (output as EDataType).instanceClassName)
+		val root = process(result) as EPackage
+		val eDataType = root.EClassifiers.head
+		assertEquals("EInt", eDataType.name)
+		assertEquals("int", eDataType.instanceClassName)
 	}
 	
 	@Test
@@ -43,14 +38,9 @@ class ContentForDataTypeTest extends ContentTest {
 			package test;
 			datatype EInt<T> : int;
 		''')
-		process(result)
-		val output = cache.get(
-			(result.declarations.head.declaration as DataTypeDecl).typeParamsInfo.tp.head,
-			result.eResource,
-			[null])
-		Assertions.assertNotNull(output)
-		Assertions.assertInstanceOf(ETypeParameter, output);
-		Assertions.assertEquals("T", (output as ETypeParameter).name);
+		val root = process(result) as EPackage
+		val eDataType = root.EClassifiers.head
+		Assertions.assertEquals("T", eDataType.ETypeParameters.head.name);
 	}
 
 }

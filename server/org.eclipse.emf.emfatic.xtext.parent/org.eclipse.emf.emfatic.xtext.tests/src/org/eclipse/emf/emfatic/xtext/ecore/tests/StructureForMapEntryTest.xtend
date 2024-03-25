@@ -1,7 +1,6 @@
 package org.eclipse.emf.emfatic.xtext.ecore.tests
 
 import com.google.inject.Inject
-import org.eclipse.emf.ecore.EClass
 import org.eclipse.emf.ecore.EPackage
 import org.eclipse.emf.emfatic.xtext.emfatic.CompUnit
 import org.eclipse.emf.emfatic.xtext.tests.EmfaticInjectorProvider

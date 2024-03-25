@@ -2,10 +2,8 @@ package org.eclipse.emf.emfatic.xtext.ecore.tests
 
 import com.google.inject.Inject
 import org.eclipse.emf.ecore.EClass
-import org.eclipse.emf.ecore.ETypeParameter
-import org.eclipse.emf.emfatic.xtext.emfatic.ClassDecl
+import org.eclipse.emf.ecore.EPackage
 import org.eclipse.emf.emfatic.xtext.emfatic.CompUnit
-import org.eclipse.emf.emfatic.xtext.emfatic.Wildcard
 import org.eclipse.emf.emfatic.xtext.tests.EmfaticInjectorProvider
 import org.eclipse.xtext.testing.InjectWith
 import org.eclipse.xtext.testing.extensions.InjectionExtension
@@ -13,7 +11,11 @@ import org.eclipse.xtext.testing.util.ParseHelper
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.^extension.ExtendWith
-import org.eclipse.emf.ecore.EAnnotation
+
+import static org.junit.jupiter.api.Assertions.assertEquals
+import static org.junit.jupiter.api.Assertions.assertNull
+import static org.junit.jupiter.api.Assertions.assertTrue
+import org.eclipse.emf.ecore.EGenericType
 
 @ExtendWith(InjectionExtension)
 @InjectWith(EmfaticInjectorProvider)
@@ -28,14 +30,9 @@ class ContentForClassTest extends ContentTest {
 			package test;
 			class A {}
 		''')
-		process(result)
-		var output = cache.get(
-			result.declarations.head.declaration,
-			result.eResource,
-			[null])
-		Assertions.assertNotNull(output)
-		Assertions.assertInstanceOf(EClass, output);
-		Assertions.assertEquals("A", (output as EClass).name);
+		val root = process(result) as EPackage
+		val eClass = root.EClassifiers.head
+		assertEquals("A", (eClass as EClass).name);
 	}
 	
 	@Test
@@ -45,17 +42,12 @@ class ContentForClassTest extends ContentTest {
 			@"http://class/annotation"(k="v")
 			class A {}
 		''')
-		process(result)
-		var output = cache.get(
-			result.declarations.head.annotations.head,
-			result.eResource,
-			[null])
-		Assertions.assertNotNull(output)
-		Assertions.assertInstanceOf(EAnnotation, output);
-		Assertions.assertEquals("http://class/annotation", (output as EAnnotation).source)
-		Assertions.assertEquals(1, (output as EAnnotation).details.size)
-		Assertions.assertTrue((output as EAnnotation).details.containsKey("k"))
-		Assertions.assertEquals("v", (output as EAnnotation).details.get("k"))
+		val root = process(result) as EPackage
+		val eAnnotation = root.EClassifiers.head.EAnnotations.head
+		assertEquals("http://class/annotation", eAnnotation.source)
+		assertEquals(1, eAnnotation.details.size)
+		assertTrue(eAnnotation.details.containsKey("k"))
+		assertEquals("v", eAnnotation.details.get("k"))
 	}
 	
 	@Test
@@ -64,14 +56,9 @@ class ContentForClassTest extends ContentTest {
 			package test;
 			abstract class A {}
 		''')
-		process(result)
-		var output = cache.get(
-			result.declarations.head.declaration,
-			result.eResource,
-			[null])
-		Assertions.assertNotNull(output)
-		Assertions.assertInstanceOf(EClass, output);
-		Assertions.assertTrue((output as EClass).abstract);	
+		val root = process(result) as EPackage
+		val eClass = root.EClassifiers.head as EClass
+		assertTrue(eClass.abstract);	
 	}
 	
 	@Test
@@ -80,14 +67,9 @@ class ContentForClassTest extends ContentTest {
 			package test;
 			interface A {}
 		''')
-		process(result)
-		var output = cache.get(
-			result.declarations.head.declaration,
-			result.eResource,
-			[null])
-		Assertions.assertNotNull(output)
-		Assertions.assertInstanceOf(EClass, output);
-		Assertions.assertTrue((output as EClass).interface);	
+		val root = process(result) as EPackage
+		val eClass = root.EClassifiers.head as EClass
+		assertTrue(eClass.interface);	
 	}
 	
 	@Test
@@ -96,16 +78,10 @@ class ContentForClassTest extends ContentTest {
 			package test;
 			class A<T> {}
 		''')
-		process(result)
-		val output = cache.get(
-			(result.declarations.head.declaration as ClassDecl).typeParamsInfo.tp.head,
-			result.eResource,
-			[null])
-		Assertions.assertNotNull(output)
-		Assertions.assertInstanceOf(ETypeParameter, output);
-		Assertions.assertEquals("T", (output as ETypeParameter).name);
+		val root = process(result) as EPackage
+		val eTypeParam = root.EClassifiers.head.ETypeParameters.head
+		assertEquals("T", eTypeParam.name);
 	}
-
 
 	@Test
 	def void emptyClassWithGenericsBound() {
@@ -114,16 +90,11 @@ class ContentForClassTest extends ContentTest {
 			class A<T extends C> {}
 			class C {}
 		''')
-		process(result)
-		val output = cache.get(
-			(result.declarations.head.declaration as ClassDecl).typeParamsInfo.tp.head,
-			result.eResource,
-			[null])
-		Assertions.assertNotNull(output)
-		Assertions.assertInstanceOf(ETypeParameter, output);
-		Assertions.assertEquals("T", (output as ETypeParameter).name);
-		val bounds = (output as ETypeParameter).EBounds.get(0);
-		Assertions.assertEquals("C", bounds.EClassifier.name);
+		val root = process(result) as EPackage
+		val eTypeParam = root.EClassifiers.head.ETypeParameters.head
+		Assertions.assertEquals("T", eTypeParam.name);
+		val bounds = eTypeParam.EBounds.get(0);
+		assertEquals("C", bounds.EClassifier.name);
 	}
 	
 	@Test
@@ -133,14 +104,9 @@ class ContentForClassTest extends ContentTest {
 			class A extends B {}
 			class B {}
 		''')
-		process(result)
-		var output = cache.get(
-			result.declarations.head.declaration,
-			result.eResource,
-			[null])
-		Assertions.assertNotNull(output)
-		Assertions.assertInstanceOf(EClass, output);
-		Assertions.assertEquals("B", (output as EClass).ESuperTypes.head.name);
+		val root = process(result) as EPackage
+		val eClass = root.EClassifiers.head as EClass
+		assertEquals("B", eClass.ESuperTypes.head.name);
 	}
 
 	@Test
@@ -150,16 +116,10 @@ class ContentForClassTest extends ContentTest {
 			class A extends B<?> {}
 			class B {}
 		''')
-		process(result)
-		var output = cache.get(
-			result.declarations.head.declaration,
-			result.eResource,
-			[null])
-		Assertions.assertNotNull(output)
-		Assertions.assertInstanceOf(EClass, output);
-		val genSuperType = (output as EClass).EGenericSuperTypes.head
-		Assertions.assertEquals(1, genSuperType.ETypeArguments.size);
-		Assertions.assertNull(genSuperType.ETypeParameter);
+		val root = process(result) as EPackage
+		val genSuperType = (root.EClassifiers.head as EClass).EGenericSuperTypes.head
+		assertEquals(1, genSuperType.ETypeArguments.size);
+		assertNull(genSuperType.ETypeParameter);
 	}
 	
 	@Test
@@ -170,14 +130,9 @@ class ContentForClassTest extends ContentTest {
 			class B {}
 			class C {}
 		''')
-		process(result)
-		val classDecl = result.declarations.head.declaration as ClassDecl
-		val wildcard = (classDecl).superTypes.head.typeArgs.head as Wildcard
-		val output = cache.get(
-			wildcard.bound,
-			result.eResource,
-			[null])
-		Assertions.assertNotNull(output)
+		val root = process(result) as EPackage
+		val eTypeArg = (root.EClassifiers.head as EClass).EGenericSuperTypes.head.ETypeArguments.head as EGenericType
+		assertEquals("C", eTypeArg.EUpperBound.EClassifier.name)
 	}
  	
 }

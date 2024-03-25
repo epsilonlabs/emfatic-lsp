@@ -1,25 +1,17 @@
 package org.eclipse.emf.emfatic.xtext.ecore.tests
 
 import com.google.inject.Inject
-import org.eclipse.emf.ecore.EOperation
-import org.eclipse.emf.ecore.EParameter
-import org.eclipse.emf.emfatic.xtext.emfatic.Annotation
-import org.eclipse.emf.emfatic.xtext.emfatic.ClassDecl
+import org.eclipse.emf.ecore.EClass
+import org.eclipse.emf.ecore.EPackage
 import org.eclipse.emf.emfatic.xtext.emfatic.CompUnit
-import org.eclipse.emf.emfatic.xtext.emfatic.Operation
-import org.eclipse.emf.emfatic.xtext.emfatic.Param
 import org.eclipse.emf.emfatic.xtext.tests.EmfaticInjectorProvider
 import org.eclipse.xtext.testing.InjectWith
 import org.eclipse.xtext.testing.extensions.InjectionExtension
 import org.eclipse.xtext.testing.util.ParseHelper
-import org.eclipse.xtext.util.OnChangeEvictingCache
-import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.^extension.ExtendWith
 
 import static org.junit.jupiter.api.Assertions.assertEquals
-import org.eclipse.emf.ecore.EPackage
-import org.eclipse.emf.ecore.EClass
 
 @ExtendWith(InjectionExtension)
 @InjectWith(EmfaticInjectorProvider)
@@ -27,10 +19,6 @@ class StructureForOperationsTest extends StructureTest {
 
 	@Inject
 	ParseHelper<CompUnit> parseHelper
-
-	@Inject
-	OnChangeEvictingCache cache
-
 
 	@Test
 	def void classWithOperation() {
