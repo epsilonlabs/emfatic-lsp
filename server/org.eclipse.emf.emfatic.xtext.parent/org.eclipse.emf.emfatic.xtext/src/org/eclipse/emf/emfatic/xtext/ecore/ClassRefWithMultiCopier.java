@@ -2,7 +2,6 @@ package org.eclipse.emf.emfatic.xtext.ecore;
 
 import org.eclipse.emf.ecore.EReference;
 import org.eclipse.emf.emfatic.xtext.emfatic.ClassRefWithMulti;
-import org.eclipse.xtext.util.OnChangeEvictingCache;
 
 public class ClassRefWithMultiCopier {
 	
@@ -18,22 +17,22 @@ public class ClassRefWithMultiCopier {
 	ClassRefWithMultiCopier(ClassRefWithMulti source) {
 		this(source, null, null);
 	}
-	
-	ClassRefWithMultiCopier load(OnChangeEvictingCache cache) {
-		BoundClassExceptWildcardCopier cCopier = cache.get(this.source.getType(), this.source.getType().eResource(), () -> (BoundClassExceptWildcardCopier) null);
+		
+	ClassRefWithMultiCopier load(Content content) {
+		BoundClassExceptWildcardCopier cCopier = content.equivalent(this.source.getType());
 		if (cCopier == null) {
 			throw new IllegalArgumentException("Target element not found for " + this.source.getType());
 		}
 		MultiplicityCopier mCopier;
 		if (this.source.getMultiplicity() != null) {
-			mCopier = cache.get(this.source.getMultiplicity(), this.source.eResource(), () ->(MultiplicityCopier)null );
+			mCopier = content.equivalent(this.source.getMultiplicity());
 			if (mCopier == null) {
 				throw new IllegalArgumentException("Target element not found for " + this.source.getMultiplicity());
 			}
 		} else {
 			mCopier = new MultiplicityCopier();
 		}
-		return new ClassRefWithMultiCopier(this.source, cCopier.load(cache), mCopier.load(cache));
+		return new ClassRefWithMultiCopier(this.source, cCopier.load(content), mCopier.load());
 	}
 	
 	private final ClassRefWithMulti source;

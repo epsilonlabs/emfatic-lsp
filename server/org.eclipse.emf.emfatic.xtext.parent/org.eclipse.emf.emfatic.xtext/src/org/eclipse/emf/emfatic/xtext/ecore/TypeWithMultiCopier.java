@@ -2,7 +2,6 @@ package org.eclipse.emf.emfatic.xtext.ecore;
 
 import org.eclipse.emf.ecore.ETypedElement;
 import org.eclipse.emf.emfatic.xtext.emfatic.TypeWithMulti;
-import org.eclipse.xtext.util.OnChangeEvictingCache;
 
 public class TypeWithMultiCopier {
 		
@@ -30,21 +29,21 @@ public class TypeWithMultiCopier {
 		return this.cCopier.toEClass();
 	}
 
-	TypeWithMultiCopier load(OnChangeEvictingCache cache) {
-		BoundClassifierExceptWildcardCopier cCopier = cache.get(this.twm.getType(), this.twm.getType().eResource(), () -> (BoundClassifierExceptWildcardCopier) null);
+	TypeWithMultiCopier load(Content content) {
+		BoundClassifierExceptWildcardCopier cCopier = content.equivalent(this.twm.getType());
 		if (cCopier == null) {
 			throw new IllegalArgumentException("Target element not found for " + this.twm.getType());
 		}
 		MultiplicityCopier mCopier;
 		if (this.twm.getMultiplicity() != null) {
-			mCopier = cache.get(this.twm.getMultiplicity(), this.twm.eResource(), () ->(MultiplicityCopier)null );
+			mCopier = content.equivalent(this.twm.getMultiplicity());
 			if (mCopier == null) {
 				throw new IllegalArgumentException("Target element not found for " + this.twm.getMultiplicity());
 			}
 		} else {
 			mCopier = new MultiplicityCopier();
 		}
-		return new TypeWithMultiCopier(this.twm, cCopier.load(cache), mCopier.load(cache));
+		return new TypeWithMultiCopier(this.twm, cCopier.load(content), mCopier.load());
 	}
 
 	

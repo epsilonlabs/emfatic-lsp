@@ -8,11 +8,10 @@ import org.eclipse.emf.ecore.EcoreFactory;
 import org.eclipse.emf.emfatic.xtext.emfatic.BoundDataTypeWithMulti;
 import org.eclipse.emf.emfatic.xtext.emfatic.DataType;
 import org.eclipse.emf.emfatic.xtext.scoping.EmfaticImport;
-import org.eclipse.xtext.util.OnChangeEvictingCache;
 
 public class BoundDataTypeWithMultiCopier {
 	
-	public BoundDataTypeWithMultiCopier load(OnChangeEvictingCache cache) {
+	public BoundDataTypeWithMultiCopier load(Content content) {
 		var bound = this.source.getBound();
 		if (bound == null) {
 			return this;
@@ -23,7 +22,7 @@ public class BoundDataTypeWithMultiCopier {
 			// Its an Xtext datatype wrapping ecore
 			targetEDataType = (EDataType) this.importer.export((DataType)bound);
 		} else {
-			EObject targetBound = cache.get(bound, bound.eResource(), () -> null);	
+			EObject targetBound = content.equivalent(bound);	
 			if (targetBound instanceof EDataType) {
 				targetEDataType = (EDataType) targetBound;
 			} else if (targetBound instanceof ETypeParameter) {
@@ -32,7 +31,7 @@ public class BoundDataTypeWithMultiCopier {
 		}
 		MultiplicityCopier mCopier;
 		if (this.source.getMultiplicity() != null) {
-			mCopier = cache.get(this.source.getMultiplicity(), this.source.eResource(), () ->(MultiplicityCopier)null );
+			mCopier = content.equivalent(this.source.getMultiplicity());
 			if (mCopier == null) {
 				throw new IllegalArgumentException("Target element not found for " + this.source.getMultiplicity());
 			}
@@ -43,7 +42,7 @@ public class BoundDataTypeWithMultiCopier {
 				this.source,
 				targetEDataType,
 				targetTypeParameter,
-				mCopier.load(cache),
+				mCopier.load(),
 				this.importer);
 	}
 	

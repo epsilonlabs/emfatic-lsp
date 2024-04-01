@@ -2,7 +2,6 @@ package org.eclipse.emf.emfatic.xtext.ecore;
 
 import org.eclipse.emf.ecore.EOperation;
 import org.eclipse.emf.emfatic.xtext.emfatic.ResultType;
-import org.eclipse.xtext.util.OnChangeEvictingCache;
 
 public class ResultTypeCopier {
 
@@ -10,24 +9,24 @@ public class ResultTypeCopier {
 		this(source, null, null);
 	}
 	
-	ResultTypeCopier load(OnChangeEvictingCache cache) {
+	ResultTypeCopier load(Content content) {
 		TypeWithMultiCopier cCopier = null;
 		MultiplicityCopier mCopier = null;
 		if (this.source.getType() != null) {
-			cCopier = cache.get(this.source.getType(), this.source.getType().eResource(), () -> (TypeWithMultiCopier) null);
+			cCopier = content.equivalent(this.source.getType());
 			if (cCopier == null) {
 				throw new IllegalArgumentException("Target element not found for " + this.source.getType());
 			}
-			cCopier = cCopier.load(cache);
+			cCopier = cCopier.load(content);
 			if (this.source.getType().getMultiplicity() != null) {
-				mCopier = cache.get(this.source.getType().getMultiplicity(), this.source.eResource(), () ->(MultiplicityCopier)null );
+				mCopier = content.equivalent(this.source.getType().getMultiplicity());
 				if (mCopier == null) {
 					throw new IllegalArgumentException("Target element not found for " + this.source.getType().getMultiplicity());
 				}
 			} else {
 				mCopier = new MultiplicityCopier();
 			}
-			mCopier = mCopier.load(cache);
+			mCopier = mCopier.load();
 		}
 		return new ResultTypeCopier(this.source, cCopier, mCopier);
 	}

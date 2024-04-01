@@ -4,7 +4,6 @@ import org.eclipse.emf.ecore.EGenericType;
 import org.eclipse.emf.ecore.ETypedElement;
 import org.eclipse.emf.ecore.EcoreFactory;
 import org.eclipse.emf.emfatic.xtext.emfatic.Wildcard;
-import org.eclipse.xtext.util.OnChangeEvictingCache;
 
 public class WildcardCopier implements TypeArgCopier {
 
@@ -32,20 +31,20 @@ public class WildcardCopier implements TypeArgCopier {
 	}
 	
 	@Override
-	public WildcardCopier load(OnChangeEvictingCache cache) {
+	public WildcardCopier load(Content content) {
 		var s = false;
 		var e = false;
 		BoundClassifierExceptWildcardCopier targetBound = null;
 		if (this.source.getDir() != null) {
 			s = this.source.getDir().isSuper();
 			e = !s;
-			targetBound = cache.get(this.source.getBound(), this.source.eResource(), () -> null);
+			targetBound = content.equivalent(this.source.getBound());
 			if (targetBound == null) {
 				throw new IllegalArgumentException("Target element not found for " + this.source.getBound());
 			}
 		}
 		if (targetBound != null) {
-			targetBound = targetBound.load(cache);
+			targetBound = targetBound.load(content);
 		}
 		return new WildcardCopier(this.source, e, s, targetBound);
 	}

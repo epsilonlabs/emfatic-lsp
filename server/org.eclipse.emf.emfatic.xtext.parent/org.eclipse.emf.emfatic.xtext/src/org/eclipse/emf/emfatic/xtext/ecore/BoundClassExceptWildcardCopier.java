@@ -11,7 +11,6 @@ import org.eclipse.emf.ecore.ETypeParameter;
 import org.eclipse.emf.ecore.EcoreFactory;
 import org.eclipse.emf.emfatic.xtext.emfatic.BoundClassExceptWildcard;
 import org.eclipse.emf.emfatic.xtext.scoping.EmfaticImport;
-import org.eclipse.xtext.util.OnChangeEvictingCache;
 
 class BoundClassExceptWildcardCopier extends AbstractClassifierCopier<BoundClassExceptWildcard> {
 		
@@ -19,12 +18,12 @@ class BoundClassExceptWildcardCopier extends AbstractClassifierCopier<BoundClass
 		this(bc, null, null, Collections.emptyList(), emfaticImport);
 	}
 
-	BoundClassExceptWildcardCopier load(OnChangeEvictingCache cache) {
+	BoundClassExceptWildcardCopier load(Content content) {
 		var bound = this.source.getBound();
 		if (bound == null) {
 			return this;
 		}
-		EObject targetBound = targetBound(cache, bound);
+		EObject targetBound = targetBound(content, bound);
 		EClassifier targetEClass = null;
 		ETypeParameter targetTypeParameter = null;
 		if (targetBound instanceof EClassifier) {
@@ -32,7 +31,7 @@ class BoundClassExceptWildcardCopier extends AbstractClassifierCopier<BoundClass
 		} else if (targetBound instanceof ETypeParameter) {
 			targetTypeParameter = (ETypeParameter) targetBound;
 		}
-		List<TypeArgCopier> tArgs = targetTypeArgs(cache, this.source.getTypeArgs());
+		List<TypeArgCopier> tArgs = targetTypeArgs(content, this.source.getTypeArgs());
 		return new BoundClassExceptWildcardCopier(this.source, targetEClass, targetTypeParameter, tArgs, this.emfaticImport);
 	}
 

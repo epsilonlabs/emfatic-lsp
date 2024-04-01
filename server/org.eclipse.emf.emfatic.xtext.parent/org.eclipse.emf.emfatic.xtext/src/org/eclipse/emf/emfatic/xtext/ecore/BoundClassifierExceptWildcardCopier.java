@@ -12,7 +12,6 @@ import org.eclipse.emf.ecore.ETypedElement;
 import org.eclipse.emf.ecore.EcoreFactory;
 import org.eclipse.emf.emfatic.xtext.emfatic.BoundClassifierExceptWildcard;
 import org.eclipse.emf.emfatic.xtext.scoping.EmfaticImport;
-import org.eclipse.xtext.util.OnChangeEvictingCache;
 
 class BoundClassifierExceptWildcardCopier extends AbstractClassifierCopier<BoundClassifierExceptWildcard> implements TypeArgCopier {
 		
@@ -21,12 +20,12 @@ class BoundClassifierExceptWildcardCopier extends AbstractClassifierCopier<Bound
 	}
 
 	@Override
-	public BoundClassifierExceptWildcardCopier load(OnChangeEvictingCache cache) {
+	public BoundClassifierExceptWildcardCopier load(Content content) {
 		var bound = this.source.getBound();
 		if (bound == null) {
 			return this;
 		}
-		EObject targetBound = targetBound(cache, bound);
+		EObject targetBound = targetBound(content, bound);
 		EClassifier targetEClassifier = null;
 		ETypeParameter targetTypeParameter = null;
 		if (targetBound instanceof EClassifier) {
@@ -38,7 +37,7 @@ class BoundClassifierExceptWildcardCopier extends AbstractClassifierCopier<Bound
 				this.source, 
 				targetEClassifier,
 				targetTypeParameter,
-				targetTypeArgs(cache, this.source.getTypeArgs()), 
+				targetTypeArgs(content, this.source.getTypeArgs()), 
 				this.emfaticImport);
 	}
 
@@ -56,7 +55,6 @@ class BoundClassifierExceptWildcardCopier extends AbstractClassifierCopier<Bound
 				teGt.getETypeArguments().add(taGt);
 			});	
 		}
-		
 	}
 	
 	@Override
@@ -72,7 +70,6 @@ class BoundClassifierExceptWildcardCopier extends AbstractClassifierCopier<Bound
 			ta.configure(taGt);
 			gt.getETypeArguments().add(taGt);
 		});
-		
 	}
 	
 	public boolean toEClass() {

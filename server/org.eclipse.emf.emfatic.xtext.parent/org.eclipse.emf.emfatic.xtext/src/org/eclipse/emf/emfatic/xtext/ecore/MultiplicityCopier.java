@@ -2,7 +2,6 @@ package org.eclipse.emf.emfatic.xtext.ecore;
 
 import org.eclipse.emf.ecore.ETypedElement;
 import org.eclipse.emf.emfatic.xtext.emfatic.Multiplicity;
-import org.eclipse.xtext.util.OnChangeEvictingCache;
 
 public class MultiplicityCopier {
 	
@@ -14,7 +13,7 @@ public class MultiplicityCopier {
 		this(source, 0, 1);
 	}
 	
-	MultiplicityCopier load(OnChangeEvictingCache cache) {
+	MultiplicityCopier load() {
 		int lb = 0;
 		int ub = 1;
 		if (this.source != null) {

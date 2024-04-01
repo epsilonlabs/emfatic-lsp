@@ -11,7 +11,6 @@ import org.eclipse.emf.emfatic.xtext.emfatic.ClassifierDecl;
 import org.eclipse.emf.emfatic.xtext.emfatic.TypeArg;
 import org.eclipse.emf.emfatic.xtext.emfatic.TypeParam;
 import org.eclipse.emf.emfatic.xtext.scoping.EmfaticImport;
-import org.eclipse.xtext.util.OnChangeEvictingCache;
 
 public class AbstractClassifierCopier<C extends EObject> {
 
@@ -29,13 +28,13 @@ public class AbstractClassifierCopier<C extends EObject> {
 		this.emfaticImport = emfaticImport;
 	}
 	
-	protected EObject targetBound(OnChangeEvictingCache cache, EObject bound) {
+	protected EObject targetBound(Content content, EObject bound) {
 		if (bound instanceof TypeParam) {
-			return cache.get(bound, bound.eResource(), () -> null);
+			return content.equivalent(bound);
 		} else {	// ClassifierDecl
 			EClassifier type;
 			if (this.source.eResource() == bound.eResource()) {
-				type = cache.get(bound, bound.eResource(), () -> null);
+				type =  content.equivalent(bound);
 			} else {
 				type = this.emfaticImport.export((ClassifierDecl)bound);
 			}
@@ -43,14 +42,14 @@ public class AbstractClassifierCopier<C extends EObject> {
 		}
 	}
 
-	protected List<TypeArgCopier> targetTypeArgs(OnChangeEvictingCache cache, EList<TypeArg> typeArgs2) {
+	protected List<TypeArgCopier> targetTypeArgs(Content content, EList<TypeArg> typeArgs) {
 		List<TypeArgCopier> tArgs = new ArrayList<>();
-		for (TypeArg ta : typeArgs2) {
-			TypeArgCopier taTarget = cache.get(ta, ta.eResource(), () -> null);
+		for (TypeArg ta : typeArgs) {
+			TypeArgCopier taTarget = content.equivalent(ta);
 			if (taTarget == null) {
 				throw new IllegalArgumentException("Target element not found for " + ta);
 			}
-			tArgs.add(taTarget.load(cache));
+			tArgs.add(taTarget.load(content));
 		}
 		return tArgs;
 	}
