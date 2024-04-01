@@ -11,7 +11,14 @@ import org.eclipse.xtext.testing.util.ParseHelper
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.^extension.ExtendWith
 
-import static org.junit.jupiter.api.Assertions.assertEquals
+import static org.junit.jupiter.api.Assertions.assertInstanceOf
+import static org.junit.jupiter.api.Assertions.assertNotNull
+import org.eclipse.emf.emfatic.xtext.emfatic.ClassDecl
+import org.eclipse.emf.emfatic.xtext.emfatic.Operation
+import org.eclipse.emf.ecore.EOperation
+import org.eclipse.emf.emfatic.xtext.emfatic.ClassMemberDecl
+import org.eclipse.emf.ecore.EAnnotation
+import org.eclipse.emf.ecore.EParameter
 
 @ExtendWith(InjectionExtension)
 @InjectWith(EmfaticInjectorProvider)
@@ -28,12 +35,15 @@ class StructureForOperationsTest extends StructureTest {
 				op String getFullName();
 			}
 		''')
-		val root = process(result) as EPackage
-		val eClass = root.EClassifiers.head as EClass
-		assertEquals(1, eClass.EOperations.size)
-		val eOperation = eClass.EOperations.head
-		assertEquals(0, eOperation.EParameters.size)
-		assertEquals(0, eOperation.ETypeParameters.size)
+		val cache = process(result)
+		assertNotNull(cache.get(result.package))
+		assertInstanceOf(EPackage, cache.get(result.package))
+		assertNotNull(cache.get(result.declarations.get(0).declaration))
+		assertInstanceOf(EClass, cache.get(result.declarations.get(0).declaration))
+		val classDecl = result.declarations.get(0).declaration as ClassDecl
+		val operation = classDecl.members.get(0).member as Operation
+		assertNotNull(cache.get(operation))
+		assertInstanceOf(EOperation, cache.get(operation))
 	}
 	
 	@Test
@@ -45,10 +55,14 @@ class StructureForOperationsTest extends StructureTest {
 				op String getFullName();
 			}
 		''')
-		val root = process(result) as EPackage
-		val eClass = root.EClassifiers.head as EClass
-		val eOperation = eClass.EOperations.head
-		assertEquals(1, eOperation.EAnnotations.size)
+		val cache = process(result)
+		assertNotNull(cache.get(result.package))
+		assertInstanceOf(EPackage, cache.get(result.package))
+		assertNotNull(cache.get(result.declarations.get(0).declaration))
+		assertInstanceOf(EClass, cache.get(result.declarations.get(0).declaration))
+		val classDecl = result.declarations.get(0).declaration as ClassDecl
+		var member = classDecl.members.get(0) as ClassMemberDecl
+		assertInstanceOf(EAnnotation, cache.get(member.annotations.get(0)))
 	}
 	
 	@Test
@@ -59,11 +73,13 @@ class StructureForOperationsTest extends StructureTest {
 				op <T> String getFullName();
 			}
 		''')
-		val root = process(result) as EPackage
-		val eClass = root.EClassifiers.head as EClass
-		val eOperation = eClass.EOperations.head
-		assertEquals(0, eOperation.EParameters.size)
-		assertEquals(1, eOperation.ETypeParameters.size)
+		val cache = process(result)
+		assertNotNull(cache.get(result.package))
+		assertNotNull(cache.get(result.declarations.get(0).declaration))
+		val classDecl = result.declarations.get(0).declaration as ClassDecl
+		val operation = classDecl.members.get(0).member as Operation
+		assertNotNull(cache.get(operation))
+		assertInstanceOf(EOperation, cache.get(operation))
 	}
 	
 	@Test
@@ -74,11 +90,15 @@ class StructureForOperationsTest extends StructureTest {
 				op String getFullName(String ~id);
 			}
 		''')
-		val root = process(result) as EPackage
-		val eClass = root.EClassifiers.head as EClass
-		val eOperation = eClass.EOperations.head
-		assertEquals(1, eOperation.EParameters.size)
-		assertEquals(0, eOperation.ETypeParameters.size)
+		val cache = process(result)
+		assertNotNull(cache.get(result.package))
+		assertNotNull(cache.get(result.declarations.get(0).declaration))
+		val classDecl = result.declarations.get(0).declaration as ClassDecl
+		val operation = classDecl.members.get(0).member as Operation
+		assertNotNull(cache.get(operation))
+		assertInstanceOf(EOperation, cache.get(operation))
+		assertNotNull(cache.get(operation.params.get(0)))
+		assertInstanceOf(EParameter, cache.get(operation.params.get(0)))
 	}
 	
 	@Test
@@ -90,11 +110,17 @@ class StructureForOperationsTest extends StructureTest {
 			}
 			class B {}
 		''')
-		val root = process(result) as EPackage
-		val eClass = root.EClassifiers.head as EClass
-		val eOperation = eClass.EOperations.head
-		assertEquals(2, eOperation.EParameters.size)
-		assertEquals(0, eOperation.ETypeParameters.size)
+		val cache = process(result)
+		assertNotNull(cache.get(result.package))
+		assertNotNull(cache.get(result.declarations.get(0).declaration))
+		val classDecl = result.declarations.get(0).declaration as ClassDecl
+		val operation = classDecl.members.get(0).member as Operation
+		assertNotNull(cache.get(operation))
+		assertInstanceOf(EOperation, cache.get(operation))
+		assertNotNull(cache.get(operation.params.get(0)))
+		assertInstanceOf(EParameter, cache.get(operation.params.get(0)))
+		assertNotNull(cache.get(operation.params.get(1)))
+		assertInstanceOf(EParameter, cache.get(operation.params.get(1)))
 	}
 	
 	@Test
@@ -105,11 +131,20 @@ class StructureForOperationsTest extends StructureTest {
 				op String getFullName(@before(k=v) String ~id @after(k=v));
 			}
 		''')
-		val root = process(result) as EPackage
-		val eClass = root.EClassifiers.head as EClass
-		val eOperation = eClass.EOperations.head
-		val eParam = eOperation.EParameters.head
-		assertEquals(2, eParam.EAnnotations.size)
+		val cache = process(result)
+		assertNotNull(cache.get(result.package))
+		assertNotNull(cache.get(result.declarations.get(0).declaration))
+		val classDecl = result.declarations.get(0).declaration as ClassDecl
+		val operation = classDecl.members.get(0).member as Operation
+		assertNotNull(cache.get(operation))
+		assertInstanceOf(EOperation, cache.get(operation))
+		assertNotNull(cache.get(operation.params.get(0)))
+		val param = operation.params.get(0)
+		assertNotNull(cache.get(param.leadingAnnotations.get(0)))
+		assertInstanceOf(EAnnotation, cache.get(param.leadingAnnotations.get(0)))
+		assertNotNull(cache.get(param.trailingAnnotations.get(0)))
+		assertInstanceOf(EAnnotation, cache.get(param.trailingAnnotations.get(0)))
+		
 	}
 	
 	@Test
@@ -120,8 +155,13 @@ class StructureForOperationsTest extends StructureTest {
 				op String getFullName() throws NullPointerException;
 			}
 		''')
-		val root = process(result) as EPackage
-		val eClass = root.EClassifiers.head as EClass
-		assertEquals(1, eClass.EOperations.size)
+		val cache = process(result)
+		assertNotNull(cache.get(result.package))
+		assertNotNull(cache.get(result.declarations.get(0).declaration))
+		val classDecl = result.declarations.get(0).declaration as ClassDecl
+		val operation = classDecl.members.get(0).member as Operation
+		assertNotNull(cache.get(operation))
+		assertInstanceOf(EOperation, cache.get(operation))
+		assertNotNull(cache.get(operation.exceptions.get(0)))
 	}
 }

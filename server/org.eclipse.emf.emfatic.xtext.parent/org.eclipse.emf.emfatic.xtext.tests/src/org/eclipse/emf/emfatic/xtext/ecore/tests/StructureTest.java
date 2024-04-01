@@ -1,23 +1,21 @@
 package org.eclipse.emf.emfatic.xtext.ecore.tests;
 
-import org.eclipse.emf.ecore.EObject;
-import org.eclipse.emf.emfatic.xtext.ecore.Structure;
+import java.util.Map;
+
+import org.eclipse.emf.emfatic.xtext.ecore.Elements;
+import org.eclipse.emf.emfatic.xtext.emfatic.CompUnit;
 import org.eclipse.emf.emfatic.xtext.scoping.EmfaticImport;
-import org.eclipse.xtext.util.OnChangeEvictingCache;
 
 import com.google.inject.Inject;
 
 public abstract class StructureTest {
 
 	@Inject
-	OnChangeEvictingCache cache;
-
-	@Inject
 	EmfaticImport importer;
 	
-	Object process(EObject result) {
-		var creator = new Structure(cache, importer);
-		return creator.doSwitch(result);
+	Map<Object, Object> process(CompUnit result) {
+		var creator = new Elements(this.importer);
+		return creator.copy(result);
 	}
 
 }

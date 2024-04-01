@@ -1,38 +1,28 @@
 package org.eclipse.emf.emfatic.xtext.ecore.tests
 
 import com.google.inject.Inject
-import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.EPackage
-import org.eclipse.emf.emfatic.xtext.ecore.Structure
 import org.eclipse.emf.emfatic.xtext.emfatic.CompUnit
-import org.eclipse.emf.emfatic.xtext.scoping.EmfaticImport
 import org.eclipse.emf.emfatic.xtext.tests.EmfaticInjectorProvider
 import org.eclipse.xtext.testing.InjectWith
 import org.eclipse.xtext.testing.extensions.InjectionExtension
 import org.eclipse.xtext.testing.util.ParseHelper
-import org.eclipse.xtext.util.OnChangeEvictingCache
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.^extension.ExtendWith
 
-import static org.junit.jupiter.api.Assertions.assertEquals
+import static org.junit.jupiter.api.Assertions.assertInstanceOf
+import static org.junit.jupiter.api.Assertions.assertNotNull
+import org.eclipse.emf.ecore.EDataType
+import org.eclipse.emf.ecore.EAnnotation
+import org.eclipse.emf.emfatic.xtext.emfatic.DataTypeDecl
+import org.eclipse.emf.ecore.ETypeParameter
 
 @ExtendWith(InjectionExtension)
 @InjectWith(EmfaticInjectorProvider)
-class StructureForDataTypeTest {
+class StructureForDataTypeTest extends StructureTest {
 
 	@Inject
 	ParseHelper<CompUnit> parseHelper
-
-	@Inject
-	OnChangeEvictingCache cache
-
-	@Inject
-	EmfaticImport importer
-	
-	def Object process(EObject result) {
-		val creator = new Structure(cache, importer)
-		return creator.doSwitch(result)
-	}
 	
 	@Test
 	def void dataType() {
@@ -40,8 +30,11 @@ class StructureForDataTypeTest {
 			package test;
 			datatype EInt : int;
 		''')
-		val root = process(result) as EPackage
-		assertEquals(1, root.EClassifiers.size)
+		val cache = process(result)
+		assertNotNull(cache.get(result.package))
+		assertInstanceOf(EPackage, cache.get(result.package))
+		assertNotNull(cache.get(result.declarations.get(0).declaration))
+		assertInstanceOf(EDataType, cache.get(result.declarations.get(0).declaration))
 	}
 	
 	@Test
@@ -51,9 +44,11 @@ class StructureForDataTypeTest {
 			@"http://class/annotation"(k="v")
 			datatype EInt : int;
 		''')
-		val root = process(result) as EPackage
-		val eDataType = root.EClassifiers.head
-		assertEquals(1, eDataType.EAnnotations.size)
+		val cache = process(result)
+		assertNotNull(cache.get(result.package))
+		assertNotNull(cache.get(result.declarations.get(0).declaration))
+		assertNotNull(cache.get(result.declarations.get(0).annotations.get(0)))
+		assertInstanceOf(EAnnotation, cache.get(result.declarations.get(0).annotations.get(0)))
 	}
 	
 	@Test
@@ -62,9 +57,12 @@ class StructureForDataTypeTest {
 			package test;
 			datatype EInt<A> : int;
 		''')
-		val root = process(result) as EPackage
-		val eDataType = root.EClassifiers.head
-		assertEquals(1, eDataType.ETypeParameters.size)
+		val cache = process(result)
+		assertNotNull(cache.get(result.package))
+		assertNotNull(cache.get(result.declarations.get(0).declaration))
+		val classDecl = result.declarations.get(0).declaration as DataTypeDecl
+		assertNotNull(cache.get(classDecl.typeParamsInfo.tp.get(0)))
+		assertInstanceOf(ETypeParameter, cache.get(classDecl.typeParamsInfo.tp.get(0)))
 	}
 
 }
