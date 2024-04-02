@@ -62,7 +62,11 @@ public class Content extends EmfaticSwitch<Object> {
 	}
 	
 	public Map<Object, Object> copy(Map<Object, Object> cache, final CompUnit model) {
+		if (cache.isEmpty()) {
+			return cache;
+		}
 		this.cache = cache;
+		this.stop = false;
 		this.doSwitch(model);
 		TreeIterator<EObject> it = EcoreUtil.getAllContents(model, true);
 		while (this.keepRunning() && it.hasNext()) {

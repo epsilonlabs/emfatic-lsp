@@ -45,6 +45,7 @@ public class Elements extends EmfaticSwitch<Object> {
 	}
 
 	public Map<Object, Object> copy(final CompUnit model) {
+		this.stop = false;
 		TreeIterator<EObject> it = EcoreUtil.getAllContents(model, true);
 		while (this.keepRunning() && it.hasNext()) {
 			this.cache.computeIfAbsent(it.next(), k -> this.doSwitch((EObject) k));

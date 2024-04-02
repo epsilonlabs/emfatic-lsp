@@ -39,7 +39,7 @@ public class EmfaticLinker extends LazyLinker {
 			if (pckg != null) {
 				annotations.refreshAnnotations(pckg.getAnnotations(), model.eResource());
 			}
-			//twin.copy((CompUnit) model);
+			this.twin.copy((CompUnit) model);
 		}
 	}
 	

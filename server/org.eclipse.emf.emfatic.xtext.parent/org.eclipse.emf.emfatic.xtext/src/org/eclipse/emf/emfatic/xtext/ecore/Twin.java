@@ -1,14 +1,17 @@
 package org.eclipse.emf.emfatic.xtext.ecore;
 
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.CompletableFuture;
+
 import org.apache.log4j.Logger;
+import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
-import org.eclipse.emf.ecore.EPackage;
-import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.emfatic.xtext.annotations.AnnotationMap;
 import org.eclipse.emf.emfatic.xtext.emfatic.CompUnit;
 import org.eclipse.emf.emfatic.xtext.scoping.EmfaticImport;
-import org.eclipse.xtext.util.OnChangeEvictingCache;
-import org.eclipse.xtext.util.concurrent.IUnitOfWork;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -16,54 +19,63 @@ import com.google.inject.Singleton;
 @Singleton
 public class Twin {
 
+	private final Elements elements;
+
+	private final Content content;
+
 	@Inject
-	public Twin(
-		OnChangeEvictingCache cache,
-		EmfaticImport emfaticImport,
-		AnnotationMap annotations) {
+	public Twin(EmfaticImport emfaticImport, AnnotationMap annotations) {
 		super();
-		this.cache = cache;
-		this.structure = new Structure(cache, emfaticImport);
-		this.content = new Content(cache, annotations);
+		this.elements = new Elements(emfaticImport);
+		this.content = new Content(annotations);
 	}
 
-	public EPackage copy(final CompUnit model) {
-		EPackage root = (EPackage) this.structure.doSwitch(model);
-		try {
-			this.cache.execWithoutCacheClear(model.eResource(), new IUnitOfWork.Void<Resource>() {
-
-				@Override
-				public void process(Resource state) throws Exception {
-					content.doSwitch(model);
+	public void copy(final CompUnit model) {
+		this.elements.stop();
+		this.content.stop();
+		if (this.copier != null) {
+			this.copier.cancel(false);
+		}
+		this.copier = CompletableFuture.supplyAsync(() -> {
+			return elements.copy(model);
+		});
+		this.copier.exceptionally(ex -> {
+				if (ex instanceof CancellationException) {
+					LOG.info("Copier was canceled");
+				} else {
+					LOG.error("There was an error translating emfatic to ECore", ex);
+				}
+				return new HashMap<Object, Object>();
+			})
+			.thenApplyAsync(cache -> {
+				return this.content.copy(cache, model);
+			})
+			.exceptionally(ex -> {
+				if (ex instanceof CancellationException) {
+					LOG.info("Copier was canceled");
+				} else {
+					LOG.error("There was an error translating emfatic to ECore", ex);
+				}
+				return new HashMap<Object, Object>();
+			})
+			.thenAcceptAsync(cache -> {
+				// TODO Save resource if cache != empty
+				System.out.println("We copied " + cache.size() + " elements");
+				System.out.println(model.eResource().getURI());
+				var ecoreURI = model.eResource().getURI().toString().replace(".lspemf", ".ecore");
+				System.out.println(model.eResource().getResourceSet());
+				var r = model.eResource().getResourceSet().createResource(URI.createURI(ecoreURI));
+				r.getContents().add((EObject) cache.get(model.getPackage()));
+				try {
+					r.save(null);
+				} catch (IOException e) {
+					LOG.error("Unable to save Emfatic model as ecore", e);
 				}
 			});
-			 
-		} catch (IllegalArgumentException e) {
-			LOG.error("Error copying attributes.", e);
-		}
-		return root;
-//		var rs = model.eResource().getResourceSet();
-//		URI ecoreUri = model.eResource().getURI().appendFileExtension("ecore");
-//		var r = rs.getResource(ecoreUri, false);
-//		if (r == null) {
-//			r = rs.createResource(ecoreUri);
-//		}
-//		r.getContents().add((EObject) root);
-//		try {
-//			r.save(null);
-//		} catch (IOException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
 	}
-	
-	public EObject ecoreElement(EObject emfatciElement) {
-		return this.cache.get(emfatciElement, emfatciElement.eResource(), () -> null);
-	}
-	
+
 	private final static Logger LOG = Logger.getLogger(Twin.class);
-	
-	private final OnChangeEvictingCache cache;
-	private final Structure structure;
-	private final Content content;
+
+	private CompletableFuture<Map<Object, Object>> copier;
+
 }
