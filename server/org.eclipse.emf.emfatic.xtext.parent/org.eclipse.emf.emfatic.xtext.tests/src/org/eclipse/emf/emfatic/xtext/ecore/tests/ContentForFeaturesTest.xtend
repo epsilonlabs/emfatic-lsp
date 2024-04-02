@@ -3,9 +3,7 @@ package org.eclipse.emf.emfatic.xtext.ecore.tests
 import com.google.inject.Inject
 import org.eclipse.emf.ecore.EClass
 import org.eclipse.emf.ecore.EPackage
-import org.eclipse.emf.emfatic.xtext.emfatic.ClassDecl
 import org.eclipse.emf.emfatic.xtext.emfatic.CompUnit
-import org.eclipse.emf.emfatic.xtext.emfatic.FeatureDecl
 import org.eclipse.emf.emfatic.xtext.tests.EmfaticInjectorProvider
 import org.eclipse.xtext.testing.InjectWith
 import org.eclipse.xtext.testing.extensions.InjectionExtension
@@ -33,7 +31,8 @@ class ContentForFeaturesTest extends ContentTest {
 				attr String b;
 			}
 		''')
-		val root = process(result) as EPackage
+		val cache = process(result)
+		val root = cache.get(result.package) as EPackage
 		val eAttribute = (root.EClassifiers.head as EClass).EAttributes.head
 		assertEquals("b", eAttribute.name)
 		assertEquals("EString", eAttribute.EAttributeType.name)
@@ -57,7 +56,8 @@ class ContentForFeaturesTest extends ContentTest {
 				attr String b;
 			}
 		''')
-		val root = process(result) as EPackage
+		val cache = process(result)
+		val root = cache.get(result.package) as EPackage
 		val eAttribute = (root.EClassifiers.head as EClass).EAttributes.head
 		val eAnnotation = eAttribute.EAnnotations.head 
 		assertEquals("http://class/annotation", eAnnotation.source)
@@ -74,7 +74,8 @@ class ContentForFeaturesTest extends ContentTest {
 				attr String[*] b;
 			}
 		''')
-		val root = process(result) as EPackage
+		val cache = process(result)
+		val root = cache.get(result.package) as EPackage
 		val eAttribute = (root.EClassifiers.head as EClass).EAttributes.head
 		assertTrue(eAttribute.isMany)
 	}
@@ -87,7 +88,8 @@ class ContentForFeaturesTest extends ContentTest {
 				attr String b = "DefValue";
 			}
 		''')
-		var root = process(result) as EPackage
+		var cache = process(result)
+		var root = cache.get(result.package) as EPackage
 		var eAttribute = (root.EClassifiers.head as EClass).EAttributes.head
 		assertEquals("DefValue", eAttribute.defaultValue)
 		result = parseHelper.parse('''
@@ -96,7 +98,8 @@ class ContentForFeaturesTest extends ContentTest {
 				attr String b;
 			}
 		''')
-		root = process(result) as EPackage
+		cache = process(result)
+		root = cache.get(result.package) as EPackage
 		eAttribute = (root.EClassifiers.head as EClass).EAttributes.head
 		assertNull(eAttribute.defaultValue)
 	}
@@ -109,7 +112,8 @@ class ContentForFeaturesTest extends ContentTest {
 				attr boolean b = true;
 			}
 		''')
-		var root = process(result) as EPackage
+		var cache = process(result)
+		var root = cache.get(result.package) as EPackage
 		var eAttribute = (root.EClassifiers.head as EClass).EAttributes.head
 		assertTrue(eAttribute.defaultValue as Boolean)
 		result = parseHelper.parse('''
@@ -118,7 +122,8 @@ class ContentForFeaturesTest extends ContentTest {
 				attr boolean b = false;
 			}
 		''')
-		root = process(result) as EPackage
+		cache = process(result)
+		root = cache.get(result.package) as EPackage
 		eAttribute = (root.EClassifiers.head as EClass).EAttributes.head
 		assertFalse(eAttribute.defaultValue as Boolean)
 		result = parseHelper.parse('''
@@ -127,7 +132,8 @@ class ContentForFeaturesTest extends ContentTest {
 				attr boolean b;
 			}
 		''')
-		root = process(result) as EPackage
+		cache = process(result)
+		root = cache.get(result.package) as EPackage
 		eAttribute = (root.EClassifiers.head as EClass).EAttributes.head
 		assertFalse(eAttribute.defaultValue as Boolean)
 	}
@@ -140,7 +146,8 @@ class ContentForFeaturesTest extends ContentTest {
 				attr int b = 2;
 			}
 		''')
-		var root = process(result) as EPackage
+		var cache = process(result)
+		var root = cache.get(result.package) as EPackage
 		var eAttribute = (root.EClassifiers.head as EClass).EAttributes.head
 		assertEquals(2, eAttribute.defaultValue)
 		result = parseHelper.parse('''
@@ -149,7 +156,8 @@ class ContentForFeaturesTest extends ContentTest {
 				attr int b = -2;
 			}
 		''')
-		root = process(result) as EPackage
+		cache = process(result)
+		root = cache.get(result.package) as EPackage
 		eAttribute = (root.EClassifiers.head as EClass).EAttributes.head
 		assertEquals(-2, eAttribute.defaultValue)
 		result = parseHelper.parse('''
@@ -158,7 +166,8 @@ class ContentForFeaturesTest extends ContentTest {
 				attr int b;
 			}
 		''')
-		root = process(result) as EPackage
+		cache = process(result)
+		root = cache.get(result.package) as EPackage
 		eAttribute = (root.EClassifiers.head as EClass).EAttributes.head
 		assertEquals(0, eAttribute.defaultValue)
 	}
@@ -171,7 +180,8 @@ class ContentForFeaturesTest extends ContentTest {
 				attr float b = 2.0;
 			}
 		''')
-		var root = process(result) as EPackage
+		var cache = process(result)
+		var root = cache.get(result.package) as EPackage
 		var eAttribute = (root.EClassifiers.head as EClass).EAttributes.head
 		assertEquals(2.0f, eAttribute.defaultValue)
 		result = parseHelper.parse('''
@@ -180,7 +190,8 @@ class ContentForFeaturesTest extends ContentTest {
 				attr float b = -2.0;
 			}
 		''')
-		root = process(result) as EPackage
+		cache = process(result)
+		root = cache.get(result.package) as EPackage
 		eAttribute = (root.EClassifiers.head as EClass).EAttributes.head
 		assertEquals(-2.0f, eAttribute.defaultValue)
 		result = parseHelper.parse('''
@@ -189,7 +200,8 @@ class ContentForFeaturesTest extends ContentTest {
 				attr float b;
 			}
 		''')
-		root = process(result) as EPackage
+		cache = process(result)
+		root = cache.get(result.package) as EPackage
 		eAttribute = (root.EClassifiers.head as EClass).EAttributes.head
 		assertEquals(0.0f, eAttribute.defaultValue)
 	}
@@ -202,7 +214,8 @@ class ContentForFeaturesTest extends ContentTest {
 				attr char b = 'c';
 			}
 		''')
-		var root = process(result) as EPackage
+		var cache = process(result)
+		var root = cache.get(result.package) as EPackage
 		var eAttribute = (root.EClassifiers.head as EClass).EAttributes.head
 		var char expected = 'c'
 		assertEquals(expected, eAttribute.defaultValue)
@@ -212,7 +225,8 @@ class ContentForFeaturesTest extends ContentTest {
 				attr char b;
 			}
 		''')
-		root = process(result) as EPackage
+		cache = process(result)
+		root = cache.get(result.package) as EPackage
 		eAttribute = (root.EClassifiers.head as EClass).EAttributes.head
 		expected = '\u0000'	// null char
 		assertEquals(expected, eAttribute.defaultValue)
@@ -234,7 +248,8 @@ class ContentForFeaturesTest extends ContentTest {
 				volatile transient unsettable derived attr String j;
 			}
 		''')
-		var root = process(result) as EPackage
+		val cache = process(result)
+		val root = cache.get(result.package) as EPackage
 		var eAttribute = (root.EClassifiers.head as EClass).EAttributes.get(0)
 		assertEquals("EString", eAttribute.EAttributeType.name)
 		assertFalse(eAttribute.changeable)
@@ -268,7 +283,8 @@ class ContentForFeaturesTest extends ContentTest {
 			}
 			class B {}
 		''')
-		val root = process(result) as EPackage
+		val cache = process(result)
+		val root = cache.get(result.package) as EPackage
 		val eReference = (root.EClassifiers.head as EClass).EReferences.head
 		assertEquals("bs", eReference.name)
 		assertEquals("B", eReference.EReferenceType.name)
@@ -291,7 +307,8 @@ class ContentForFeaturesTest extends ContentTest {
 				val T bs;
 			}
 		''')
-		val root = process(result) as EPackage
+		val cache = process(result)
+		val root = cache.get(result.package) as EPackage
 		val eReference = (root.EClassifiers.head as EClass).EReferences.head
 		assertEquals("bs", eReference.name)
 		assertEquals("T", eReference.EGenericType.ETypeParameter.name)
@@ -307,7 +324,8 @@ class ContentForFeaturesTest extends ContentTest {
 			}
 			class B {}
 		''')
-		var root = process(result) as EPackage
+		val cache = process(result)
+		val root = cache.get(result.package) as EPackage
 		var eReference = (root.EClassifiers.head as EClass).EReferences.head
 		val eAnnotation = eReference.EAnnotations.head 
 		assertEquals("http://class/annotation", eAnnotation.source)
@@ -325,7 +343,8 @@ class ContentForFeaturesTest extends ContentTest {
 			}
 			class B {}
 		''')
-		var root = process(result) as EPackage
+		val cache = process(result)
+		val root = cache.get(result.package) as EPackage
 		var eReference = (root.EClassifiers.head as EClass).EReferences.head
 		assertTrue(eReference.isMany)
 	}
@@ -339,7 +358,8 @@ class ContentForFeaturesTest extends ContentTest {
 			}
 			class B {}
 		''')
-		var root = process(result) as EPackage
+		val cache = process(result)
+		val root = cache.get(result.package) as EPackage
 		var eReference = (root.EClassifiers.head as EClass).EReferences.head
 		assertEquals(2, eReference.lowerBound)
 		assertEquals(4, eReference.upperBound)
@@ -362,48 +382,25 @@ class ContentForFeaturesTest extends ContentTest {
 			}
 			class B {}
 		''')
-		var root = process(result) as EPackage
+		val cache = process(result)
+		val root = cache.get(result.package) as EPackage
 		var eReference = (root.EClassifiers.head as EClass).EReferences.get(0)
 		assertFalse(eReference.changeable)
-		eReference = cache.get(
-			((result.declarations.head.declaration as ClassDecl).members.get(1).member as FeatureDecl).feature,
-			result.eResource,
-			[null])
+		eReference = (root.EClassifiers.head as EClass).EReferences.get(1)
 		assertTrue(eReference.volatile)
-		eReference = cache.get(
-			((result.declarations.head.declaration as ClassDecl).members.get(2).member as FeatureDecl).feature,
-			result.eResource,
-			[null])
+		eReference = (root.EClassifiers.head as EClass).EReferences.get(2)
 		assertTrue(eReference.transient)
-		eReference = cache.get(
-			((result.declarations.head.declaration as ClassDecl).members.get(3).member as FeatureDecl).feature,
-			result.eResource,
-			[null])
+		eReference = (root.EClassifiers.head as EClass).EReferences.get(3)
 		assertTrue(eReference.unsettable)
-		eReference = cache.get(
-			((result.declarations.head.declaration as ClassDecl).members.get(4).member as FeatureDecl).feature,
-			result.eResource,
-			[null])
+		eReference = (root.EClassifiers.head as EClass).EReferences.get(4)
 		assertTrue(eReference.derived)
-		eReference = cache.get(
-			((result.declarations.head.declaration as ClassDecl).members.get(5).member as FeatureDecl).feature,
-			result.eResource,
-			[null])
+		eReference = (root.EClassifiers.head as EClass).EReferences.get(5)
 		assertTrue(eReference.unique)
-		eReference = cache.get(
-			((result.declarations.head.declaration as ClassDecl).members.get(6).member as FeatureDecl).feature,
-			result.eResource,
-			[null])
+		eReference = (root.EClassifiers.head as EClass).EReferences.get(6)
 		assertTrue(eReference.ordered)
-		eReference = cache.get(
-			((result.declarations.head.declaration as ClassDecl).members.get(7).member as FeatureDecl).feature,
-			result.eResource,
-			[null])
+		eReference = (root.EClassifiers.head as EClass).EReferences.get(7)
 		assertTrue(eReference.resolveProxies)
-		eReference = cache.get(
-			((result.declarations.head.declaration as ClassDecl).members.get(8).member as FeatureDecl).feature,
-			result.eResource,
-			[null])
+		eReference = (root.EClassifiers.head as EClass).EReferences.get(8)
 		assertTrue(eReference.volatile)
 		assertTrue(eReference.transient)
 		assertTrue(eReference.unsettable)

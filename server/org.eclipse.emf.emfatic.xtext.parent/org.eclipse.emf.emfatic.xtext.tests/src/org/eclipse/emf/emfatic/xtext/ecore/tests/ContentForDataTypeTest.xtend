@@ -26,7 +26,8 @@ class ContentForDataTypeTest extends ContentTest {
 			package test;
 			datatype EInt : int;
 		''')
-		val root = process(result) as EPackage
+		val cache = process(result)
+		val root = cache.get(result.package) as EPackage
 		val eDataType = root.EClassifiers.head
 		assertEquals("EInt", eDataType.name)
 		assertEquals("int", eDataType.instanceClassName)
@@ -38,7 +39,8 @@ class ContentForDataTypeTest extends ContentTest {
 			package test;
 			datatype EInt<T> : int;
 		''')
-		val root = process(result) as EPackage
+		val cache = process(result)
+		val root = cache.get(result.package) as EPackage
 		val eDataType = root.EClassifiers.head
 		Assertions.assertEquals("T", eDataType.ETypeParameters.head.name);
 	}

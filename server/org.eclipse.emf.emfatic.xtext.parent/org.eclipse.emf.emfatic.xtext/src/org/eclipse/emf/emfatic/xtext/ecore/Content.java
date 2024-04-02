@@ -2,11 +2,15 @@ package org.eclipse.emf.emfatic.xtext.ecore;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
+import org.apache.log4j.Logger;
+import org.eclipse.emf.common.util.TreeIterator;
 import org.eclipse.emf.ecore.EAnnotation;
 import org.eclipse.emf.ecore.EAttribute;
 import org.eclipse.emf.ecore.EClass;
+import org.eclipse.emf.ecore.EClassifier;
 import org.eclipse.emf.ecore.EDataType;
 import org.eclipse.emf.ecore.EEnum;
 import org.eclipse.emf.ecore.EEnumLiteral;
@@ -20,6 +24,7 @@ import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.emf.ecore.ETypeParameter;
 import org.eclipse.emf.ecore.EcoreFactory;
 import org.eclipse.emf.ecore.resource.Resource;
+import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.emf.emfatic.xtext.annotations.AnnotationMap;
 import org.eclipse.emf.emfatic.xtext.emfatic.Annotation;
 import org.eclipse.emf.emfatic.xtext.emfatic.Attribute;
@@ -49,13 +54,34 @@ import org.eclipse.emf.emfatic.xtext.emfatic.SubPackageDecl;
 import org.eclipse.emf.emfatic.xtext.emfatic.TopLevelDecl;
 import org.eclipse.emf.emfatic.xtext.emfatic.TypeParam;
 import org.eclipse.emf.emfatic.xtext.emfatic.util.EmfaticSwitch;
-import org.eclipse.xtext.util.OnChangeEvictingCache;
 
 public class Content extends EmfaticSwitch<Object> {
 	
-	public Content(OnChangeEvictingCache cache, AnnotationMap annotations) {
-		this.cache = cache;
+	public Content(AnnotationMap annotations) {
 		this.annotations = annotations;
+	}
+	
+	public Map<Object, Object> copy(Map<Object, Object> cache, final CompUnit model) {
+		this.cache = cache;
+		this.doSwitch(model);
+		TreeIterator<EObject> it = EcoreUtil.getAllContents(model, true);
+		while (this.keepRunning() && it.hasNext()) {
+			this.doSwitch(it.next());
+		}
+		return this.cache;
+	}
+	
+	public synchronized void stop() {
+		this.stop = true;
+	}
+	
+	@Override
+	public Object doSwitch(EObject eObject) {
+		if (eObject == null) {
+			return null;
+		}
+		LOG.debug("Creating content for " + eObject);
+		return doSwitch(eObject.eClass(), eObject);
 	}
 
 	@Override
@@ -63,9 +89,14 @@ public class Content extends EmfaticSwitch<Object> {
 		if (source.getPackage() == null) {
 			return null;
 		}
-		EPackage target = (EPackage) this.doSwitch(source.getPackage());
+		EPackage target = (EPackage) this.equivalent(source.getPackage());
 		for (var d : source.getDeclarations()) {
-			this.doSwitch(d.getDeclaration());
+			var dTarget = this.equivalent(d.getDeclaration());
+			if (dTarget instanceof EClassifier) {
+				target.getEClassifiers().add((EClassifier) dTarget);
+			} else {
+				target.getESubpackages().add((EPackage) dTarget);
+			}
 		}
 		return target;
 	}
@@ -87,7 +118,12 @@ public class Content extends EmfaticSwitch<Object> {
 		EPackage target = equivalent(source);
 		target.setName(source.getName());
 		for (var d : source.getDeclarations()) {
-			this.doSwitch(d);
+			var dTarget = this.equivalent(d.getDeclaration());
+			if (dTarget instanceof EClassifier) {
+				target.getEClassifiers().add((EClassifier) dTarget);
+			} else {
+				target.getESubpackages().add((EPackage) dTarget);
+			}
 		}
 		return target;
 	}
@@ -95,12 +131,12 @@ public class Content extends EmfaticSwitch<Object> {
 	@Override
 	public Object caseMapEntryDecl(MapEntryDecl source) {
 		EClass target = equivalent(source);
-		TypeWithMultiCopier tc = ((TypeWithMultiCopier) equivalent(source.getKey())).load(this.cache);
+		TypeWithMultiCopier tc = ((TypeWithMultiCopier) equivalent(source.getKey())).load(this);
 		var key = tc.toEClass() ?  EcoreFactory.eINSTANCE.createEReference() : EcoreFactory.eINSTANCE.createEAttribute();
 		key.setName("key");
 		tc.configure(key);
 		target.getEStructuralFeatures().add(key);
-		tc = ((TypeWithMultiCopier) equivalent(source.getValue())).load(this.cache);
+		tc = ((TypeWithMultiCopier) equivalent(source.getValue())).load(this);
 		var value = tc.toEClass() ?  EcoreFactory.eINSTANCE.createEReference() : EcoreFactory.eINSTANCE.createEAttribute();
 		value.setName("value");
 		tc.configure(value);
@@ -125,8 +161,7 @@ public class Content extends EmfaticSwitch<Object> {
 					for (BoundClassifierExceptWildcard tb : tp.getTypeBoundsInfo().getTb()) {
 						var gt = EcoreFactory.eINSTANCE.createEGenericType();
 						BoundClassifierExceptWildcardCopier cp = equivalent(tb);
-						cp.load(this.cache)
-							.configure(gt);
+						cp.load(this).configure(gt);
 						targetTp.getEBounds().add(gt);
 					}
 				}
@@ -136,11 +171,16 @@ public class Content extends EmfaticSwitch<Object> {
 		}
 		for (BoundClassExceptWildcard st : source.getSuperTypes()) {
 			BoundClassExceptWildcardCopier cp = equivalent(st);
-			cp.load(this.cache).configure(target);
+			cp.load(this).configure(target);
 			
 		}
 		source.getMembers().forEach(m -> {
-			this.doSwitch(m);
+			var member = m.getMember();
+			if (member instanceof FeatureDecl) {
+				target.getEStructuralFeatures().add((EStructuralFeature) this.equivalent(((FeatureDecl) member).getFeature()));
+			} else {
+				target.getEOperations().add((EOperation) this.equivalent(member));
+			}
 		});
 		processAnnotations(target, ((TopLevelDecl)source.eContainer()).getAnnotations(), source.eResource());
 		return target;
@@ -148,14 +188,20 @@ public class Content extends EmfaticSwitch<Object> {
 
 	@Override
 	public Object caseClassMemberDecl(ClassMemberDecl source) {
-		EModelElement target =  (EModelElement) this.doSwitch(source.getMember());
+		EModelElement target;
+		var member = source.getMember();
+		if (member instanceof FeatureDecl) {
+			target = this.equivalent(((FeatureDecl) member).getFeature());
+		} else {
+			target = this.equivalent(member);
+		}
 		processAnnotations(target, source.getAnnotations(), source.eResource());
 		return target;
 	}
 
 	@Override
 	public Object caseFeatureDecl(FeatureDecl source) {
-		EStructuralFeature target = (EStructuralFeature) this.doSwitch(source.getFeature());
+		EStructuralFeature target = (EStructuralFeature) this.equivalent(source.getFeature());
 		target.setChangeable(this.applyNegativeModifier(source.getReadonly()));
 		target.setVolatile(this.applyModifier(source.getVolatile()));
 		target.setTransient(this.applyModifier(source.getTransient()));
@@ -170,7 +216,7 @@ public class Content extends EmfaticSwitch<Object> {
 	public Object caseAttribute(Attribute source) {
 		EAttribute target = equivalent(source);
 		BoundDataTypeWithMultiCopier type = equivalent(source.getTypeWithMulti());
-		type.load(this.cache).configure(target);
+		type.load(this).configure(target);
 		target.setName(source.getName()); 
 		if (source.getDefValue() != null) {
 			switch(source.getDefValue().eClass().getClassifierID()) {
@@ -213,7 +259,7 @@ public class Content extends EmfaticSwitch<Object> {
 	public Object caseReference(Reference source) {
 		EReference target = equivalent(source);
 		ClassRefWithMultiCopier type = equivalent(source.getTypeWithMulti());
-		type.load(this.cache).configure(target);
+		type.load(this).configure(target);
 		target.setName(source.getName());
 		target.setResolveProxies(this.applyModifier(source.getResolve()));
 		return target;
@@ -230,8 +276,7 @@ public class Content extends EmfaticSwitch<Object> {
 					for (BoundClassifierExceptWildcard tb : tp.getTypeBoundsInfo().getTb()) {
 						var gt = EcoreFactory.eINSTANCE.createEGenericType();
 						BoundClassifierExceptWildcardCopier cp = equivalent(tb);
-						cp.load(this.cache)
-							.configure(gt);
+						cp.load(this).configure(gt);
 						targetTp.getEBounds().add(gt);
 					}
 				}
@@ -240,12 +285,12 @@ public class Content extends EmfaticSwitch<Object> {
 			}
 		}
 		ResultTypeCopier type = equivalent(source.getResultType());
-		type.load(this.cache).configure(target);
-		source.getParams().forEach(this::doSwitch);
+		type.load(this).configure(target);
+		source.getParams().forEach(p -> target.getEParameters().add(this.equivalent(p)));
 		for (BoundClassifierExceptWildcard tb : source.getExceptions()) {
 			var gt = EcoreFactory.eINSTANCE.createEGenericType();
 			BoundClassifierExceptWildcardCopier cp = equivalent(tb);
-			cp.load(this.cache).configure(gt);
+			cp.load(this).configure(gt);
 			target.getEGenericExceptions().add(gt);
 		}
 		return target;
@@ -256,7 +301,7 @@ public class Content extends EmfaticSwitch<Object> {
 		EParameter target = equivalent(source);
 		processAnnotations(target, source.getLeadingAnnotations(), source.eResource());
 		TypeWithMultiCopier tc = ((TypeWithMultiCopier) equivalent(source.getTypeWithMulti()));
-		tc.load(this.cache).configure(target);
+		tc.load(this).configure(target);
 		target.setName(source.getName());
 		processAnnotations(target, source.getTrailingAnnotations(), source.eResource());		
 		return target;
@@ -278,8 +323,7 @@ public class Content extends EmfaticSwitch<Object> {
 					for (BoundClassifierExceptWildcard tb : tp.getTypeBoundsInfo().getTb()) {
 						var gt = EcoreFactory.eINSTANCE.createEGenericType();
 						BoundClassifierExceptWildcardCopier cp = equivalent(tb);
-						cp.load(this.cache)
-							.configure(gt);
+						cp.load(this).configure(gt);
 						targetTp.getEBounds().add(gt);
 					}
 				}
@@ -295,7 +339,7 @@ public class Content extends EmfaticSwitch<Object> {
 	public Object caseEnumDecl(EnumDecl source) {
 		EEnum target = equivalent(source);
 		target.setName(source.getName());
-		source.getEnumLiterals().forEach(this::doSwitch);
+		source.getEnumLiterals().forEach(el -> target.getELiterals().add((EEnumLiteral) this.equivalent(el)));
 		processAnnotations(target, ((TopLevelDecl)source.eContainer()).getAnnotations(), source.eResource());
 		return target;
 	}
@@ -319,12 +363,23 @@ public class Content extends EmfaticSwitch<Object> {
 		processAnnotations(target, source.getTrailingAnnotations(), source.eResource());	
 		return target;
 	}
+	
+	@SuppressWarnings("unchecked")
+	public <T> T equivalent(EObject source) {
+		var target = this.cache.get(source);
+		if (target == null) {
+			throw new IllegalArgumentException("Target element not found for " + source);
+		}
+		return (T) target;
+	}
 
+	private final static Logger LOG = Logger.getLogger(Elements.class);
+	
 	private final AnnotationMap annotations;
 	
-	private final OnChangeEvictingCache cache;
-	
 	private Set<EClass> mapEntries = new HashSet<>();
+	private Map<Object, Object> cache;
+	private boolean stop = false;
 	
 	private void processAnnotations(
 		EModelElement target,
@@ -360,15 +415,10 @@ public class Content extends EmfaticSwitch<Object> {
 			return true;
 		}
 		return modifier.isNegated();
-	}
+	}	
 	
-	private <T> T equivalent(EObject source) {
-		var target = this.cache.get(source, source.eResource(), () -> (T) null);
-		if (target == null) {
-			throw new IllegalArgumentException("Target element not found for " + source);
-		}
-		return (T) target;
+	private synchronized boolean keepRunning() {
+		return this.stop == false;
 	}
-	
 
 }

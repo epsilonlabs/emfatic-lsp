@@ -3,6 +3,7 @@ package org.eclipse.emf.emfatic.xtext.ecore;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.log4j.Logger;
 import org.eclipse.emf.common.util.TreeIterator;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EcoreFactory;
@@ -55,15 +56,12 @@ public class Elements extends EmfaticSwitch<Object> {
 		this.stop = true;
 	}
 
-	private synchronized boolean keepRunning() {
-		return this.stop == false;
-	}
-
 	@Override
 	public Object doSwitch(EObject eObject) {
 		if (eObject == null) {
-
+			return null;
 		}
+		LOG.debug("Creating element for " + eObject);
 		return doSwitch(eObject.eClass(), eObject);
 	}
 
@@ -171,10 +169,16 @@ public class Elements extends EmfaticSwitch<Object> {
 	public Object caseBoundDataTypeWithMulti(BoundDataTypeWithMulti source) {
 		return new BoundDataTypeWithMultiCopier(source, this.emfaticImport);
 	}
+	
+	private final static Logger LOG = Logger.getLogger(Elements.class);
 
 	private final Map<Object, Object> cache;
 	private final EmfaticImport emfaticImport;
 
 	private boolean stop = false;
+	
+	private synchronized boolean keepRunning() {
+		return this.stop == false;
+	}
 
 }

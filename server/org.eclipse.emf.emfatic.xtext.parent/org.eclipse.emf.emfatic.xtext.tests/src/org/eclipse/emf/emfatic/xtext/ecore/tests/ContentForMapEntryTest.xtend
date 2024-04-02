@@ -27,7 +27,8 @@ class ContentForMapEntryTest extends ContentTest {
 			mapentry EStringToStringMapEntry : String -> B;
 			class B {}
 		''')
-		val root = process(result) as EPackage
+		val cache = process(result)
+		val root = cache.get(result.package) as EPackage
 		val eClass = root.EClassifiers.head as EClass
 		assertEquals("EStringToStringMapEntry", eClass.name)
 		assertEquals("java.util.Map$Entry", eClass.instanceClassName)

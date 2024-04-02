@@ -30,7 +30,8 @@ class ContentForOperationsTest extends ContentTest {
 				op String getFullName();
 			}
 		''')
-		val root = process(result) as EPackage
+		val cache = process(result)
+		val root = cache.get(result.package) as EPackage
 		val eOperation = (root.EClassifiers.head as EClass).EOperations.head
 		assertEquals("getFullName", eOperation.name)
 		assertEquals("EString", eOperation.EType.name)
@@ -45,7 +46,8 @@ class ContentForOperationsTest extends ContentTest {
 				op void printFullName();
 			}
 		''')
-		val root = process(result) as EPackage
+		val cache = process(result)
+		val root = cache.get(result.package) as EPackage
 		val eOperation = (root.EClassifiers.head as EClass).EOperations.head
 		assertEquals("printFullName", eOperation.name)
 		assertNull(eOperation.EType)
@@ -61,7 +63,8 @@ class ContentForOperationsTest extends ContentTest {
 				op String getFullName();
 			}
 		''')
-		val root = process(result) as EPackage
+		val cache = process(result)
+		val root = cache.get(result.package) as EPackage
 		val eOperation = (root.EClassifiers.head as EClass).EOperations.head
 		var eAnnotation = eOperation.EAnnotations.head
 		assertEquals("http://class/annotation", eAnnotation.source)
@@ -78,7 +81,8 @@ class ContentForOperationsTest extends ContentTest {
 				op <T> String getFullName();
 			}
 		''')
-		val root = process(result) as EPackage
+		val cache = process(result)
+		val root = cache.get(result.package) as EPackage
 		val eOperation = (root.EClassifiers.head as EClass).EOperations.head
 		assertEquals("T", eOperation.ETypeParameters.head.name)
 	}
@@ -91,7 +95,8 @@ class ContentForOperationsTest extends ContentTest {
 				op void getFullName(String ~id);
 			}
 		''')
-		val root = process(result) as EPackage
+		val cache = process(result)
+		val root = cache.get(result.package) as EPackage
 		val eOperation = (root.EClassifiers.head as EClass).EOperations.head
 		assertEquals(1, eOperation.EParameters.size)
 		assertEquals("EString", eOperation.EParameters.head.EType.name)
@@ -108,7 +113,8 @@ class ContentForOperationsTest extends ContentTest {
 			}
 		''')
 		process(result)
-		val root = process(result) as EPackage
+		val cache = process(result)
+		val root = cache.get(result.package) as EPackage
 		val eOperation = (root.EClassifiers.head as EClass).EOperations.head
 		val param = eOperation.EParameters.head
 		var eAnnotation = param.EAnnotations.head
@@ -132,7 +138,8 @@ class ContentForOperationsTest extends ContentTest {
 			}
 			class B {}
 		''')
-		val root = process(result) as EPackage
+		val cache = process(result)
+		val root = cache.get(result.package) as EPackage
 		val eOperation = (root.EClassifiers.head as EClass).EOperations.head
 		assertEquals("B", eOperation.EGenericExceptions.head.EClassifier.name)
 	}

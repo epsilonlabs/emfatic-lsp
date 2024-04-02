@@ -28,7 +28,8 @@ class ContentForEnumTest extends ContentTest {
 			enum E {
 			}
 		''')
-		val root = process(result) as EPackage
+		val cache = process(result)
+		val root = cache.get(result.package) as EPackage
 		val eEnum = root.EClassifiers.head as EEnum
 		assertEquals("E", eEnum.name)
 	}
@@ -43,7 +44,8 @@ class ContentForEnumTest extends ContentTest {
 			  C=3;
 			}
 		''')
-		val root = process(result) as EPackage
+		val cache = process(result)
+		val root = cache.get(result.package) as EPackage
 		val eEnum = root.EClassifiers.head as EEnum
 		var eLit = eEnum.ELiterals.get(0)
 		assertEquals("A", eLit.name)
@@ -63,7 +65,8 @@ class ContentForEnumTest extends ContentTest {
 			@"http://class/annotation"(k="v")
 			enum E {}
 		''')
-		val root = process(result) as EPackage
+		val cache = process(result)
+		val root = cache.get(result.package) as EPackage
 		val eEnum = root.EClassifiers.head
 		val eAnnotation = eEnum.EAnnotations.head 
 		assertEquals("http://class/annotation", eAnnotation.source)
@@ -81,7 +84,8 @@ class ContentForEnumTest extends ContentTest {
 			  A=1 @"http://after"(x=y); 
 			}
 		''')
-		val root = process(result) as EPackage
+		val cache = process(result)
+		val root = cache.get(result.package) as EPackage
 		val eEnum = root.EClassifiers.head as EEnum
 		var aLit = eEnum.ELiterals.head
 		var eAnnotation = aLit.EAnnotations.head 
@@ -107,7 +111,8 @@ class ContentForEnumTest extends ContentTest {
 			  D; // = 5
 			}
 		''')
-		val root = process(result) as EPackage
+		val cache = process(result)
+		val root = cache.get(result.package) as EPackage
 		val eEnum = root.EClassifiers.head as EEnum
 		var eLit = eEnum.ELiterals.get(0)
 		assertEquals("A", eLit.name)

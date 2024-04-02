@@ -25,10 +25,11 @@ class ContentForPackageTest extends ContentTest {
 			@namespace(uri="http://www.eclipse.org/emf/2002/Ecore", prefix="ecore")
 			package test;
 		''')
-		val ePackage = process(result) as EPackage
-		assertEquals("test", ePackage.name)
-		assertEquals("http://www.eclipse.org/emf/2002/Ecore", ePackage.nsURI)
-		assertEquals("ecore", ePackage.nsPrefix)
+		val cache = process(result)
+		val root = cache.get(result.package) as EPackage
+		assertEquals("test", root.name)
+		assertEquals("http://www.eclipse.org/emf/2002/Ecore", root.nsURI)
+		assertEquals("ecore", root.nsPrefix)
 	}
 	
 	@Test
@@ -39,8 +40,9 @@ class ContentForPackageTest extends ContentTest {
 				
 			}
 		''')
-		val ePackage = process(result) as EPackage
-		val nested = ePackage.ESubpackages.head
+		val cache = process(result)
+		val root = cache.get(result.package) as EPackage
+		val nested = root.ESubpackages.head
 		assertEquals("nested", nested.name)
 	}
 
