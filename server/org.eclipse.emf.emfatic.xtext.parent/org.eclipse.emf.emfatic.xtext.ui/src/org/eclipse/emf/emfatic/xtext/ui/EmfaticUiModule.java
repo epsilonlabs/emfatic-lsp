@@ -4,7 +4,9 @@
 package org.eclipse.emf.emfatic.xtext.ui;
 
 import org.eclipse.emf.emfatic.xtext.ide.contentassist.EmfaticIdeCPP;
+import org.eclipse.emf.emfatic.xtext.ui.builder.preferences.EmfaticBuilderConfigurationBlock;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
+import org.eclipse.xtext.builder.preferences.BuilderConfigurationBlock;
 import org.eclipse.xtext.ide.editor.contentassist.FQNPrefixMatcher;
 import org.eclipse.xtext.ide.editor.contentassist.IPrefixMatcher;
 import org.eclipse.xtext.ide.editor.contentassist.IProposalConflictHelper;
@@ -43,5 +45,10 @@ public class EmfaticUiModule extends AbstractEmfaticUiModule {
 	
 	public Class<? extends IPrefixMatcher> bindIdeIPrefixMatcher() {
 		return FQNPrefixMatcher.class;
+	}
+	
+	@SuppressWarnings("restriction")
+	public Class<? extends BuilderConfigurationBlock> bindBuilderConfigurationBlock() {
+		return EmfaticBuilderConfigurationBlock.class;
 	}
 }

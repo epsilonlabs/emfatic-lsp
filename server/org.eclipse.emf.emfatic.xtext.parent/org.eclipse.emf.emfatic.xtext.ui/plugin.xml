@@ -9,7 +9,7 @@
 			default="true"
 			extensions="lspemf"
 			id="org.eclipse.emf.emfatic.xtext.Emfatic"
-			name="Emfatic Editor">
+			name="%editor.name">
 		</editor>
 	</extension>
 	<extension
@@ -209,7 +209,7 @@
 			base-type="org.eclipse.core.runtime.text"
 			file-extensions="lspemf"
 			id="org.eclipse.emf.emfatic.xtext.Emfatic.contenttype"
-			name="Emfatic File"
+			name="%content-type.name"
 			priority="normal">
 		</content-type>
 	</extension>
@@ -230,21 +230,21 @@
 	<!-- marker definitions for org.eclipse.emf.emfatic.xtext.Emfatic -->
 	<extension
 			id="emfatic.check.fast"
-			name="Emfatic Problem"
+			name="%extension.name"
 			point="org.eclipse.core.resources.markers">
 		<super type="org.eclipse.xtext.ui.check.fast"/>
 		<persistent value="true"/>
 	</extension>
 	<extension
 			id="emfatic.check.normal"
-			name="Emfatic Problem"
+			name="%extension.name.0"
 			point="org.eclipse.core.resources.markers">
 		<super type="org.eclipse.xtext.ui.check.normal"/>
 		<persistent value="true"/>
 	</extension>
 	<extension
 			id="emfatic.check.expensive"
-			name="Emfatic Problem"
+			name="%extension.name.1"
 			point="org.eclipse.core.resources.markers">
 		<super type="org.eclipse.xtext.ui.check.expensive"/>
 		<persistent value="true"/>
@@ -413,7 +413,7 @@
 	<extension point="org.eclipse.compare.contentMergeViewers">
 		<viewer id="org.eclipse.emf.emfatic.xtext.Emfatic.compare.contentMergeViewers"
 			class="org.eclipse.emf.emfatic.xtext.ui.EmfaticExecutableExtensionFactory:org.eclipse.xtext.ui.compare.InjectableViewerCreator"
-			extensions="lspemf" label="Emfatic Compare">
+			extensions="lspemf" label="%viewer.label">
 		</viewer>
 		<contentTypeBinding
 			contentTypeId="org.eclipse.emf.emfatic.xtext.Emfatic.contenttype"

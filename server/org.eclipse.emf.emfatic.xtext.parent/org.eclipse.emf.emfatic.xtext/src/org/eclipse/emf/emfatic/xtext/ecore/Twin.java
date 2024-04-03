@@ -9,6 +9,7 @@ import java.util.concurrent.CompletableFuture;
 import org.apache.log4j.Logger;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.emfatic.xtext.annotations.AnnotationMap;
 import org.eclipse.emf.emfatic.xtext.emfatic.CompUnit;
 import org.eclipse.emf.emfatic.xtext.scoping.EmfaticImport;
@@ -36,6 +37,9 @@ public class Twin {
 		if (this.copier != null) {
 			this.copier.cancel(false);
 		}
+		if (this.ecore != null) {
+			this.ecore.getContents().clear();
+		}
 		this.copier = CompletableFuture.supplyAsync(() -> {
 			return elements.copy(model);
 		});
@@ -43,7 +47,7 @@ public class Twin {
 				if (ex instanceof CancellationException) {
 					LOG.info("Copier was canceled");
 				} else {
-					LOG.error("There was an error translating emfatic to ECore", ex);
+					LOG.error("There was an error translating emfatic to Ecore", ex);
 				}
 				return new HashMap<Object, Object>();
 			})
@@ -54,27 +58,33 @@ public class Twin {
 				if (ex instanceof CancellationException) {
 					LOG.info("Copier was canceled");
 				} else {
-					LOG.error("There was an error translating emfatic to ECore", ex);
+					LOG.error("There was an error translating emfatic to Ecore", ex);
 				}
 				return new HashMap<Object, Object>();
 			})
 			.thenAcceptAsync(cache -> {
-				// TODO Save resource if cache != empty
-				System.out.println("We copied " + cache.size() + " elements");
-				System.out.println(model.eResource().getURI());
-				var ecoreURI = model.eResource().getURI().toString().replace(".lspemf", ".ecore");
-				System.out.println(model.eResource().getResourceSet());
-				var r = model.eResource().getResourceSet().createResource(URI.createURI(ecoreURI));
-				r.getContents().add((EObject) cache.get(model.getPackage()));
-				try {
-					r.save(null);
-				} catch (IOException e) {
-					LOG.error("Unable to save Emfatic model as ecore", e);
+				if (!cache.isEmpty()) {
+					LOG.info("Saving the generated Ecore elements");
+					var ecoreURI = model.eResource().getURI().toString().replace(".lspemf", ".ecore");
+					ecore = model.eResource().getResourceSet().createResource(URI.createURI(ecoreURI));
+					ecore.getContents().add((EObject) cache.get(model.getPackage()));
+					cache.clear();
 				}
 			});
 	}
+	
+	public void save() {
+		if (this.ecore != null && !this.ecore.getContents().isEmpty()) {
+			try {
+				this.ecore.save(null);
+			} catch (IOException e) {
+				LOG.error("There was an error translating emfatic to Ecore", e);
+			}
+		}
+	}
 
 	private final static Logger LOG = Logger.getLogger(Twin.class);
+	private Resource ecore;
 
 	private CompletableFuture<Map<Object, Object>> copier;
 
