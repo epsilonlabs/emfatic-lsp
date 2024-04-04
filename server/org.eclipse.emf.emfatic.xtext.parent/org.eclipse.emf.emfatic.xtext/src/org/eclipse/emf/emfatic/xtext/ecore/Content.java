@@ -291,7 +291,7 @@ public class Content extends EmfaticSwitch<Object> {
 		ResultTypeCopier type = equivalent(source.getResultType());
 		type.load(this).configure(target);
 		source.getParams().forEach(p -> target.getEParameters().add(this.equivalent(p)));
-		for (BoundClassifierExceptWildcard tb : source.getExceptions()) {
+		for (BoundClassExceptWildcard tb : source.getExceptions()) {
 			var gt = EcoreFactory.eINSTANCE.createEGenericType();
 			BoundClassifierExceptWildcardCopier cp = equivalent(tb);
 			cp.load(this).configure(gt);

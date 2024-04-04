@@ -188,7 +188,7 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="params" upperBound="-1"
         eType="#//Param" containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="exceptions" upperBound="-1"
-        eType="#//BoundClassifierExceptWildcard" containment="true"/>
+        eType="#//BoundClassExceptWildcard" containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="ResultType">
     <eStructuralFeatures xsi:type="ecore:EReference" name="type" eType="#//TypeWithMulti"
