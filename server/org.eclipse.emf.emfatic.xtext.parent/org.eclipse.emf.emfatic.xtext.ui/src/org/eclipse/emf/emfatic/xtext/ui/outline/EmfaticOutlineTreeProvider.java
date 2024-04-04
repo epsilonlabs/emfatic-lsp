@@ -4,8 +4,17 @@
 package org.eclipse.emf.emfatic.xtext.ui.outline;
 
 import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.emfatic.xtext.ecore.Twin;
+import org.eclipse.emf.emfatic.xtext.emfatic.CompUnit;
+import org.eclipse.swt.graphics.Image;
+import org.eclipse.xtext.nodemodel.ICompositeNode;
+import org.eclipse.xtext.nodemodel.util.NodeModelUtils;
+import org.eclipse.xtext.ui.editor.outline.IOutlineNode;
 import org.eclipse.xtext.ui.editor.outline.impl.DefaultOutlineTreeProvider;
 import org.eclipse.xtext.ui.editor.outline.impl.DocumentRootNode;
+import org.eclipse.xtext.ui.editor.outline.impl.EObjectNode;
+
+import com.google.inject.Inject;
 
 /**
  * Customization of the default outline structure.
@@ -22,5 +31,33 @@ public class EmfaticOutlineTreeProvider extends DefaultOutlineTreeProvider {
 		createEObjectNode(parentNode, modelElement, imageDispatcher.invoke(modelElement), text,
 				isLeafDispatcher.invoke(modelElement));
 	}
+	
+	protected void _createChildren(
+		DocumentRootNode parentNode, 
+		CompUnit compUnit) {
+		_createNode(parentNode, this.twin.target(compUnit.getPackage()));
+	}
+	
+	protected EObjectNode createEObjectNode(
+		IOutlineNode parentNode,
+		EObject modelElement,
+		Image image,
+		Object text,
+		boolean isLeaf) {
+		EObjectNode eObjectNode = new EObjectNode(modelElement, parentNode, image, text, isLeaf);
+		EObject emfaticElement = this.twin.soruce(modelElement);
+		ICompositeNode parserNode = NodeModelUtils.getNode(emfaticElement);
+		if (parserNode != null) {
+			eObjectNode.setTextRegion(parserNode.getTextRegion());
+		}
+		if (isLocalElement(parentNode, emfaticElement)) {
+			eObjectNode.setShortTextRegion(locationInFileProvider.getSignificantTextRegion(emfaticElement));
+		}
+		return eObjectNode;
+	}
+	
+	
+	@Inject
+	private Twin twin;
 	
 }
