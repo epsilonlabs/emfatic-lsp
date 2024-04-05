@@ -431,4 +431,80 @@
 			type="text">
 		</fileTypes>
 	</extension>
+	<!-- Emfatic Commands -->
+	<extension point="org.eclipse.ui.commands">
+      <category id="org.eclipse.emf.emfatic.xtext.Emfatic.category"
+            name="Emfatic Category">
+      </category>
+      <command categoryId="org.eclipse.emf.emfatic.xtext.Emfatic.category"
+            name="Generate Ecore Model"
+            id="org.eclipse.emf.emfatic.xtext.Emfatic.commands.generateEcoreCommand">
+      </command>
+      <command categoryId="org.eclipse.emf.emfatic.xtext.Emfatic.category"
+            name="Generate Emfatic File"
+            id="org.eclipse.emf.emfatic.xtext.Emfatic.commands.generateEmfCommand">
+      </command>
+   </extension>
+   <extension point="org.eclipse.ui.handlers">
+      <handler
+      		class="org.eclipse.emf.emfatic.xtext.ui.handlers.GenerateEcoreHandler"
+            commandId="org.eclipse.emf.emfatic.xtext.Emfatic.commands.generateEcoreCommand">
+      </handler>
+      <handler
+      		class="org.eclipse.emf.emfatic.xtext.ui.handlers.GenerateEmfHandler"
+            commandId="org.eclipse.emf.emfatic.xtext.Emfatic.commands.generateEmfCommand">
+      </handler>
+   </extension>
+   <extension point="org.eclipse.ui.menus">
+      <menuContribution
+            locationURI="popup:org.eclipse.ui.popup.any?after=additions">
+         <menu id="org.eclipse.emf.emfatic.xtext.Emfatic.menus.mainMenu"
+               label="Emfatic"
+               mnemonic="E">
+	  		<visibleWhen>
+		  			<with variable="activeMenuSelection">
+				     	<iterate
+				          ifEmpty="false">
+				         	<adapt type="org.eclipse.core.resources.IResource">
+				         	<or>
+				            <test property="org.eclipse.core.resources.contentTypeId" value="org.eclipse.emf.emfatic.xtext.Emfatic.contenttype" />
+				            <test property="org.eclipse.core.resources.contentTypeId" value="org.eclipse.emf.ecore" />
+				             </or>
+				         </adapt>
+				      </iterate>
+				   </with>
+	  		</visibleWhen>
+	        <command
+	          commandId="org.eclipse.emf.emfatic.xtext.Emfatic.commands.generateEcoreCommand"
+	          id="org.eclipse.emf.emfatic.xtext.Emfatic.menus.generateEcoreCommand"
+	          mnemonic="E">
+	          <visibleWhen>
+		  			<with variable="activeMenuSelection">
+				     	<iterate
+				          ifEmpty="false">
+				         	<adapt type="org.eclipse.core.resources.IResource">
+				            <test property="org.eclipse.core.resources.contentTypeId" value="org.eclipse.emf.emfatic.xtext.Emfatic.contenttype" />
+				         </adapt>
+				      </iterate>
+				   </with>
+	  		</visibleWhen>
+	     	</command>
+	     	<command
+	          commandId="org.eclipse.emf.emfatic.xtext.Emfatic.commands.generateEmfCommand"
+	          id="org.eclipse.emf.emfatic.xtext.Emfatic.menus.generateEmfCommand"
+	          mnemonic="M">
+	          <visibleWhen>
+		  			<with variable="activeMenuSelection">
+				     	<iterate
+				          ifEmpty="false">
+				         	<adapt type="org.eclipse.core.resources.IResource">
+				            <test property="org.eclipse.core.resources.contentTypeId" value="org.eclipse.emf.ecore" />
+				         </adapt>
+				      </iterate>
+				   </with>
+	  		</visibleWhen>
+	     	</command>
+         </menu>
+      </menuContribution>
+   </extension>
 </plugin>

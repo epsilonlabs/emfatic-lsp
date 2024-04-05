@@ -3,6 +3,7 @@
  */
 package org.eclipse.emf.emfatic.xtext.ui;
 
+import org.eclipse.emf.emfatic.xtext.ecore.Twin;
 import org.eclipse.emf.emfatic.xtext.ide.contentassist.EmfaticIdeCPP;
 import org.eclipse.emf.emfatic.xtext.ui.builder.preferences.EmfaticBuilderConfigurationBlock;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
@@ -15,6 +16,8 @@ import org.eclipse.xtext.ide.editor.contentassist.antlr.AntlrProposalConflictHel
 import org.eclipse.xtext.service.SingletonBinding;
 import org.eclipse.xtext.ui.editor.contentassist.IContentProposalProvider;
 import org.eclipse.xtext.ui.editor.contentassist.UiToIdeContentProposalProvider;
+
+import com.google.inject.Binder;
 
 /**
  * Use this class to register components to be used within the Eclipse IDE.
@@ -50,5 +53,9 @@ public class EmfaticUiModule extends AbstractEmfaticUiModule {
 	@SuppressWarnings("restriction")
 	public Class<? extends BuilderConfigurationBlock> bindBuilderConfigurationBlock() {
 		return EmfaticBuilderConfigurationBlock.class;
+	}
+	
+	public void configureTwinProvider(Binder binder) {
+		binder.bind(Twin.class);
 	}
 }
