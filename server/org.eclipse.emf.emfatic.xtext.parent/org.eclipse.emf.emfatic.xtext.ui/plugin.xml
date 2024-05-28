@@ -447,11 +447,11 @@
    </extension>
    <extension point="org.eclipse.ui.handlers">
       <handler
-      		class="org.eclipse.emf.emfatic.xtext.ui.handlers.GenerateEcoreHandler"
+      		class="org.eclipse.emf.emfatic.xtext.ui.EmfaticExecutableExtensionFactory:org.eclipse.emf.emfatic.xtext.ui.handlers.GenerateEcoreHandler"
             commandId="org.eclipse.emf.emfatic.xtext.Emfatic.commands.generateEcoreCommand">
       </handler>
       <handler
-      		class="org.eclipse.emf.emfatic.xtext.ui.handlers.GenerateEmfHandler"
+      		class="org.eclipse.emf.emfatic.xtext.ui.EmfaticExecutableExtensionFactory:org.eclipse.emf.emfatic.xtext.ui.handlers.GenerateEmfHandler"
             commandId="org.eclipse.emf.emfatic.xtext.Emfatic.commands.generateEmfCommand">
       </handler>
    </extension>

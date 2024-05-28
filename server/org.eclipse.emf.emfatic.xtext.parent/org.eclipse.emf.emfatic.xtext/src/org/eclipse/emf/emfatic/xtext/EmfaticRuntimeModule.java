@@ -8,6 +8,7 @@ import org.eclipse.emf.emfatic.xtext.annotations.DefaultAnnotationMap;
 import org.eclipse.emf.emfatic.xtext.conversion.EmfaticIDValueConverter;
 import org.eclipse.emf.emfatic.xtext.conversion.EmfaticValueConverterService;
 import org.eclipse.emf.emfatic.xtext.ecore.Twin;
+import org.eclipse.emf.emfatic.xtext.generator.EcoreGenerator;
 import org.eclipse.emf.emfatic.xtext.linking.EmfaticLinker;
 import org.eclipse.emf.emfatic.xtext.naming.EmfaticQNP;
 import org.eclipse.emf.emfatic.xtext.scoping.EmfaticGSP;
@@ -53,7 +54,6 @@ public class EmfaticRuntimeModule extends AbstractEmfaticRuntimeModule {
 		return EmfaticQNP.class;
 	}
 	
-	
 	public Class<? extends org.eclipse.xtext.linking.ILinker> bindILinker() {
 		return EmfaticLinker.class;
 	}
@@ -76,6 +76,10 @@ public class EmfaticRuntimeModule extends AbstractEmfaticRuntimeModule {
 	
 	public Class<? extends AbstractIDValueConverter> bindAbstractIDValueConverter() {
 		return EmfaticIDValueConverter.class;
+	}
+	
+	public void configureEcoreGenerator(Binder binder) {
+		binder.bind(EcoreGenerator.class);
 	}
 	
 }

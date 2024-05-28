@@ -4,6 +4,7 @@
 package org.eclipse.emf.emfatic.xtext.ui;
 
 import org.eclipse.emf.emfatic.xtext.ecore.Twin;
+import org.eclipse.emf.emfatic.xtext.generator.EcoreGenerator;
 import org.eclipse.emf.emfatic.xtext.ide.contentassist.EmfaticIdeCPP;
 import org.eclipse.emf.emfatic.xtext.ui.builder.preferences.EmfaticBuilderConfigurationBlock;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
@@ -58,4 +59,9 @@ public class EmfaticUiModule extends AbstractEmfaticUiModule {
 	public void configureTwinProvider(Binder binder) {
 		binder.bind(Twin.class);
 	}
+	
+	public void configureEcoreGenerator(Binder binder) {
+		binder.bind(EcoreGenerator.class);
+	}
+	
 }

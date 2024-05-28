@@ -8,3 +8,6 @@ xtext-gen
 # maven & eclispe build
 target
 bin
+
+# logs
+logs

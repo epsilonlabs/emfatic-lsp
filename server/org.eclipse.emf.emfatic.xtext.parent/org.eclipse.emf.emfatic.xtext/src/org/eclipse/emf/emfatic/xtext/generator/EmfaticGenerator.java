@@ -17,7 +17,7 @@ public class EmfaticGenerator extends AbstractGenerator {
 
 	@Override
 	public void doGenerate(Resource input, IFileSystemAccess2 fsa, IGeneratorContext context) {
-		this.twin.save();
+		this.twin.save(input.getContents().get(0));
 	}
 	
 	@Inject

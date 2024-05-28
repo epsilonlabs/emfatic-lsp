@@ -73,30 +73,57 @@ public class Twin {
 				valuesChanged(model);
 				this.semaphore.release();});
 	}
-
+	
 	public void save() {
-		if (this.ecore != null && !this.ecore.getContents().isEmpty()) {
-			try {
-				this.ecore.save(null);
-			} catch (IOException e) {
-				LOG.error("There was an error translating emfatic to Ecore", e);
-			}
+		if (this.toEcore == null) {
+			LOG.info("Ecore has not been created, nothing to save");
+			return;
+		}
+		try {
+			this.ecore.save(null);
+		} catch (IOException e) {
+			LOG.error("There was an error translating emfatic to Ecore", e);
 		}
 	}
 
+	public void save(EObject root) {
+		if (this.toEcore == null) {
+			blockingCopy(root);
+		}
+		try {
+			this.ecore.save(null);
+		} catch (IOException e) {
+			LOG.error("There was an error translating emfatic to Ecore", e);
+		}
+	}
+
+	/**
+	 * Get the ECore element mapped to the Emfatic element
+	 * @param emfaticElement
+	 * @return
+	 */
 	public EObject target(EObject emfaticElement) {
 		if (this.toEcore == null) {
-			try {
-				semaphore.acquire();
-			} catch (InterruptedException e) {
-				LOG.warn("target was interrupted", e);
-			}
+			blockingCopy(emfaticElement);
+		}
+		if (this.ecore == null) {
 			CompUnit compUnit = (CompUnit) emfaticElement.eResource().getContents().get(0);
 			this.toEcore = init(compUnit);
 			this.valuesChanged(compUnit);
-			this.semaphore.release();
 		}
 		return (EObject) this.toEcore.get(emfaticElement);
+	}
+
+	private void blockingCopy(EObject emfaticElement) {
+		try {
+			semaphore.acquire();
+		} catch (InterruptedException e) {
+			LOG.warn("target was interrupted", e);
+		}
+		CompUnit compUnit = (CompUnit) emfaticElement.eResource().getContents().get(0);
+		this.toEcore = init(compUnit);
+		this.valuesChanged(compUnit);
+		this.semaphore.release();
 	}
 
 	private Map<Object, Object> init(CompUnit compUnit) {
@@ -105,6 +132,9 @@ public class Twin {
 	}
 
 	public EObject soruce(EObject ecoreElement) {
+		if (this.toEmfatic == null) {
+			return null;
+		}
 		return (EObject) this.toEmfatic.get(ecoreElement);
 	}
 
