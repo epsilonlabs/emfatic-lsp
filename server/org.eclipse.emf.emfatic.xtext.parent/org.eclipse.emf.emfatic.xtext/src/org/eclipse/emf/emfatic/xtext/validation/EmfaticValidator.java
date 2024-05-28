@@ -162,17 +162,13 @@ public class EmfaticValidator extends AbstractEmfaticValidator {
 			}
 		} else {
 			String literal = source.getLiteral();
-			try {
-				label = this.annotationMap.labelForUri(literal, annt.eResource());
+			this.annotationMap.labelForUri(literal, annt.eResource())
+				.ifPresent(l ->
 				warning(
-						"The key uri " + literal + " can be replaced by its label: " + label,
+						"The key uri " + literal + " can be replaced by its label: " + l,
 						EmfaticPackage.Literals.ANNOTATION__SOURCE,
 						IssueCodes.W_URI_INSTEAD_OF_LABEL,
-						label.toLowerCase());
-			} catch (NoSuchElementException e) {
-				// No issue
-			}
-			
+						l.toLowerCase()));			
 		}
 	}
 	
@@ -387,16 +383,10 @@ public class EmfaticValidator extends AbstractEmfaticValidator {
 		StringOrQualifiedID source = annt.getSource();
 		String label = null;
 		label = source.getId();
-		if (label == null) {
-			try {
-				label = this.annotationMap.labelForUri(source.getLiteral(), annt.eResource());
-			} catch (NoSuchElementException e) {
-				// People may use arbitrary URIs at any point
-				LOG.warn("Non-registered Annotation URI used: " + source.getLiteral());
-			}
+		if (label != null) {
+			return Optional.of(label);
 		}
-		return Optional.ofNullable(label);
+		return this.annotationMap.labelForUri(source.getLiteral(), annt.eResource());
 	}
-	
-	
+		
 }

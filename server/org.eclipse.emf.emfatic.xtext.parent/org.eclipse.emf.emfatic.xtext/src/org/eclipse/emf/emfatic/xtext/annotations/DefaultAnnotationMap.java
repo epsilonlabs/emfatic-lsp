@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -111,16 +112,18 @@ public class DefaultAnnotationMap implements AnnotationMap {
 	}
 	
 	@Override
-	public String labelForUri(String uri, Resource resource) throws NoSuchElementException {
-		return allAnnotations(resource)
+	public Optional<String> labelForUri(String uri, Resource resource) throws NoSuchElementException {
+		Optional<EmfaticAnnotation> match = allAnnotations(resource)
 				.filter(a -> Objects.equals(a.source(), uri))
-				.findFirst()
-				.orElseThrow()
-				.label();
+				.findFirst();
+		if (match.isPresent()) {
+			return Optional.of(match.get().label());
+		}
+		return Optional.empty();
 	}
 	
 	@Override
-	public String uriForLabel(String id, Resource resource) {
+	public Optional<String> uriForLabel(String id, Resource resource) {
 		var result = this.annotations.get(id);
 		if (result == null) {
 			var user = this.userAnnotations.get(resource.getURI());
@@ -129,7 +132,7 @@ public class DefaultAnnotationMap implements AnnotationMap {
 				
 			}
 		}
-		return result == null ? null : result.source();
+		return Optional.ofNullable(result == null ? null : result.source());
 	}
 
 	

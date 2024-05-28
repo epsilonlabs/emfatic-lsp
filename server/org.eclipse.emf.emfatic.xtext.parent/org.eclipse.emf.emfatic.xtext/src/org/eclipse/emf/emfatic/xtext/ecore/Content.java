@@ -399,7 +399,8 @@ public class Content extends EmfaticSwitch<Object> {
 		if (annt.getSource().getId() == null) {
 			emfAnnt.setSource(annt.getSource().getLiteral());
 		} else {
-			emfAnnt.setSource(this.annotations.uriForLabel(annt.getSource().getId(), eResource));
+			this.annotations.uriForLabel(annt.getSource().getId(), eResource)
+				.ifPresent(uri -> emfAnnt.setSource(uri));
 		}
 		for (Details d : annt.getDetails()) {
 			emfAnnt.getDetails().put(d.getKey(), d.getValue());

@@ -11,6 +11,7 @@ package org.eclipse.emf.emfatic.xtext.annotations;
 
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EClass;
@@ -65,16 +66,6 @@ public interface AnnotationMap {
 	 * @return the list of keys that can be used for the given EClass
 	 */
 	List<String> keysFor(String label, EClass eClass);
-	
-	/**
-	 * Get the Emfatic annotation label mapped to the provided URI, in the given Resource
-	 *
-	 * @param uri the URI
-	 * @param resource the Resoruce in which the URI is searched
-	 * @return the label if registered.
-	 * @throws NoSuchElementException if an annotation with the URI does not exist.
-	 */
-	String labelForUri(String uri, Resource resource) throws NoSuchElementException;
 
 	/**
 	 * Cehck if the provided label matches the label of any of the user or provided annotations.
@@ -88,12 +79,19 @@ public interface AnnotationMap {
 	/**
 	 * Get the Emfatic annotation URI mapped to the provided Label, in the given Resource
 	 *
-	 * @param uri the URI
-	 * @param resource the Resoruce in which the URI is searched
-	 * @return the label if registered.
-	 * @throws NoSuchElementException if an annotation with the URI does not exist.
+	 * @param label the URI label
+	 * @param resource the Resource in which the URI is searched
+	 * @return the uri associated to the label, if present.
 	 */
-	String uriForLabel(String id, Resource resource);
+	Optional<String> uriForLabel(String label, Resource resource);
 
+	/**
+	 * Get the Emfatic annotation label mapped to the provided URI, in the given Resource
+	 *
+	 * @param uri the URI
+	 * @param resource the Resource in which the URI is searched
+	 * @return the label associated to the URI, if registered.
+	 */
+	Optional<String> labelForUri(String uri, Resource resource) throws NoSuchElementException;
 
 }
