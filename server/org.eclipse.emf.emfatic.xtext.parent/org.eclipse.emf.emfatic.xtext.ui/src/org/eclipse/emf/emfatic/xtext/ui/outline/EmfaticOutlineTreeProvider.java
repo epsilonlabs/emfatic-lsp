@@ -6,6 +6,7 @@ package org.eclipse.emf.emfatic.xtext.ui.outline;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.emfatic.xtext.ecore.Twin;
 import org.eclipse.emf.emfatic.xtext.emfatic.CompUnit;
+import org.eclipse.emf.emfatic.xtext.emfatic.EmfaticPackage;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.xtext.nodemodel.ICompositeNode;
 import org.eclipse.xtext.nodemodel.util.NodeModelUtils;
@@ -23,37 +24,52 @@ import com.google.inject.Inject;
  */
 public class EmfaticOutlineTreeProvider extends DefaultOutlineTreeProvider {
 	
-	protected void _createNode(DocumentRootNode parentNode, EObject modelElement) {
-		Object text = textDispatcher.invoke(modelElement);
+	protected void _createNode(DocumentRootNode parentNode, EObject treeElement) {
+		var ecoreElement = this.twin.target(treeElement);
+		Object text = textDispatcher.invoke(ecoreElement);
 		if (text == null) {
-			text = modelElement.eResource().getURI().trimFileExtension().lastSegment();
+			text = treeElement.eResource().getURI().trimFileExtension().lastSegment();
 		}
-		createEObjectNode(parentNode, modelElement, imageDispatcher.invoke(modelElement), text,
-				isLeafDispatcher.invoke(modelElement));
+		createEObjectNode(
+				parentNode, 
+				treeElement,
+				imageDispatcher.invoke(ecoreElement),
+				text,
+				isLeafDispatcher.invoke(ecoreElement));
 	}
 	
 	protected void _createChildren(
 		DocumentRootNode parentNode, 
 		CompUnit compUnit) {
-		_createNode(parentNode, this.twin.target(compUnit.getPackage()));
+		_createNode(parentNode, compUnit.getPackage());
 	}
 	
 	protected EObjectNode createEObjectNode(
 		IOutlineNode parentNode,
-		EObject modelElement,
+		EObject treeElement,
 		Image image,
 		Object text,
 		boolean isLeaf) {
-		EObjectNode eObjectNode = new EObjectNode(modelElement, parentNode, image, text, isLeaf);
-		EObject emfaticElement = this.twin.soruce(modelElement);
-		ICompositeNode parserNode = NodeModelUtils.getNode(emfaticElement);
+		var ecoreElement = treeElement;
+		if (treeElement.eClass().getEPackage().equals(EmfaticPackage.eINSTANCE)) {
+			ecoreElement = this.twin.target(treeElement);	
+		}
+		EObjectNode eObjectNode = new EObjectNode(ecoreElement, parentNode, image, text, isLeaf);
+		ICompositeNode parserNode = NodeModelUtils.getNode(treeElement);
 		if (parserNode != null) {
 			eObjectNode.setTextRegion(parserNode.getTextRegion());
 		}
-		if (isLocalElement(parentNode, emfaticElement)) {
-			eObjectNode.setShortTextRegion(locationInFileProvider.getSignificantTextRegion(emfaticElement));
+		if (isLocalElement(parentNode, treeElement)) {
+			eObjectNode.setShortTextRegion(locationInFileProvider.getSignificantTextRegion(treeElement));
 		}
 		return eObjectNode;
+	}
+	
+	/**
+	 * Default for isLeafDispatcher
+	 */
+	protected boolean _isLeaf(Object modelElement) {
+		return true;
 	}
 	
 	
