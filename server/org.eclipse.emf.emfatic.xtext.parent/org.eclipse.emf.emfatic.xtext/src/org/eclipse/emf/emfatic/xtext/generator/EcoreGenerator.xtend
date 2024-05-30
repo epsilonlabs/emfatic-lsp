@@ -1,15 +1,16 @@
 package org.eclipse.emf.emfatic.xtext.generator
 
-import org.eclipse.emf.ecore.EPackage
-import org.eclipse.emf.ecore.resource.Resource
-import org.eclipse.xtext.generator.IFileSystemAccess2
-import org.eclipse.emf.emfatic.xtext.annotations.AnnotationMap
 import com.google.inject.Inject
 import org.eclipse.emf.ecore.EAnnotation
+import org.eclipse.emf.ecore.EClass
 import org.eclipse.emf.ecore.EDataType
 import org.eclipse.emf.ecore.EEnum
-import org.eclipse.emf.ecore.EEnumLiteral
-import org.eclipse.emf.ecore.EClass
+import org.eclipse.emf.ecore.EPackage
+import org.eclipse.emf.ecore.resource.Resource
+import org.eclipse.emf.emfatic.xtext.annotations.AnnotationMap
+import org.eclipse.xtext.generator.IFileSystemAccess2
+import org.eclipse.emf.ecore.ETypeParameter
+import org.eclipse.emf.ecore.EGenericType
 
 /**
  * Generate Emfatic files form Ecore metamodels
@@ -87,7 +88,12 @@ class EcoreGenerator {
 	
 	def eClass(EClass ec) {
 		return '''
-		class «ec.name» «FOR sc : ec.ESuperTypes BEFORE "extends " SEPARATOR ", " AFTER " " »«sc.name»«ENDFOR»{
+		«
+			IF ec.abstract»abstract «ENDIF»«
+			IF ec.interface»interface «ELSE»class «ENDIF»«ec.name»«
+			FOR tp : ec.ETypeParameters BEFORE "<" SEPARATOR ", " AFTER ">"»«typeParameter(tp)»«ENDFOR» «
+			FOR sc : ec.EGenericSuperTypes BEFORE "extends " SEPARATOR ", " AFTER " " »«genericType(sc)»«ENDFOR»«
+			IF ec.instanceClassName !== null»: «ec.instanceClassName» «ENDIF»{
 		
 		}
 		'''
@@ -105,8 +111,40 @@ class EcoreGenerator {
 		return value;
 	}
 
-	private def String source(EAnnotation ea) {
+	private def source(EAnnotation ea) {
 		var label = this.annotations.labelForUri(ea.getSource, ea.eResource)
 		return label.orElse(ea.source)
 	}	
+	
+	private def typeParameter(ETypeParameter etp) {
+		var result = new StringBuilder
+		result.append(etp.name)
+		if (!etp.EBounds.empty) {
+			result.append(" extends ")
+			result.append(etp.EBounds.map[genericType].join(" & "));
+		}
+		return result.toString
+	}
+	
+	private def genericType(EGenericType egt) {
+		var result = new StringBuilder
+		if (egt.EClassifier !== null || egt.ETypeParameter !== null) {
+			result.append(egt.EClassifier !== null ? egt.EClassifier.name : typeParameter(egt.ETypeParameter));
+			if (!egt.ETypeArguments.empty) {
+				result.append("<")
+				result.append(egt.ETypeArguments.map[genericType].join(", "))
+				result.append(">")
+			}
+		} else {	// Wildcard
+			result.append("?")
+			if (egt.ELowerBound !== null) {
+				result.append(" extends ")
+				result.append(genericType(egt.ELowerBound))
+			} else if (egt.EUpperBound !== null) {
+				result.append(" super ")
+				result.append(genericType(egt.EUpperBound))
+			}
+		}
+		return result.toString
+	}
 }
