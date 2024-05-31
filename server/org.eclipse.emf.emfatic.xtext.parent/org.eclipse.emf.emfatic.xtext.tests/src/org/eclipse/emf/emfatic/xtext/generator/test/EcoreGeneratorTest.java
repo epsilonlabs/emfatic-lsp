@@ -1,14 +1,13 @@
 package org.eclipse.emf.emfatic.xtext.generator.test;
 
-import static org.junit.Assert.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 
 import java.util.Arrays;
 
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EPackage;
 import org.eclipse.emf.ecore.EcoreFactory;
+import org.eclipse.emf.ecore.EcorePackage;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
 import org.eclipse.emf.emfatic.xtext.generator.EcoreGenerator;
@@ -274,7 +273,8 @@ class EcoreGeneratorTest {
 		var it = Arrays.asList(result).subList(3, result.length).iterator();
 		var line = it.next();
 		assertEquals("class AuthenticationType {", line);
-		line = it.next();
+		it.next();
+		it.next();
 		line = it.next();
 		assertEquals("}", line);
 	}
@@ -312,7 +312,8 @@ class EcoreGeneratorTest {
 		assertEquals(")", line);
 		line = it.next();
 		assertEquals("class AuthenticationType {", line);
-		line = it.next();
+		it.next();
+		it.next();
 		line = it.next();
 		assertEquals("}", line);
 	}
@@ -332,9 +333,11 @@ class EcoreGeneratorTest {
 		String output = output(false);
 		var result = output.split("\\r?\\n");
 		var it = Arrays.asList(result).subList(7, result.length).iterator();
+		it.next();
 		var line = it.next();
 		assertEquals("class SCLType extends TBaseElement {", line);
-		line = it.next();
+		it.next();
+		it.next();
 		line = it.next();
 		assertEquals("}", line);
 	}
@@ -357,10 +360,12 @@ class EcoreGeneratorTest {
 		this.generator.generate(r, "test.emf", this.fsa);
 		String output = output(false);
 		var result = output.split("\\r?\\n");
-		var it = Arrays.asList(result).subList(11, result.length).iterator();
+		var it = Arrays.asList(result).subList(12, result.length).iterator();
+		it.next();
 		var line = it.next();
 		assertEquals("class SCLType extends TBaseElement, TLN0 {", line);
-		line = it.next();
+		it.next();
+		it.next();
 		line = it.next();
 		assertEquals("}", line);
 	}
@@ -379,7 +384,8 @@ class EcoreGeneratorTest {
 		var it = Arrays.asList(result).subList(3, result.length).iterator();
 		var line = it.next();
 		assertEquals("class AuthenticationType : org.eclipse.emf.common.util.Enumerator {", line);
-		line = it.next();
+		it.next();
+		it.next();
 		line = it.next();
 		assertEquals("}", line);
 	}
@@ -400,9 +406,11 @@ class EcoreGeneratorTest {
 		String output = output(false);
 		var result = output.split("\\r?\\n");
 		var it = Arrays.asList(result).subList(7, result.length).iterator();
+		it.next();
 		var line = it.next();
 		assertEquals("class AuthenticationType extends TBaseElement : org.eclipse.emf.common.util.Enumerator {", line);
-		line = it.next();
+		it.next();
+		it.next();
 		line = it.next();
 		assertEquals("}", line);
 	}
@@ -421,7 +429,8 @@ class EcoreGeneratorTest {
 		var it = Arrays.asList(result).subList(3, result.length).iterator();
 		var line = it.next();
 		assertEquals("abstract class AuthenticationType {", line);
-		line = it.next();
+		it.next();
+		it.next();
 		line = it.next();
 		assertEquals("}", line);
 	}
@@ -440,7 +449,8 @@ class EcoreGeneratorTest {
 		var it = Arrays.asList(result).subList(3, result.length).iterator();
 		var line = it.next();
 		assertEquals("interface AuthenticationType {", line);
-		line = it.next();
+		it.next();
+		it.next();
 		line = it.next();
 		assertEquals("}", line);
 	}
@@ -460,7 +470,8 @@ class EcoreGeneratorTest {
 		var it = Arrays.asList(result).subList(3, result.length).iterator();
 		var line = it.next();
 		assertEquals("abstract interface AuthenticationType {", line);
-		line = it.next();
+		it.next();
+		it.next();
 		line = it.next();
 		assertEquals("}", line);
 	}
@@ -481,7 +492,8 @@ class EcoreGeneratorTest {
 		var it = Arrays.asList(result).subList(3, result.length).iterator();
 		var line = it.next();
 		assertEquals("class AuthenticationType<C> {", line);
-		line = it.next();
+		it.next();
+		it.next();
 		line = it.next();
 		assertEquals("}", line);
 	}
@@ -505,7 +517,8 @@ class EcoreGeneratorTest {
 		var it = Arrays.asList(result).subList(3, result.length).iterator();
 		var line = it.next();
 		assertEquals("class AuthenticationType<C, T> {", line);
-		line = it.next();
+		it.next();
+		it.next();
 		line = it.next();
 		assertEquals("}", line);
 	}
@@ -531,7 +544,8 @@ class EcoreGeneratorTest {
 		var it = Arrays.asList(result).subList(3, result.length).iterator();
 		var line = it.next();
 		assertEquals("class AuthenticationType<C extends A> {", line);
-		line = it.next();
+		it.next();
+		it.next();
 		line = it.next();
 		assertEquals("}", line);
 	}
@@ -562,7 +576,8 @@ class EcoreGeneratorTest {
 		var it = Arrays.asList(result).subList(3, result.length).iterator();
 		var line = it.next();
 		assertEquals("class AuthenticationType<C extends A & B> {", line);
-		line = it.next();
+		it.next();
+		it.next();
 		line = it.next();
 		assertEquals("}", line);
 	}
@@ -594,7 +609,8 @@ class EcoreGeneratorTest {
 		var it = Arrays.asList(result).subList(3, result.length).iterator();
 		var line = it.next();
 		assertEquals("class AuthenticationType<C extends A<?>> {", line);
-		line = it.next();
+		it.next();
+		it.next();
 		line = it.next();
 		assertEquals("}", line);
 	}
@@ -632,7 +648,8 @@ class EcoreGeneratorTest {
 		var it = Arrays.asList(result).subList(3, result.length).iterator();
 		var line = it.next();
 		assertEquals("class AuthenticationType<C extends A<? extends X>> {", line);
-		line = it.next();
+		it.next();
+		it.next();
 		line = it.next();
 		assertEquals("}", line);
 	}
@@ -670,12 +687,571 @@ class EcoreGeneratorTest {
 		var it = Arrays.asList(result).subList(3, result.length).iterator();
 		var line = it.next();
 		assertEquals("class AuthenticationType<C extends A<? super X>> {", line);
+		it.next();
+		it.next();
+		line = it.next();
+		assertEquals("}", line);
+	}
+	
+	@Test
+	public void eClassMapEntryAttributes() {
+		var ePackage = rootPackage();
+		var r = addToResource(ePackage);
+		var ec = EcoreFactory.eINSTANCE.createEClass();
+		ec.setName("SizeToWeight");
+		ec.setInstanceClassName("java.util.Map$Entry");
+		ePackage.getEClassifiers().add(ec);
+		var key = EcoreFactory.eINSTANCE.createEAttribute();
+		key.setName("key");
+		key.setEType(EcorePackage.Literals.ESTRING);
+		ec.getEStructuralFeatures().add(key);
+		var value = EcoreFactory.eINSTANCE.createEAttribute();
+		value.setName("value");
+		value.setEType(EcorePackage.Literals.ESHORT);
+		ec.getEStructuralFeatures().add(value);
+		this.generator.generate(r, "test.emf", this.fsa);
+		String output = output(false);
+		var result = output.split("\\r?\\n");
+		var it = Arrays.asList(result).subList(3, result.length).iterator();
+		var line = it.next();
+		assertEquals("mapentry SizeToWeight : EString -> EShort;", line);
+	}
+	
+	@Test
+	public void eClassMapEntryAttributeAndReference() {
+		var ePackage = rootPackage();
+		var r = addToResource(ePackage);
+		var ec = EcoreFactory.eINSTANCE.createEClass();
+		ec.setName("SizeToWeight");
+		ec.setInstanceClassName("java.util.Map$Entry");
+		ePackage.getEClassifiers().add(ec);
+		var key = EcoreFactory.eINSTANCE.createEAttribute();
+		key.setName("key");
+		key.setEType(EcorePackage.Literals.ESTRING);
+		ec.getEStructuralFeatures().add(key);
+		var value = EcoreFactory.eINSTANCE.createEReference();
+		value.setName("value");
+		var valueType = EcoreFactory.eINSTANCE.createEClass();
+		valueType.setName("A");
+		ePackage.getEClassifiers().add(valueType);
+		value.setEType(valueType);
+		ec.getEStructuralFeatures().add(value);
+		this.generator.generate(r, "test.emf", this.fsa);
+		String output = output(false);
+		var result = output.split("\\r?\\n");
+		var it = Arrays.asList(result).subList(3, result.length).iterator();
+		var line = it.next();
+		assertEquals("mapentry SizeToWeight : EString -> A;", line);
+	}
+	
+	@Test
+	public void eClassWithAttribtues() {
+		var ePackage = rootPackage();
+		var r = addToResource(ePackage);
+		var ec = EcoreFactory.eINSTANCE.createEClass();
+		ec.setName("AuthenticationType");
+		ePackage.getEClassifiers().add(ec);
+		// [0..1]
+		var ea = EcoreFactory.eINSTANCE.createEAttribute();
+		ea.setName("certificate");
+		ea.setEType(EcorePackage.Literals.ESTRING);
+		ea.setLowerBound(0);
+		ea.setUpperBound(1);
+		ec.getEStructuralFeatures().add(ea);
+		// [0..-1]
+		ea = EcoreFactory.eINSTANCE.createEAttribute();
+		ea.setName("none");
+		ea.setEType(EcorePackage.Literals.ESTRING);
+		ea.setLowerBound(0);
+		ea.setUpperBound(-1);
+		ec.getEStructuralFeatures().add(ea);
+		// [0..n]
+		ea = EcoreFactory.eINSTANCE.createEAttribute();
+		ea.setName("password");
+		ea.setEType(EcorePackage.Literals.ESTRING);
+		ea.setLowerBound(0);
+		ea.setUpperBound(4);
+		ec.getEStructuralFeatures().add(ea);
+		// [1..-1]
+		ea = EcoreFactory.eINSTANCE.createEAttribute();
+		ea.setName("strong");
+		ea.setEType(EcorePackage.Literals.ESTRING);
+		ea.setLowerBound(1);
+		ea.setUpperBound(-1);
+		ec.getEStructuralFeatures().add(ea);
+		// [1..1]
+		ea = EcoreFactory.eINSTANCE.createEAttribute();
+		ea.setName("weak");
+		ea.setEType(EcorePackage.Literals.ESTRING);
+		ea.setLowerBound(1);
+		ea.setUpperBound(1);
+		ec.getEStructuralFeatures().add(ea);
+		// [n]
+		ea = EcoreFactory.eINSTANCE.createEAttribute();
+		ea.setName("mixed");
+		ea.setEType(EcorePackage.Literals.ESTRING);
+		ea.setLowerBound(2);
+		ea.setUpperBound(2);
+		ec.getEStructuralFeatures().add(ea);
+		// [m..n]
+		ea = EcoreFactory.eINSTANCE.createEAttribute();
+		ea.setName("configRef");
+		ea.setEType(EcorePackage.Literals.ESTRING);
+		ea.setLowerBound(3);
+		ea.setUpperBound(7);
+		ec.getEStructuralFeatures().add(ea);
+		// [5..*]
+		ea = EcoreFactory.eINSTANCE.createEAttribute();
+		ea.setName("dataRef");
+		ea.setEType(EcorePackage.Literals.ESTRING);
+		ea.setLowerBound(5);
+		ea.setUpperBound(-1);
+		ec.getEStructuralFeatures().add(ea);
+		// [1..?]
+		ea = EcoreFactory.eINSTANCE.createEAttribute();
+		ea.setName("dataSet");
+		ea.setEType(EcorePackage.Literals.ESTRING);
+		ea.setLowerBound(1);
+		ea.setUpperBound(-2);
+		ec.getEStructuralFeatures().add(ea);
+		
+		this.generator.generate(r, "test.emf", this.fsa);
+		String output = output(false);
+		var result = output.split("\\r?\\n");
+		var it = Arrays.asList(result).subList(3, result.length).iterator();
+		var line = it.next();
+		assertEquals("class AuthenticationType {", line);
+		line = it.next();
+		line = it.next();
+		assertEquals("\tattr EString certificate;", line);
+		line = it.next();
+		assertEquals("\tattr EString[*] none;", line);
+		line = it.next();
+		assertEquals("\tattr EString[0..4] password;", line);
+		line = it.next();
+		assertEquals("\tattr EString[+] strong;", line);
+		line = it.next();
+		assertEquals("\tattr EString[1] weak;", line);
+		line = it.next();
+		assertEquals("\tattr EString[2] mixed;", line);
+		line = it.next();
+		assertEquals("\tattr EString[3..7] configRef;", line);
+		line = it.next();
+		assertEquals("\tattr EString[5..*] dataRef;", line);
+		line = it.next();
+		assertEquals("\tattr EString[1..?] dataSet;", line);
+		line = it.next();
+		line = it.next();
+		assertEquals("}", line);
+	}
+	
+	@Test
+	public void eClassWithAttribtuesEscapeKeywords() {
+		var ePackage = rootPackage();
+		var r = addToResource(ePackage);
+		var ec = EcoreFactory.eINSTANCE.createEClass();
+		ec.setName("AuthenticationType");
+		ePackage.getEClassifiers().add(ec);
+		var ea = EcoreFactory.eINSTANCE.createEAttribute();
+		ea.setName("abstract");
+		ea.setEType(EcorePackage.Literals.ESTRING);
+		ea.setLowerBound(0);
+		ea.setUpperBound(1);
+		ec.getEStructuralFeatures().add(ea);
+		ea = EcoreFactory.eINSTANCE.createEAttribute();
+		ea.setName("interface");
+		ea.setEType(EcorePackage.Literals.ESTRING);
+		ea.setLowerBound(0);
+		ea.setUpperBound(-1);
+		ec.getEStructuralFeatures().add(ea);
+		this.generator.generate(r, "test.emf", this.fsa);
+		String output = output(false);
+		var result = output.split("\\r?\\n");
+		var it = Arrays.asList(result).subList(3, result.length).iterator();
+		var line = it.next();
+		assertEquals("class AuthenticationType {", line);
+		it.next();
+		line = it.next();
+		assertEquals("\tattr EString ~abstract;", line);
+		line = it.next();
+		assertEquals("\tattr EString[*] ~interface;", line);
+		line = it.next();
+		line = it.next();
+		assertEquals("}", line);
+	}
+	
+	@Test
+	public void eClassWithReferences() {
+		var ePackage = rootPackage();
+		var r = addToResource(ePackage);
+		var ec1 = EcoreFactory.eINSTANCE.createEClass();
+		ec1.setName("School");
+		ePackage.getEClassifiers().add(ec1);
+		var ec2 = EcoreFactory.eINSTANCE.createEClass();
+		ec2.setName("Course");
+		ePackage.getEClassifiers().add(ec2);
+		var ec3 = EcoreFactory.eINSTANCE.createEClass();
+		ec3.setName("Teacher");
+		ePackage.getEClassifiers().add(ec3);
+		var er = EcoreFactory.eINSTANCE.createEReference();
+		er.setName("courses");
+		er.setEType(ec2);
+		er.setContainment(true);
+		er.setLowerBound(0);
+		er.setUpperBound(-1);
+		ec1.getEStructuralFeatures().add(er);
+		er = EcoreFactory.eINSTANCE.createEReference();
+		er.setName("teachers");
+		er.setEType(ec3);
+		er.setContainment(true);
+		er.setLowerBound(0);
+		er.setUpperBound(-1);
+		ec1.getEStructuralFeatures().add(er);
+		var toughtBy = EcoreFactory.eINSTANCE.createEReference();
+		toughtBy.setName("toughtBy");
+		toughtBy.setEType(ec3);
+		toughtBy.setContainment(false);
+		toughtBy.setLowerBound(1);
+		toughtBy.setUpperBound(1);
+		ec2.getEStructuralFeatures().add(toughtBy);
+		var teaches = EcoreFactory.eINSTANCE.createEReference();
+		teaches.setName("teaches");
+		teaches.setEType(ec2);
+		teaches.setContainment(false);
+		teaches.setLowerBound(1);
+		teaches.setUpperBound(-1);
+		teaches.setEOpposite(toughtBy);
+		toughtBy.setEOpposite(teaches);
+		ec3.getEStructuralFeatures().add(teaches);
+		this.generator.generate(r, "test.emf", this.fsa);
+		String output = output(false);
+		var result = output.split("\\r?\\n");
+		var it = Arrays.asList(result).subList(3, result.length).iterator();
+		var line = it.next();
+		assertEquals("class School {", line);
+		it.next();
+		line = it.next();
+		assertEquals("\tval Course[*] courses;", line);
+		line = it.next();
+		assertEquals("\tval Teacher[*] teachers;", line);
+		it.next();
+		line = it.next();
+		assertEquals("}", line);
+		it.next();
+		line = it.next();
+		assertEquals("class Course {", line);
+		it.next();
+		line = it.next();
+		assertEquals("\tref Teacher[1]#teaches toughtBy;", line);
+		it.next();
+		line = it.next();
+		assertEquals("}", line);
+		it.next();
+		line = it.next();
+		assertEquals("class Teacher {", line);
+		it.next();
+		line = it.next();
+		assertEquals("\tref Course[+]#toughtBy teaches;", line);
+		it.next();
+		line = it.next();
+		assertEquals("}", line);
+	}
+	
+	@Test
+	public void eClassFeatureModifiers() {
+		var ePackage = rootPackage();
+		var r = addToResource(ePackage);
+		var ec = EcoreFactory.eINSTANCE.createEClass();
+		ec.setName("School");
+		ePackage.getEClassifiers().add(ec);
+		var ec2 = EcoreFactory.eINSTANCE.createEClass();
+		ec2.setName("Course");
+		ePackage.getEClassifiers().add(ec2);
+		// Resolve
+		var er = EcoreFactory.eINSTANCE.createEReference();
+		er.setName("courses");
+		er.setEType(ec2);
+		er.setContainment(true);
+		er.setLowerBound(0);
+		er.setUpperBound(-1);
+		er.setResolveProxies(false);
+		ec.getEStructuralFeatures().add(er);
+		// Readonly
+		var ea = EcoreFactory.eINSTANCE.createEAttribute();
+		ea.setName("certificate");
+		ea.setEType(EcorePackage.Literals.ESTRING);
+		ea.setLowerBound(0);
+		ea.setUpperBound(1);
+		ea.setChangeable(false);
+		ec.getEStructuralFeatures().add(ea);
+		// Volatile
+		ea = EcoreFactory.eINSTANCE.createEAttribute();
+		ea.setName("none");
+		ea.setEType(EcorePackage.Literals.ESTRING);
+		ea.setLowerBound(0);
+		ea.setUpperBound(-1);
+		ea.setVolatile(true);
+		ec.getEStructuralFeatures().add(ea);
+		// Transient
+		ea = EcoreFactory.eINSTANCE.createEAttribute();
+		ea.setName("password");
+		ea.setEType(EcorePackage.Literals.ESTRING);
+		ea.setLowerBound(0);
+		ea.setUpperBound(4);
+		ea.setTransient(true);
+		ec.getEStructuralFeatures().add(ea);
+		// Unsettable
+		ea = EcoreFactory.eINSTANCE.createEAttribute();
+		ea.setName("strong");
+		ea.setEType(EcorePackage.Literals.ESTRING);
+		ea.setLowerBound(1);
+		ea.setUpperBound(-1);
+		ea.setUnsettable(true);
+		ec.getEStructuralFeatures().add(ea);
+		// ID
+		ea = EcoreFactory.eINSTANCE.createEAttribute();
+		ea.setName("weak");
+		ea.setEType(EcorePackage.Literals.ESTRING);
+		ea.setLowerBound(1);
+		ea.setUpperBound(1);
+		ea.setID(true);
+		ec.getEStructuralFeatures().add(ea);
+		// Unique
+		ea = EcoreFactory.eINSTANCE.createEAttribute();
+		ea.setName("mixed");
+		ea.setEType(EcorePackage.Literals.ESTRING);
+		ea.setLowerBound(2);
+		ea.setUpperBound(2);
+		ea.setUnique(false);
+		ec.getEStructuralFeatures().add(ea);
+		// Ordered
+		ea = EcoreFactory.eINSTANCE.createEAttribute();
+		ea.setName("configRef");
+		ea.setEType(EcorePackage.Literals.ESTRING);
+		ea.setLowerBound(3);
+		ea.setUpperBound(7);
+		ea.setOrdered(false);
+		ec.getEStructuralFeatures().add(ea);
+		// Derived
+		ea = EcoreFactory.eINSTANCE.createEAttribute();
+		ea.setName("dataRef");
+		ea.setEType(EcorePackage.Literals.ESTRING);
+		ea.setLowerBound(5);
+		ea.setUpperBound(-1);
+		ea.setDerived(true);
+		ec.getEStructuralFeatures().add(ea);
+		this.generator.generate(r, "test.emf", this.fsa);
+		String output = output(false);
+		var result = output.split("\\r?\\n");
+		var it = Arrays.asList(result).subList(3, result.length).iterator();
+		var line = it.next();
+		assertEquals("class School {", line);
+		it.next();
+		line = it.next();
+		assertEquals("\treadonly attr EString certificate;", line);
+		line = it.next();
+		assertEquals("\tvolatile attr EString[*] none;", line);
+		line = it.next();
+		assertEquals("\ttransient attr EString[0..4] password;", line);
+		line = it.next();
+		assertEquals("\tunsettable attr EString[+] strong;", line);
+		line = it.next();
+		assertEquals("\tid attr EString[1] weak;", line);
+		line = it.next();
+		assertEquals("\t!unique attr EString[2] mixed;", line);
+		line = it.next();
+		assertEquals("\t!ordered attr EString[3..7] configRef;", line);
+		line = it.next();
+		assertEquals("\tderived attr EString[5..*] dataRef;", line);
+		line = it.next();
+		assertEquals("\t!resolve val Course[*] courses;", line);
+		it.next();
+		line = it.next();
+		assertEquals("}", line);
+	}
+	
+	@Test
+	public void eClassWithAnnotatedFeatures() {
+		var ePackage = rootPackage();
+		var r = addToResource(ePackage);
+		var ec1 = EcoreFactory.eINSTANCE.createEClass();
+		ec1.setName("School");
+		ePackage.getEClassifiers().add(ec1);
+		var ec2 = EcoreFactory.eINSTANCE.createEClass();
+		ec2.setName("Course");
+		ePackage.getEClassifiers().add(ec2);
+		var ea = EcoreFactory.eINSTANCE.createEAttribute();
+		ea.setName("certificate");
+		ea.setEType(EcorePackage.Literals.ESTRING);
+		ea.setLowerBound(0);
+		ea.setUpperBound(1);
+		var annot = EcoreFactory.eINSTANCE.createEAnnotation();
+		annot.setSource("http://example.org");
+		annot.getDetails().put("keyA", "Value A");
+		ea.getEAnnotations().add(annot);
+		ec2.getEStructuralFeatures().add(ea);
+		var er = EcoreFactory.eINSTANCE.createEReference();
+		er.setName("courses");
+		er.setEType(ec2);
+		er.setContainment(true);
+		er.setLowerBound(0);
+		er.setUpperBound(-1);
+		annot = EcoreFactory.eINSTANCE.createEAnnotation();
+		annot.setSource("http://example.org");
+		annot.getDetails().put("key B", "ValueB");
+		er.getEAnnotations().add(annot);
+		ec1.getEStructuralFeatures().add(er); 
+		this.generator.generate(r, "test.emf", this.fsa);
+		String output = output(false);
+		var result = output.split("\\r?\\n");
+		var it = Arrays.asList(result).subList(3, result.length).iterator();
+		var line = it.next();
+		assertEquals("class School {", line);
+		it.next();
+		line = it.next();
+		assertEquals("\t@http://example.org(", line);
+		line = it.next();
+		assertEquals("\t\t\"key B\"=ValueB", line);
+		line = it.next();
+		assertEquals("\t)", line);
+		line = it.next();
+		assertEquals("\tval Course[*] courses;", line);
+		line = it.next();
+		line = it.next();
+		assertEquals("}", line);
+		line = it.next();
+		line = it.next();
+		assertEquals("class Course {", line);
+		it.next();
+		line = it.next();
+		assertEquals("\t@http://example.org(", line);
+		line = it.next();
+		assertEquals("\t\tkeyA=\"Value A\"", line);
+		line = it.next();
+		assertEquals("\t)", line);
+		line = it.next();
+		assertEquals("\tattr EString certificate;", line);
 		line = it.next();
 		line = it.next();
 		assertEquals("}", line);
 	}
 	
 	
+	@Test
+	public void eClassWithAttribtuesWithDefaultValues() {
+		var ePackage = rootPackage();
+		var r = addToResource(ePackage);
+		var ec = EcoreFactory.eINSTANCE.createEClass();
+		ec.setName("AuthenticationType");
+		ePackage.getEClassifiers().add(ec);
+		// Boolean
+		var ea = EcoreFactory.eINSTANCE.createEAttribute();
+		ea.setName("certificate");
+		ea.setEType(EcorePackage.Literals.EBOOLEAN);
+		ea.setLowerBound(0);
+		ea.setUpperBound(1);
+		ea.setDefaultValue(true);
+		ec.getEStructuralFeatures().add(ea);
+		// Integer
+		ea = EcoreFactory.eINSTANCE.createEAttribute();
+		ea.setName("none");
+		ea.setEType(EcorePackage.Literals.EINT);
+		ea.setLowerBound(0);
+		ea.setUpperBound(1);
+		ea.setDefaultValue(123);
+		ec.getEStructuralFeatures().add(ea);
+		// Float
+		ea = EcoreFactory.eINSTANCE.createEAttribute();
+		ea.setName("password");
+		ea.setEType(EcorePackage.Literals.EFLOAT);
+		ea.setLowerBound(0);
+		ea.setUpperBound(1);
+		ea.setDefaultValue(4.5);
+		ec.getEStructuralFeatures().add(ea);
+		// String
+		ea = EcoreFactory.eINSTANCE.createEAttribute();
+		ea.setName("strong");
+		ea.setEType(EcorePackage.Literals.ESTRING);
+		ea.setLowerBound(0);
+		ea.setUpperBound(1);
+		ea.setDefaultValue("unfold");
+		ec.getEStructuralFeatures().add(ea);
+		// Char
+		ea = EcoreFactory.eINSTANCE.createEAttribute();
+		ea.setName("weak");
+		ea.setEType(EcorePackage.Literals.ECHAR);
+		ea.setLowerBound(0);
+		ea.setUpperBound(1);
+		ea.setDefaultValue('g');
+		ec.getEStructuralFeatures().add(ea);
+		this.generator.generate(r, "test.emf", this.fsa);
+		String output = output(false);
+		var result = output.split("\\r?\\n");
+		var it = Arrays.asList(result).subList(3, result.length).iterator();
+		var line = it.next();
+		assertEquals("class AuthenticationType {", line);
+		it.next();
+		line = it.next();
+		assertEquals("\tattr EBoolean certificate = \"true\";", line);
+		line = it.next();
+		assertEquals("\tattr EInt none = 123;", line);
+		line = it.next();
+		assertEquals("\tattr EFloat password = 4.5;", line);
+		line = it.next();
+		assertEquals("\tattr EString strong = \"unfold\";", line);
+		line = it.next();
+		assertEquals("\tattr EChar weak = 'g';", line);
+		it.next();
+		line = it.next();
+		assertEquals("}", line);
+	}
+	
+	@Test
+	public void eClassWithOperations() {
+		var ePackage = rootPackage();
+		var r = addToResource(ePackage);
+		var ec = EcoreFactory.eINSTANCE.createEClass();
+		ec.setName("AuthenticationType");
+		ePackage.getEClassifiers().add(ec);
+		// void - no parameters
+		var op = EcoreFactory.eINSTANCE.createEOperation();
+		op.setName("validate");
+		ec.getEOperations().add(op);
+		// Return type - no parameters
+		op = EcoreFactory.eINSTANCE.createEOperation();
+		op.setName("type");
+		op.setEType(EcorePackage.Literals.ESTRING);
+		ec.getEOperations().add(op);
+		// Return type, parameters
+		op = EcoreFactory.eINSTANCE.createEOperation();
+		op.setName("approve");
+		op.setEType(EcorePackage.Literals.ESTRING);
+		var param = EcoreFactory.eINSTANCE.createEParameter();
+		param.setName("name");
+		param.setEType(EcorePackage.Literals.ESTRING);
+		op.getEParameters().add(param);
+		param = EcoreFactory.eINSTANCE.createEParameter();
+		param.setName("admin");
+		param.setEType(EcorePackage.Literals.EBOOLEAN);
+		op.getEParameters().add(param);
+		ec.getEOperations().add(op);
+		this.generator.generate(r, "test.emf", this.fsa);
+		String output = output(true);
+		var result = output.split("\\r?\\n");
+		var it = Arrays.asList(result).subList(3, result.length).iterator();
+		var line = it.next();
+		assertEquals("class AuthenticationType {", line);
+		it.next();
+		line = it.next();
+		assertEquals("\top void validate();", line);
+		line = it.next();
+		assertEquals("\top EString type();", line);
+		line = it.next();
+		assertEquals("\top EString approve(EString name, EBoolean admin);", line);
+		it.next();
+		line = it.next();
+		assertEquals("}", line);
+	}
 	
 	@Inject
 	private EcoreGenerator generator;

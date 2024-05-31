@@ -11,6 +11,22 @@ import org.eclipse.emf.emfatic.xtext.annotations.AnnotationMap
 import org.eclipse.xtext.generator.IFileSystemAccess2
 import org.eclipse.emf.ecore.ETypeParameter
 import org.eclipse.emf.ecore.EGenericType
+import org.eclipse.emf.ecore.EAttribute
+import java.util.List
+import java.util.ArrayList
+import org.eclipse.xtext.Grammar
+import org.eclipse.xtext.GrammarUtil
+import org.eclipse.xtext.generator.grammarAccess.*
+import org.eclipse.xtext.xtext.generator.grammarAccess.GrammarAccessExtensions
+import org.eclipse.emf.emfatic.xtext.services.EmfaticGrammarAccess
+import java.util.Set
+import org.eclipse.emf.ecore.EStructuralFeature
+import org.eclipse.emf.ecore.EReference
+import org.eclipse.emf.ecore.EOperation
+import org.eclipse.emf.ecore.ETypedElement
+import org.eclipse.emf.ecore.impl.ETypedElementImpl
+import java.lang.annotation.ElementType
+import org.eclipse.emf.ecore.EcorePackage
 
 /**
  * Generate Emfatic files form Ecore metamodels
@@ -87,22 +103,66 @@ class EcoreGenerator {
 	}
 	
 	def eClass(EClass ec) {
-		return '''
-		«
-			IF ec.abstract»abstract «ENDIF»«
-			IF ec.interface»interface «ELSE»class «ENDIF»«ec.name»«
-			FOR tp : ec.ETypeParameters BEFORE "<" SEPARATOR ", " AFTER ">"»«typeParameter(tp)»«ENDFOR» «
-			FOR sc : ec.EGenericSuperTypes BEFORE "extends " SEPARATOR ", " AFTER " " »«genericType(sc)»«ENDFOR»«
-			IF ec.instanceClassName !== null»: «ec.instanceClassName» «ENDIF»{
-		
+		if (ec.instanceClassName === "java.util.Map$Entry"
+			&& ec.EStructuralFeatures.size == 2
+			&& ec.EStructuralFeatures.map[name].containsAll(#["key", "value"])
+		) { // Map Entry
+			var key = ec.getEStructuralFeature("key")
+			var value = ec.getEStructuralFeature("value")
+			return '''
+			mapentry «ec.name» : «key.EType.name» -> «value.EType.name»;
+			'''
+		} else {
+			return '''
+			«
+				IF ec.abstract»abstract «ENDIF»«
+				IF ec.interface»interface «ELSE»class «ENDIF»«ec.name»«
+				FOR tp : ec.ETypeParameters BEFORE "<" SEPARATOR ", " AFTER ">"»«typeParameter(tp)»«ENDFOR» «
+				FOR sc : ec.EGenericSuperTypes BEFORE "extends " SEPARATOR ", " AFTER " " »«genericType(sc)»«ENDFOR»«
+				IF ec.instanceClassName !== null»: «ec.instanceClassName» «ENDIF»{
+				
+				«FOR ea : ec.EAttributes»
+					«attribute(ea)»
+				«ENDFOR»
+				«FOR ea : ec.EReferences»
+					«reference(ea)»
+				«ENDFOR»
+				«FOR eo : ec.EOperations»
+					«operation(eo)»
+				«ENDFOR»
+			
+			}
+			'''
 		}
-		'''
+	}
+	
+	def attribute(EAttribute ea) {
+		return '''
+		«FOR an : ea.EAnnotations»«this.eAnnotation(an)»«ENDFOR»
+		«modifier(ea)»attr «ea.EType.name»«multiplicity(ea)» «escape(ea.name)»«defaultValue(ea)»;'''
+	}
+	
+	def reference(EReference er) {
+		return '''
+		«FOR an : er.EAnnotations»«this.eAnnotation(an)»«ENDFOR»
+		«modifier(er)»«IF er.containment»val«ELSE»ref«ENDIF» «er.EType.name»«multiplicity(er)»«
+			IF er.EOpposite !== null»#«er.EOpposite.name»«ENDIF» «escape(er.name)»;'''
+	}
+	
+	def operation(EOperation eo) {
+		return '''«modifier(eo)»op «IF eo.EType === null»void«ELSE»«eo.EType.name»«ENDIF» «eo.name»(«parameters(eo)»);'''
 	}
 	
 	@Inject
 	AnnotationMap annotations;
 	
+	
+	@Inject
+	EmfaticGrammarAccess grammarAccess;
+	
 	val outputConfigName = "/"
+	
+	var Set<String> keywords = null;
 	
 	private def surround(String value) {
 		if (value.contains(" ")) {
@@ -146,5 +206,104 @@ class EcoreGenerator {
 			}
 		}
 		return result.toString
+	}
+	
+	private def multiplicity(EStructuralFeature ef) {
+		val List<String> multiplicity = new ArrayList;
+		if (ef.lowerBound == 0) {
+			if (ef.upperBound == -1) {
+				multiplicity.add("*")
+			} else if (ef.upperBound != 1) {
+				multiplicity.add("0")
+				multiplicity.add(String.valueOf(ef.upperBound))
+			}
+		} else if (ef.lowerBound == 1) {
+			if (ef.upperBound == 1) {
+				multiplicity.add("1")
+			} else if (ef.upperBound == -1) {
+				multiplicity.add("+")
+			} else if (ef.upperBound == -2) {
+				multiplicity.add("1")
+				multiplicity.add("?")
+			}
+		} else if (ef.lowerBound == ef.upperBound) {
+			multiplicity.add(String.valueOf(ef.lowerBound))
+		} else { //if (ea.lowerBound != 0 &&  ea.upperBound != 1) {
+			multiplicity.add(String.valueOf(ef.lowerBound))
+			multiplicity.add(ef.upperBound == -1 ? "*" : String.valueOf(ef.upperBound))
+		}
+		return '''«FOR m : multiplicity BEFORE "[" SEPARATOR ".." AFTER "]"»«m»«ENDFOR»'''
+	}
+	
+	private def modifier(ETypedElement te) {
+		var sb = new StringBuilder
+		if (!te.ordered) {
+			sb.append("!ordered ")
+		}
+		if (!te.unique) {
+			sb.append("!unique ")
+		}
+		return sb.toString
+	}
+	
+	private def modifier(EStructuralFeature ef) {
+		var sb = new StringBuilder(modifier(ef as ETypedElement))
+		if (!ef.isChangeable) {
+			sb.append("readonly ")
+		}
+		if (ef.derived) {
+			sb.append("derived ")
+		}
+		if (ef.transient) {
+			sb.append("transient ")
+		}
+		if (ef.unsettable) {
+			sb.append("unsettable ")
+		}
+		if (ef.volatile) {
+			sb.append("volatile ")
+		}
+		return sb.toString
+	}
+	
+	private def modifier(EReference er) {
+		var sb = new StringBuilder(modifier(er as EStructuralFeature))
+		if (!er.resolveProxies) {
+			sb.append("!resolve ")
+		}
+		return sb.toString
+	}
+	
+	private def modifier(EAttribute ea) {
+		var sb = new StringBuilder(modifier(ea as EStructuralFeature))
+		if (ea.isID) {
+			sb.append("id ")
+		}
+		return sb.toString
+	}
+	
+	private def defaultValue(EAttribute ea) {
+		if (ea.defaultValue === null) {
+			return "";
+		}
+		return ''' = «IF ea.EType === EcorePackage.Literals.EBOOLEAN»"«ea.defaultValue»"«
+		ELSEIF ea.EType === EcorePackage.Literals.ESTRING»"«ea.defaultValue»"«
+		ELSEIF ea.EType === EcorePackage.Literals.ECHAR»'«ea.defaultValue»'«
+		ELSE»«ea.defaultValue»«ENDIF»'''
+	}
+	
+	private def escape(String name) {
+		return keywords().contains(name) ? "~" + name : name
+	}
+	
+	private def keywords() {
+		if (keywords === null) {
+			keywords = GrammarUtil.getAllKeywords(grammarAccess.grammar)
+		}
+		return keywords
+	}
+	
+	private def parameters(EOperation eo) {
+		return '''«FOR p : eo.EParameters SEPARATOR ', '»«p.EType.name» «p.name»«ENDFOR»'''
 	}
 }
