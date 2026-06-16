@@ -22,11 +22,11 @@ import org.eclipse.xtext.validation.Issue;
  */
 public class EmfaticQuickfixProvider extends DefaultQuickfixProvider {
 	
-	@Fix(IssueCodes.E_INVALID_IMPORT_URI)
-	@Fix(IssueCodes.E_UNSUPPORTED_URI_EXTENSION)
-	@Fix(IssueCodes.E_IMPORTED_METAMODEL_NOT_FOUND)
-	@Fix(IssueCodes.W_ECORE_IMPORTED)
-	@Fix(IssueCodes.W_EMPTY_METAMODEL)
+	@Fix(IssueCodes.E_INVLD_IMPRT_URI)
+	@Fix(IssueCodes.E_UNSPPRTD_URI_EXTNSN)
+	@Fix(IssueCodes.E_IMPRTD_MTMDL_NOT_FND)
+	@Fix(IssueCodes.W_ECORE_IMPRTD)
+	@Fix(IssueCodes.W_EMPTY_MTMDL)
 	public void removeImport(final Issue issue, IssueResolutionAcceptor acceptor) {
 		acceptor.accept(
 				issue,
@@ -39,7 +39,7 @@ public class EmfaticQuickfixProvider extends DefaultQuickfixProvider {
 				);
 	}
 	
-	@Fix(IssueCodes.E_EXTEND_CYCLE_DETECTED)
+	@Fix(IssueCodes.E_EXTND_CYCLE_DTCTD)
 	public void removeSuperClass(final Issue issue, IssueResolutionAcceptor acceptor) {
 		acceptor.accept(
 				issue,
@@ -51,7 +51,7 @@ public class EmfaticQuickfixProvider extends DefaultQuickfixProvider {
 				);
 	}
 	
-	@Fix(IssueCodes.W_URI_INSTEAD_OF_LABEL)
+	@Fix(IssueCodes.W_URI_INSTD_OF_LBL)
 	public void replaceByLabel(final Issue issue, IssueResolutionAcceptor acceptor) {
 		acceptor.accept(
 				issue,

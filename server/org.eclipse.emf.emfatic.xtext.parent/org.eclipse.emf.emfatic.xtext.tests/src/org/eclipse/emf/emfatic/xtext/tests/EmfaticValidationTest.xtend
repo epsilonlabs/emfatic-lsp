@@ -21,82 +21,48 @@ class EmfaticValidationTest {
 	@Inject ValidationTestHelper validationTestHelper
 	
 	@Test
-	def void ecore_is_valid_annotation() {
+	def void warn_if_ecore_imported() {
 		var result = parseHelper.parse('''
-			@ecore(settingDelegates="http://www.eclipse.org/emf/2002/Ecore/OCL")
+			@namespace(uri="http://www.deis-project.eu/ode/base", prefix="odeBase")
 			package db;
+			import "http://www.eclipse.org/emf/2002/Ecore";
 		''')
-		validationTestHelper.assertNoIssues(result)
-		result = parseHelper.parse('''
-			@"http://www.eclipse.org/emf/2002/Ecore"(settingDelegates="http://www.eclipse.org/emf/2002/Ecore/OCL")
-			package db;
-		''')
-		validationTestHelper.assertWarning(result, EmfaticPackage.Literals.ANNOTATION, IssueCodes.W_URI_INSTEAD_OF_LABEL)
-	}
-	
-	@Test
-	def void emfatic_is_valid_annotation() {
-		var result = parseHelper.parse('''
-			@EmfaticAnnotationMap(myLabel="http://foo/bar")
-			package db;
-		''')
-		validationTestHelper.assertNoIssues(result)
-		result = parseHelper.parse('''
-			@"http://www.eclipse.org/emf/2004/EmfaticAnnotationMap"(myLabel="http://foo/bar")
-			package db;
-		''')
-		validationTestHelper.assertWarning(result, EmfaticPackage.Literals.ANNOTATION, IssueCodes.W_URI_INSTEAD_OF_LABEL)
-	}
-	
-	@Test
-	def void genmodel_is_valid_annotation() {
-		var result = parseHelper.parse('''
-			@GenModel(documentation="model documentation")
-			package db;
-		''')
-		validationTestHelper.assertNoIssues(result)
-		result = parseHelper.parse('''
-			@"http://www.eclipse.org/emf/2002/GenModel"(documentation="model documentation")
-			package db;
-		''')
-		validationTestHelper.assertWarning(result, EmfaticPackage.Literals.ANNOTATION, IssueCodes.W_URI_INSTEAD_OF_LABEL)
-	}
-	
-	@Test
-	def void extendedmetadata_is_valid_annotation() {
-		var result = parseHelper.parse('''
-			@ExtendedMetaData(qualified="true")
-			package db;
-		''')
-		validationTestHelper.assertNoIssues(result)
-		result = parseHelper.parse('''
-			@"http://org/eclipse/emf/ecore/util/ExtendedMetaData"(qualified="true")
-			package db;
-		''')
-		validationTestHelper.assertWarning(result, EmfaticPackage.Literals.ANNOTATION, IssueCodes.W_URI_INSTEAD_OF_LABEL)
+		validationTestHelper.assertWarning(
+			result,
+			EmfaticPackage.Literals.IMPORT,
+			IssueCodes.W_ECORE_IMPRTD)
 	}
 	
 	@Test
 	def void import_unsupported_exception() {
 		var result = parseHelper.parse('''
+			@namespace(uri="http://www.deis-project.eu/ode/base", prefix="odeBase")
 			package db;
 			import "platform:/plugin/com.myplugin/icons/me.gif";
 		''')
-		validationTestHelper.assertError(result, EmfaticPackage.Literals.IMPORT, IssueCodes.E_UNSUPPORTED_URI_EXTENSION)	
+		validationTestHelper.assertError(
+			result,
+			EmfaticPackage.Literals.IMPORT,
+			IssueCodes.E_UNSPPRTD_URI_EXTNSN)	
 	}
 	
 	@Test
 	def void import_unable_to_load_mm() {
 		var result = parseHelper.parse('''
+			@namespace(uri="http://www.deis-project.eu/ode/base", prefix="odeBase")
 			package db;
 			import "platform:/plugin/com.myplugin/icons/me.gif";
 		''')
-		validationTestHelper.assertError(result, EmfaticPackage.Literals.IMPORT, IssueCodes.E_UNSUPPORTED_URI_EXTENSION)	
+		validationTestHelper.assertError(
+			result,
+			EmfaticPackage.Literals.IMPORT,
+			IssueCodes.E_UNSPPRTD_URI_EXTNSN)	
 	}
 	
 	@Test
 	def void import_valid_mm() {
 		var result = parseHelper.parse('''
+			@namespace(uri="http://www.deis-project.eu/ode/base", prefix="odeBase")
 			package db;
 			import "platform:/plugin/org.eclipse.emf.emfatic.xtext.tests/model/vogella.ecore";
 		''')
@@ -106,15 +72,20 @@ class EmfaticValidationTest {
 	@Test
 	def void import_missing_resoruce() {
 		var result = parseHelper.parse('''
+			@namespace(uri="http://www.deis-project.eu/ode/base", prefix="odeBase")
 			package db;
 			import "platform:/plugin/org.eclipse.emf.emfatic.xtext.tests/model/vogella2.ecore";
 		''')
-		validationTestHelper.assertError(result, EmfaticPackage.Literals.IMPORT, IssueCodes.E_IMPORTED_METAMODEL_NOT_FOUND)	
+		validationTestHelper.assertError(
+			result,
+			EmfaticPackage.Literals.IMPORT,
+			IssueCodes.E_IMPRTD_MTMDL_NOT_FND)	
 	}
 	
 	@Test
 	def void import_registred_mm() {
 		var result = parseHelper.parse('''
+			@namespace(uri="http://www.deis-project.eu/ode/base", prefix="odeBase")
 			package db;
 			import "http://www.eclipse.org/Xtext/Xbase/XAnnotations";
 		''')
@@ -122,22 +93,79 @@ class EmfaticValidationTest {
 	}
 	
 	@Test
-	def void import_self_inheritance() {
+	def void ecore_is_valid_annotation() {
 		var result = parseHelper.parse('''
 			@namespace(uri="http://www.deis-project.eu/ode/base", prefix="odeBase")
-			package odeBase;
-			
-			class KeyValueMap extends Value, KeyValueMap {
-			    attr String key;
-			    val Value[*] values;
-			}
-			
-			class Value {
-			    attr String tag;
-			    attr String value;
-			}
+			@ecore(settingDelegates="http://www.eclipse.org/emf/2002/Ecore/OCL")
+			package db;
 		''')
-		validationTestHelper.assertError(result, EmfaticPackage.Literals.CLASS_DECL, IssueCodes.E_EXTEND_CYCLE_DETECTED)	
+		validationTestHelper.assertNoIssues(result)
+		result = parseHelper.parse('''
+			@namespace(uri="http://www.deis-project.eu/ode/base", prefix="odeBase")
+			@"http://www.eclipse.org/emf/2002/Ecore"(settingDelegates="http://www.eclipse.org/emf/2002/Ecore/OCL")
+			package db;
+		''')
+		validationTestHelper.assertWarning(
+			result,
+			EmfaticPackage.Literals.ANNOTATION,
+			IssueCodes.W_URI_INSTD_OF_LBL)
+	}
+	
+	@Test
+	def void emfatic_is_valid_annotation() {
+		var result = parseHelper.parse('''
+			@namespace(uri="http://www.deis-project.eu/ode/base", prefix="odeBase")
+			@EmfaticAnnotationMap(myLabel="http://foo/bar")
+			package db;
+		''')
+		validationTestHelper.assertNoIssues(result)
+		result = parseHelper.parse('''
+			@namespace(uri="http://www.deis-project.eu/ode/base", prefix="odeBase")
+			@"http://www.eclipse.org/emf/2004/EmfaticAnnotationMap"(myLabel="http://foo/bar")
+			package db;
+		''')
+		validationTestHelper.assertWarning(
+			result,
+			EmfaticPackage.Literals.ANNOTATION,
+			IssueCodes.W_URI_INSTD_OF_LBL)
+	}
+	
+	@Test
+	def void genmodel_is_valid_annotation() {
+		var result = parseHelper.parse('''
+			@namespace(uri="http://www.deis-project.eu/ode/base", prefix="odeBase")
+			@GenModel(documentation="model documentation")
+			package db;
+		''')
+		validationTestHelper.assertNoIssues(result)
+		result = parseHelper.parse('''
+			@namespace(uri="http://www.deis-project.eu/ode/base", prefix="odeBase")
+			@"http://www.eclipse.org/emf/2002/GenModel"(documentation="model documentation")
+			package db;
+		''')
+		validationTestHelper.assertWarning(
+			result,
+			EmfaticPackage.Literals.ANNOTATION,
+			IssueCodes.W_URI_INSTD_OF_LBL)
+	}
+	
+	@Test
+	def void extendedmetadata_is_valid_annotation() {
+		var result = parseHelper.parse('''
+			@namespace(uri="http://www.deis-project.eu/ode/base", prefix="odeBase")
+			@ExtendedMetaData(qualified="true")
+			package db;
+		''')
+		validationTestHelper.assertNoIssues(result)
+		result = parseHelper.parse('''
+			@namespace(uri="http://www.deis-project.eu/ode/base", prefix="odeBase")
+			@"http://org/eclipse/emf/ecore/util/ExtendedMetaData"(qualified="true")
+			package db;
+		''')
+		validationTestHelper.assertWarning(
+			result,
+			EmfaticPackage.Literals.ANNOTATION,
+			IssueCodes.W_URI_INSTD_OF_LBL)
 	}
 	
 	@Test
@@ -157,7 +185,10 @@ class EmfaticValidationTest {
 			    attr String value;
 			}
 		''')
-		validationTestHelper.assertError(result, EmfaticPackage.Literals.ANNOTATION, IssueCodes.E_UNKOWN_ANNOTATION_LABEL)	
+		validationTestHelper.assertError(
+			result,
+			EmfaticPackage.Literals.ANNOTATION,
+			IssueCodes.E_UNKWN_ANNT_LABEL)	
 	}
 	
 	@Test
@@ -177,7 +208,10 @@ class EmfaticValidationTest {
 			    attr String value;
 			}
 		''')
-		validationTestHelper.assertError(result, EmfaticPackage.Literals.DETAILS, IssueCodes.E_DUPLICATE_KEY_FOUND)	
+		validationTestHelper.assertError(
+			result,
+			EmfaticPackage.Literals.DETAILS,
+			IssueCodes.E_DUP_ANNT_KEY_FOUND)	
 	}
 	
 	@Test
@@ -217,7 +251,32 @@ class EmfaticValidationTest {
 			    attr String value;
 			}
 		''')
-		validationTestHelper.assertWarning(result, EmfaticPackage.Literals.DETAILS, IssueCodes.W_INVALID_KEY_USED)	
+		validationTestHelper.assertWarning(
+			result,
+			EmfaticPackage.Literals.DETAILS,
+			IssueCodes.W_INVLD_KEY_USED)	
+	}
+	
+		@Test
+	def void eclass_self_inheritance() {
+		var result = parseHelper.parse('''
+			@namespace(uri="http://www.deis-project.eu/ode/base", prefix="odeBase")
+			package odeBase;
+			
+			class KeyValueMap extends Value, KeyValueMap {
+			    attr String key;
+			    val Value[*] values;
+			}
+			
+			class Value {
+			    attr String tag;
+			    attr String value;
+			}
+		''')
+		validationTestHelper.assertError(
+			result,
+			EmfaticPackage.Literals.CLASS_DECL,
+			IssueCodes.E_EXTND_CYCLE_DTCTD)	
 	}
 	
 	@Test
@@ -237,11 +296,14 @@ class EmfaticValidationTest {
 			}
 			
 		''')
-		validationTestHelper.assertError(result, EmfaticPackage.Literals.CLASS_DECL, IssueCodes.E_DUPLICATE_CLASS_NAME)	
+		validationTestHelper.assertError(
+			result,
+			EmfaticPackage.Literals.CLASS_DECL,
+			IssueCodes.E_DUP_CLASS_NAME)	
 	}
 	
 	@Test
-	def void duplicate_feature_name() {
+	def void duplicate_attribute_name() {
 		var result = parseHelper.parse('''
 			@namespace(uri="http://www.deis-project.eu/ode/base", prefix="odeBase")
 			package odeBase;
@@ -253,9 +315,15 @@ class EmfaticValidationTest {
 			}
 			
 		''')
-		validationTestHelper.assertError(result, EmfaticPackage.Literals.FEATURE_DECL, IssueCodes.E_DUPLICATE_FEATURE_NAME)	
-		
-		result = parseHelper.parse('''
+		validationTestHelper.assertError(
+			result,
+			EmfaticPackage.Literals.FEATURE_DECL,
+			IssueCodes.E_DUP_FEAT_NAME)
+	}
+	
+	@Test
+	def void duplicate_reference_name() {
+		var result = parseHelper.parse('''
 			@namespace(uri="http://www.deis-project.eu/ode/base", prefix="odeBase")
 			package odeBase;
 			
@@ -266,7 +334,10 @@ class EmfaticValidationTest {
 			}
 			
 		''')
-		validationTestHelper.assertError(result, EmfaticPackage.Literals.FEATURE_DECL, IssueCodes.E_DUPLICATE_FEATURE_NAME)	
+		validationTestHelper.assertError(
+			result,
+			EmfaticPackage.Literals.FEATURE_DECL,
+			IssueCodes.E_DUP_FEAT_NAME)	
 	}
 	
 	@Test
@@ -283,7 +354,35 @@ class EmfaticValidationTest {
 			}
 			
 		''')
-		validationTestHelper.assertError(result, EmfaticPackage.Literals.OPERATION, IssueCodes.E_DUPLICATE_OPERATION_NAME)	
+		validationTestHelper.assertError(
+			result,
+			EmfaticPackage.Literals.OPERATION,
+			IssueCodes.E_DUP_OP_NAME)	
+	}
+	
+	@Test
+	def void duplicate_operation_parameter_name() {
+		var result = parseHelper.parse('''
+			@namespace(uri="http://www.deis-project.eu/ode/base", prefix="odeBase")
+			package odeBase;
+			
+			class Value {
+			    op boolean isSet(EString name, EString last);
+			}
+		''')
+		validationTestHelper.assertNoIssues(result)
+		result = parseHelper.parse('''
+			@namespace(uri="http://www.deis-project.eu/ode/base", prefix="odeBase")
+			package odeBase;
+			
+			class Value {
+			    op boolean isSet(EString name, EString name);
+			}
+		''')
+		validationTestHelper.assertError(
+			result,
+			EmfaticPackage.Literals.OPERATION,
+			IssueCodes.E_DUP_OP_PARAM_NAME)
 	}
 	// 
 
