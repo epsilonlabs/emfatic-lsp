@@ -45,18 +45,15 @@ class EcoreGenerator {
 		outputConfigName
 	}
 	
-	def eAnnotation(EAnnotation ea) {
-		return '''
+	def eAnnotation(EAnnotation ea) '''
 		@«this.source(ea)»(
 			«FOR me : ea.details SEPARATOR ','»
 			«surround(me.key)»=«me.value === null ? '""' : surround(me.value)»
 			«ENDFOR»
 		)
 		'''
-	}
 	
-	def ePackage(EPackage p) {
-		return '''
+	def ePackage(EPackage p) '''
 		@namespace(uri="«p.nsURI»", prefix="«p.nsPrefix»")
 		«FOR ea : p.EAnnotations»«this.eAnnotation(ea)»«ENDFOR»
 		package «p.name»;
@@ -74,7 +71,6 @@ class EcoreGenerator {
 		«this.eClass(ec)»
 		«ENDFOR»
 		'''
-	}
 	
 	def eDataType(EDataType dt) {
 		if (dt instanceof EEnum) {
@@ -86,8 +82,7 @@ class EcoreGenerator {
 		'''
 	}
 	
-	def eEnum(EEnum en) {
-		return '''
+	def eEnum(EEnum en) '''
 		enum «en.name» {
 			«FOR el : en.ELiterals»
 			«FOR ea : el.EAnnotations SEPARATOR ""»«this.eAnnotation(ea)»«ENDFOR»
@@ -100,7 +95,6 @@ class EcoreGenerator {
 		}
 		
 		'''
-	}
 	
 	def eClass(EClass ec) {
 		if (ec.instanceClassName === "java.util.Map$Entry"
@@ -114,6 +108,7 @@ class EcoreGenerator {
 			'''
 		} else {
 			return '''
+			«FOR ea : ec.EAnnotations SEPARATOR ""»«this.eAnnotation(ea)»«ENDFOR»
 			«
 				IF ec.abstract»abstract «ENDIF»«
 				IF ec.interface»interface «ELSE»class «ENDIF»«ec.name»«
@@ -136,22 +131,22 @@ class EcoreGenerator {
 		}
 	}
 	
-	def attribute(EAttribute ea) {
-		return '''
+	def attribute(EAttribute ea) '''
 		«FOR an : ea.EAnnotations»«this.eAnnotation(an)»«ENDFOR»
-		«modifier(ea)»attr «ea.EType.name»«multiplicity(ea)» «escape(ea.name)»«defaultValue(ea)»;'''
-	}
+		«modifier(ea)»attr «ea.EType.name»«multiplicity(ea)» «escape(ea.name)»«defaultValue(ea)»;
+		'''
 	
-	def reference(EReference er) {
-		return '''
+	def reference(EReference er) '''
 		«FOR an : er.EAnnotations»«this.eAnnotation(an)»«ENDFOR»
 		«modifier(er)»«IF er.containment»val«ELSE»ref«ENDIF» «er.EType.name»«multiplicity(er)»«
-			IF er.EOpposite !== null»#«er.EOpposite.name»«ENDIF» «escape(er.name)»;'''
-	}
+			IF er.EOpposite !== null»#«er.EOpposite.name»«ENDIF» «escape(er.name)»;
+		'''
 	
-	def operation(EOperation eo) {
-		return '''«modifier(eo)»op «IF eo.EType === null»void«ELSE»«eo.EType.name»«ENDIF» «eo.name»(«parameters(eo)»);'''
-	}
+	def operation(EOperation eo) '''
+		«FOR ea : eo.EAnnotations SEPARATOR ""»«this.eAnnotation(ea)»«ENDFOR»
+		«modifier(eo)»op «IF eo.EType === null»void«ELSE»«eo.EType.name»«ENDIF» «eo.name»(«parameters(eo)»);
+		'''
+	
 	
 	@Inject
 	AnnotationMap annotations;
