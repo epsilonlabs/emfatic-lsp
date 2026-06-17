@@ -1,32 +1,27 @@
 package org.eclipse.emf.emfatic.xtext.generator
 
 import com.google.inject.Inject
+import java.util.ArrayList
+import java.util.List
+import java.util.Set
 import org.eclipse.emf.ecore.EAnnotation
+import org.eclipse.emf.ecore.EAttribute
 import org.eclipse.emf.ecore.EClass
 import org.eclipse.emf.ecore.EDataType
 import org.eclipse.emf.ecore.EEnum
-import org.eclipse.emf.ecore.EPackage
-import org.eclipse.emf.ecore.resource.Resource
-import org.eclipse.emf.emfatic.xtext.annotations.AnnotationMap
-import org.eclipse.xtext.generator.IFileSystemAccess2
-import org.eclipse.emf.ecore.ETypeParameter
 import org.eclipse.emf.ecore.EGenericType
-import org.eclipse.emf.ecore.EAttribute
-import java.util.List
-import java.util.ArrayList
-import org.eclipse.xtext.Grammar
-import org.eclipse.xtext.GrammarUtil
-import org.eclipse.xtext.generator.grammarAccess.*
-import org.eclipse.xtext.xtext.generator.grammarAccess.GrammarAccessExtensions
-import org.eclipse.emf.emfatic.xtext.services.EmfaticGrammarAccess
-import java.util.Set
-import org.eclipse.emf.ecore.EStructuralFeature
-import org.eclipse.emf.ecore.EReference
 import org.eclipse.emf.ecore.EOperation
+import org.eclipse.emf.ecore.EPackage
+import org.eclipse.emf.ecore.EReference
+import org.eclipse.emf.ecore.EStructuralFeature
+import org.eclipse.emf.ecore.ETypeParameter
 import org.eclipse.emf.ecore.ETypedElement
-import org.eclipse.emf.ecore.impl.ETypedElementImpl
-import java.lang.annotation.ElementType
 import org.eclipse.emf.ecore.EcorePackage
+import org.eclipse.emf.ecore.resource.Resource
+import org.eclipse.emf.emfatic.xtext.services.EmfaticGrammarAccess
+import org.eclipse.xtext.GrammarUtil
+import org.eclipse.xtext.generator.IFileSystemAccess2
+import org.eclipse.emf.emfatic.xtext.annotations.AnnotationMap
 
 /**
  * Generate Emfatic files form Ecore metamodels
@@ -147,10 +142,8 @@ class EcoreGenerator {
 		«modifier(eo)»op «IF eo.EType === null»void«ELSE»«eo.EType.name»«ENDIF» «eo.name»(«parameters(eo)»);
 		'''
 	
-	
 	@Inject
 	AnnotationMap annotations;
-	
 	
 	@Inject
 	EmfaticGrammarAccess grammarAccess;

@@ -134,7 +134,7 @@ ClassifierDecl:
  * and using a multi-value assignment instead
  */
 SubPackageDecl:
-	'package' name=ID LCURLY declarations+=TopLevelDecl* RCURLY
+	ns=PackageNs 'package' name=ID LCURLY declarations+=TopLevelDecl* RCURLY
 ;
 
 /*
