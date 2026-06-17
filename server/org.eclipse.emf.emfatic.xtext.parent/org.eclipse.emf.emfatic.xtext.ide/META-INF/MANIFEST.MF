@@ -7,15 +7,15 @@ Bundle-Version: 1.0.0.qualifier
 Bundle-SymbolicName: org.eclipse.emf.emfatic.xtext.ide; singleton:=true
 Bundle-ActivationPolicy: lazy
 Require-Bundle: org.eclipse.emf.emfatic.xtext,
- org.eclipse.xtext.ide,
- org.eclipse.xtext.xbase.ide,
+ org.eclipse.xtext.ide;bundle-version="2.34.0",
+ org.eclipse.xtext.xbase.ide;bundle-version="2.34.0",
  org.antlr.runtime;bundle-version="[3.2.0,3.2.1)",
  org.aopalliance;bundle-version="1.0.0",
  io.github.classgraph;bundle-version="4.8.138",
- org.eclipse.lsp4j;bundle-version="0.15.0",
- org.eclipse.lsp4j.jsonrpc;bundle-version="0.15.0",
+ org.eclipse.lsp4j;bundle-version="0.19.0",
+ org.eclipse.lsp4j.jsonrpc;bundle-version="0.19.0",
  com.google.gson;bundle-version="2.9.1"
-Bundle-RequiredExecutionEnvironment: JavaSE-17
+Bundle-RequiredExecutionEnvironment: JavaSE-21
 Export-Package: org.eclipse.emf.emfatic.xtext.ide.contentassist,
  org.eclipse.emf.emfatic.xtext.ide.contentassist.antlr,
  org.eclipse.emf.emfatic.xtext.ide.contentassist.antlr.internal
