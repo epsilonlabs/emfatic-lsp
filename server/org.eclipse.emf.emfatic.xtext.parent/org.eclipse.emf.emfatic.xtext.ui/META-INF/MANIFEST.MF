@@ -18,7 +18,7 @@ Require-Bundle: org.eclipse.emf.emfatic.xtext,
  org.eclipse.xtext.builder,
  org.eclipse.ui.forms;bundle-version="3.11.400"
 Import-Package: org.apache.log4j
-Bundle-RequiredExecutionEnvironment: JavaSE-17
+Bundle-RequiredExecutionEnvironment: JavaSE-21
 Export-Package: org.eclipse.emf.emfatic.xtext.ui.internal,
  org.eclipse.emf.emfatic.xtext.ui.contentassist,
  org.eclipse.emf.emfatic.xtext.ui.quickfix

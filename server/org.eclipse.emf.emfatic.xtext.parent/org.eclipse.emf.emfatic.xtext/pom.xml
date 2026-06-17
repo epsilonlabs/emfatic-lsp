@@ -43,6 +43,26 @@
 					</dependency>
 				</dependencies>
 			</plugin>
+			<!-- Add src-gen -->
+			<plugin>
+	            <groupId>org.codehaus.mojo</groupId>
+	            <artifactId>build-helper-maven-plugin</artifactId>
+	            <version>3.6.0</version>
+	            <executions>
+	                <execution>
+	                    <id>add-source</id>
+	                    <phase>generate-sources</phase>
+	                    <goals>
+	                        <goal>add-source</goal>
+	                    </goals>
+	                    <configuration>
+	                        <sources>
+	                            <source>${project.basedir}/src-gen</source>
+	                        </sources>
+	                    </configuration>
+	                </execution>
+	            </executions>
+	        </plugin>
 			<plugin>
 				<groupId>org.eclipse.xtend</groupId>
 				<artifactId>xtend-maven-plugin</artifactId>

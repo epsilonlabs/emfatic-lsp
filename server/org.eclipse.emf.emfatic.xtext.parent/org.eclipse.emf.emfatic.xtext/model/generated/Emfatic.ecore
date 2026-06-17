@@ -51,6 +51,8 @@
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="ClassifierDecl" eSuperTypes="#//Declaration"/>
   <eClassifiers xsi:type="ecore:EClass" name="SubPackageDecl" eSuperTypes="#//Declaration">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="ns" eType="#//PackageNs"
+        containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="declarations" upperBound="-1"
         eType="#//TopLevelDecl" containment="true"/>
   </eClassifiers>

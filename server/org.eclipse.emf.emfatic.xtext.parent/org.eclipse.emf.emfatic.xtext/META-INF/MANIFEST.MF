@@ -2,29 +2,33 @@ Manifest-Version: 1.0
 Automatic-Module-Name: org.eclipse.emf.emfatic.xtext
 Bundle-ManifestVersion: 2
 Bundle-Name: org.eclipse.emf.emfatic.xtext
-Bundle-Vendor: My Company
+Bundle-Vendor: Epsilon Labs
 Bundle-Version: 1.0.0.qualifier
 Bundle-SymbolicName: org.eclipse.emf.emfatic.xtext; singleton:=true
 Bundle-ActivationPolicy: lazy
 Require-Bundle: org.antlr.runtime;bundle-version="[3.2.0,3.2.1)",
  org.eclipse.emf.common,
  org.eclipse.emf.ecore,
- org.eclipse.equinox.common;bundle-version="3.5.0",
- org.eclipse.xtext;bundle-version="2.28.0",
- org.eclipse.xtext.xbase;bundle-version="2.28.0",
- org.eclipse.xtext.xbase.lib;bundle-version="2.14.0",
+ org.eclipse.equinox.common;bundle-version="3.19.100",
+ org.eclipse.xtext;bundle-version="2.34.0",
+ org.eclipse.xtext.xbase;bundle-version="2.34.0",
+ org.eclipse.xtext.xbase.lib;bundle-version="2.34.0",
  org.eclipse.xtext.util;bundle-version="2.28.0",
- org.eclipse.equinox.registry,
- org.eclipse.core.runtime;bundle-version="3.26.0",
- org.eclipse.jdt.core;bundle-version="3.31.0"
-Bundle-RequiredExecutionEnvironment: JavaSE-17
+ org.eclipse.equinox.registry;bundle-version="3.12.100",
+ org.eclipse.core.runtime;bundle-version="3.31.100",
+ org.eclipse.jdt.core;bundle-version="3.39.0"
+Bundle-RequiredExecutionEnvironment: JavaSE-21
 Export-Package: org.eclipse.emf.emfatic.xtext,
  org.eclipse.emf.emfatic.xtext.annotations,
+ org.eclipse.emf.emfatic.xtext.common,
+ org.eclipse.emf.emfatic.xtext.conversion,
  org.eclipse.emf.emfatic.xtext.ecore,
  org.eclipse.emf.emfatic.xtext.emfatic,
  org.eclipse.emf.emfatic.xtext.emfatic.impl,
  org.eclipse.emf.emfatic.xtext.emfatic.util,
  org.eclipse.emf.emfatic.xtext.generator,
+ org.eclipse.emf.emfatic.xtext.linking,
+ org.eclipse.emf.emfatic.xtext.naming,
  org.eclipse.emf.emfatic.xtext.parser.antlr,
  org.eclipse.emf.emfatic.xtext.parser.antlr.internal,
  org.eclipse.emf.emfatic.xtext.scoping,
