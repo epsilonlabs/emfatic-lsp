@@ -14,14 +14,25 @@ import org.eclipse.emf.emfatic.xtext.emfatic.CompUnit
 
 @ExtendWith(InjectionExtension)
 @InjectWith(EmfaticInjectorProvider)
-class EmfaticParsingTest {
+class ParsingTest {
 	@Inject
 	ParseHelper<CompUnit> parseHelper
 	
 	@Test
-	def void mainPackage() {
+	def void namespace_is_required() {
 		val result = parseHelper.parse('''
 			package test;
+		''')
+		Assertions.assertNotNull(result)
+		val errors = result.eResource.errors
+		Assertions.assertTrue(errors.size > 0, '''Expected missing namespace error''')
+	}
+	
+	@Test
+	def void only_package() {
+		val result = parseHelper.parse('''
+			@namespace(uri="http://www.example.com/emfatic", prefix="main")
+			package ecore;
 		''')
 		Assertions.assertNotNull(result)
 		val errors = result.eResource.errors
@@ -29,9 +40,34 @@ class EmfaticParsingTest {
 	}
 	
 	@Test
-	def void mainPackageWithAnnotation() {
+	def void package_with_annotation() {
 		val result = parseHelper.parse('''
-			@namespace(uri="http://www.eclipse.org/emf/2002/Ecore", prefix="ecore")
+			@namespace(uri="http://www.example.com/emfatic", prefix="main")
+			@"http://source/uri"("key1"="value1", "key2"="value2")
+			package ecore;
+		''')
+		Assertions.assertNotNull(result)
+		val errors = result.eResource.errors
+		Assertions.assertTrue(errors.isEmpty, '''Unexpected errors: «errors.join(", ")»''')
+	}
+	
+	@Test
+	def void package_with_simple_annotation() {
+		val result = parseHelper.parse('''
+			@namespace(uri="http://www.example.com/emfatic", prefix="main")
+			@simpleAttr
+			package ecore;
+		''')
+		Assertions.assertNotNull(result)
+		val errors = result.eResource.errors
+		Assertions.assertTrue(errors.isEmpty, '''Unexpected errors: «errors.join(", ")»''')
+	}
+	
+	@Test
+	def void package_with_label_annotation() {
+		val result = parseHelper.parse('''
+			@namespace(uri="http://www.example.com/emfatic", prefix="main")
+			@genmodel(documentation="model documentation")
 			package ecore;
 		''')
 		Assertions.assertNotNull(result)
@@ -42,9 +78,10 @@ class EmfaticParsingTest {
 	@Test
 	def void imports() {
 		val result = parseHelper.parse('''
+			@namespace(uri="http://www.example.com/emfatic", prefix="main")
 			package main;
 			import "platform:/resource/proj1/foo.ecore";
-			import "http://www.eclipse.org/emf/2002/Ecore";
+			import "http://www.example.com/emfatic";
 		''')
 		Assertions.assertNotNull(result)
 		val errors = result.eResource.errors
@@ -54,13 +91,18 @@ class EmfaticParsingTest {
 	@Test
 	def void subPackage() {
 		val result = parseHelper.parse('''
+			@namespace(uri="http://www.example.com/emfatic", prefix="main")
 			package main;
 			
+			@namespace(uri="http://www.example.com/emfatic/sub1", prefix="sub1")
 			package sub1 {
 			}
 			
+			@namespace(uri="http://www.example.com/emfatic/sub1", prefix="sub2")
 			package sub2 {
+			  @namespace(uri="http://www.example.com/emfatic/sub1", prefix="sub2_1")
 			  package sub2_1 { }
+			  @namespace(uri="http://www.example.com/emfatic/sub1", prefix="sub2_2")
 			  package sub2_2 { }
 			}
 		''')
@@ -72,6 +114,7 @@ class EmfaticParsingTest {
 	@Test
 	def void classKind() {
 		val result = parseHelper.parse('''
+			@namespace(uri="http://www.example.com/emfatic", prefix="main")
 			package main;
 			
 			class C1 { } // isInterface=false, isAbstract=false
@@ -87,6 +130,7 @@ class EmfaticParsingTest {
 	@Test
 	def void classInheritance() {
 		val result = parseHelper.parse('''
+			@namespace(uri="http://www.example.com/emfatic", prefix="main")
 			package main;
 			
 			class A { }
@@ -102,6 +146,7 @@ class EmfaticParsingTest {
 	@Test
 	def void classInstanceClassName() {
 		val result = parseHelper.parse('''
+			@namespace(uri="http://www.example.com/emfatic", prefix="main")
 			package main;
 			
 			class EStringToStringMapEntry : java.util.Map$Entry {
@@ -116,6 +161,7 @@ class EmfaticParsingTest {
 	@Test
 	def void dataTypes() {
 		val result = parseHelper.parse('''
+			@namespace(uri="http://www.example.com/emfatic", prefix="main")
 			package main;
 			
 			datatype EInt : int;
@@ -133,6 +179,7 @@ class EmfaticParsingTest {
 	@Test
 	def void enummeratedTypes() {
 		val result = parseHelper.parse('''
+			@namespace(uri="http://www.example.com/emfatic", prefix="main")
 			package main;
 			
 			enum E {
@@ -149,6 +196,7 @@ class EmfaticParsingTest {
 	@Test
 	def void enummeratedTypesReasonable() {
 		val result = parseHelper.parse('''
+			@namespace(uri="http://www.example.com/emfatic", prefix="test")
 			package main;
 			
 			enum E {
@@ -166,6 +214,7 @@ class EmfaticParsingTest {
 	@Test
 	def void mapEntry() {
 		val result = parseHelper.parse('''
+			@namespace(uri="http://www.example.com/emfatic", prefix="test")
 			package main;
 			
 			mapentry EStringToStringMapEntry : String -> String;
@@ -176,8 +225,9 @@ class EmfaticParsingTest {
 	}
 	
 	@Test
-	def void typeExpressions() {
+	def void dataTypeAsType() {
 		val result = parseHelper.parse('''
+			@namespace(uri="http://www.example.com/emfatic", prefix="test")
 			package test;
 			
 			datatype D1 : int;
@@ -201,6 +251,7 @@ class EmfaticParsingTest {
 	@Test
 	def void multiplicityExpressions() {
 		val result = parseHelper.parse('''
+			@namespace(uri="http://www.example.com/emfatic", prefix="test")
 			package test;
 			
 			class C {
@@ -218,6 +269,7 @@ class EmfaticParsingTest {
 	@Test
 	def void escapeKeywords() {
 		val result = parseHelper.parse('''
+			@namespace(uri="http://www.example.com/emfatic", prefix="test")
 			package test;
 			
 			class EClass extends EClassifier {
@@ -235,6 +287,7 @@ class EmfaticParsingTest {
 	@Test
 	def void features() {
 		val result = parseHelper.parse('''
+			@namespace(uri="http://www.example.com/emfatic", prefix="test")
 			package test;
 			
 			class EPackage extends ENamedElement {
@@ -255,6 +308,7 @@ class EmfaticParsingTest {
 	@Test
 	def void attributes() {
 		val result = parseHelper.parse('''
+			@namespace(uri="http://www.example.com/emfatic", prefix="test")
 			package test;
 			
 			class C {
@@ -271,6 +325,7 @@ class EmfaticParsingTest {
 	@Test
 	def void references() {
 		val result = parseHelper.parse('''
+			@namespace(uri="http://www.example.com/emfatic", prefix="test")
 			package test;
 			
 			class EPackage extends ENamedElement {
@@ -287,6 +342,7 @@ class EmfaticParsingTest {
 	@Test
 	def void operations() {
 		val result = parseHelper.parse('''
+			@namespace(uri="http://www.example.com/emfatic", prefix="test")
 			package test;
 			
 			class X {
@@ -300,23 +356,12 @@ class EmfaticParsingTest {
 		val errors = result.eResource.errors
 		Assertions.assertTrue(errors.isEmpty, '''Unexpected errors: «errors.join(", ")»''')
 	}
-	
-	@Test
-	def void annotations() {
-		val result = parseHelper.parse('''
-			@"http://source/uri"("key1"="value1", "key2"="value2")
-			@sourceLabel(key.a="value1", key.b="value2")
-			@simpleAttr
-			package test;
-		''')
-		Assertions.assertNotNull(result)
-		val errors = result.eResource.errors
-		Assertions.assertTrue(errors.isEmpty, '''Unexpected errors: «errors.join(", ")»''')
-	}
+
 	
 	@Test
 	def void annotationsLabels() {
 		val result = parseHelper.parse('''
+			@namespace(uri="http://www.example.com/emfatic", prefix="main")
 			@EmfaticAnnotationMap(myLabel="http://foo/bar")
 			@genmodel(documentation="model documentation")
 			package test;
@@ -330,4 +375,22 @@ class EmfaticParsingTest {
 		val errors = result.eResource.errors
 		Assertions.assertTrue(errors.isEmpty, '''Unexpected errors: «errors.join(", ")»''')
 	}
+	
+	@Test
+	def void simpleTypeParameter() {
+		val result = parseHelper.parse('''
+			@namespace(uri="http://test", prefix="test")
+			package test;
+			
+			class Container<T> {
+				attr T value;
+			}
+		''')
+		Assertions.assertNotNull(result)
+		val errors = result.eResource.errors
+		Assertions.assertTrue(errors.isEmpty, '''Unexpected errors: «errors.join(", ")»''')
+	}
+	
+	
+	
 }

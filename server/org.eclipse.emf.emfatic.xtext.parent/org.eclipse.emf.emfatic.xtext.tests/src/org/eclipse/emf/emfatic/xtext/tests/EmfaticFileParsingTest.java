@@ -25,7 +25,7 @@ import com.google.inject.Provider;
 
 @ExtendWith(InjectionExtension.class)
 @InjectWith(EmfaticInjectorProvider.class)
-class EmfaticEcoreTest {
+class EmfaticFileParsingTest {
 	
 	@Inject
 	private Provider<XtextResourceSet> resourceSetProvider;

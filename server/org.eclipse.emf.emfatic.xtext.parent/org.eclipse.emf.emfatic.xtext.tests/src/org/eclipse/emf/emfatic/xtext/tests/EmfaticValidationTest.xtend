@@ -384,6 +384,24 @@ class EmfaticValidationTest {
 			EmfaticPackage.Literals.OPERATION,
 			IssueCodes.E_DUP_OP_PARAM_NAME)
 	}
-	// 
+	
+	@Test
+	def void unbound_type_parameter() {
+		var result = parseHelper.parse('''
+			@namespace(uri="http://www.deis-project.eu/ode/base", prefix="odeBase")
+			package odeBase;
+			
+			class Value<T,E> {
+			    op T<?> test();
+			}
+			
+		'''
+		)
+		validationTestHelper.assertNoIssues(result)
+	}
+	
+	
+	
+	//
 
 }
