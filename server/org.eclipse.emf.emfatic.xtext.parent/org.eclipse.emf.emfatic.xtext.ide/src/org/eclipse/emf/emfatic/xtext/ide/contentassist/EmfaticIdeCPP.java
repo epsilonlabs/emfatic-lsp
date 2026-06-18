@@ -11,7 +11,6 @@ package org.eclipse.emf.emfatic.xtext.ide.contentassist;
 
 import java.util.Collection;
 
-import org.apache.log4j.Logger;
 import org.eclipse.emf.emfatic.xtext.annotations.AnnotationMap;
 import org.eclipse.xtext.AbstractElement;
 import org.eclipse.xtext.AbstractRule;
@@ -26,6 +25,8 @@ import org.eclipse.xtext.ide.editor.contentassist.IIdeContentProposalAcceptor;
 import org.eclipse.xtext.ide.editor.contentassist.IdeContentProposalProvider;
 import org.eclipse.xtext.resource.IEObjectDescription;
 import org.eclipse.xtext.util.TextRegion;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
@@ -161,7 +162,7 @@ public class EmfaticIdeCPP extends IdeContentProposalProvider {
 	}
 
 	
-	private static final Logger LOG = Logger.getLogger(EmfaticIdeCPP.class);
+	private static final Logger LOG = LoggerFactory.getLogger(EmfaticIdeCPP.class);
 	
 	
 	@Inject

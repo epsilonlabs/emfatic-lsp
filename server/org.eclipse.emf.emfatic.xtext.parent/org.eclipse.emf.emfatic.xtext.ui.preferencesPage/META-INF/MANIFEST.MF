@@ -1,0 +1,11 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: PreferencesPage
+Bundle-SymbolicName: org.eclipse.emf.emfatic.xtext.ui.preferencesPage;singleton:=true
+Bundle-Version: 1.0.0.qualifier
+Require-Bundle: org.eclipse.ui;bundle-version="3.201.100",
+ org.eclipse.core.runtime;bundle-version="3.26.0"
+Automatic-Module-Name: org.eclipse.emf.emfatic.xtext.ui.preferencesPage
+Bundle-ActivationPolicy: lazy
+Bundle-Activator: org.eclipse.emf.emfatic.xtext.ui.preferencespage.Activator
+Bundle-RequiredExecutionEnvironment: JavaSE-17

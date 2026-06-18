@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature id="org.eclipse.emf.emfatic.xtext.feature"
+	label="Emfatic Feature "
+	version="1.0.0.qualifier">
+	<plugin
+			id="org.eclipse.emf.emfatic.xtext"
+			download-size="0"
+			install-size="0"
+			version="0.0.0"
+			unpack="false"/>
+	<plugin
+			id="org.eclipse.emf.emfatic.xtext.logging"
+			download-size="0"
+			install-size="0"
+			version="0.0.0"
+			unpack="false"/>
+	<plugin
+			id="org.eclipse.emf.emfatic.xtext.ide"
+			download-size="0"
+			install-size="0"
+			version="0.0.0"
+			unpack="false"/>
+	<plugin
+			id="org.eclipse.emf.emfatic.xtext.ui"
+			download-size="0"
+			install-size="0"
+			version="0.0.0"
+			unpack="false"/>
+	<plugin
+			id="org.eclipse.emf.emfatic.xtext.ui.nl1"
+			download-size="0"
+			install-size="0"
+			version="0.0.0"
+			unpack="false"/>
+	<plugin
+			id="org.eclipse.emf.emfatic.xtext.ui.preferencesPage"
+			download-size="0"
+			install-size="0"
+			version="0.0.0"
+			unpack="false"/>
+</feature>

@@ -13,7 +13,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 
-import org.apache.log4j.Logger;
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.emfatic.xtext.annotations.AnnotationMap;
@@ -32,6 +31,8 @@ import org.eclipse.xtext.ide.editor.contentassist.ContentAssistContext;
 import org.eclipse.xtext.ide.editor.contentassist.ContentAssistEntry;
 import org.eclipse.xtext.ide.editor.contentassist.IdeContentProposalCreator;
 import org.eclipse.xtext.util.TextRegion;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ContentProposals extends EmfaticSwitch<Collection<ContentAssistEntry>> {
 	
@@ -107,7 +108,7 @@ public class ContentProposals extends EmfaticSwitch<Collection<ContentAssistEntr
 		return Collections.emptyList();
 	}
 
-	private static final Logger LOG = Logger.getLogger(ContentProposals.class);
+	private static final Logger LOG = LoggerFactory.getLogger(ContentProposals.class);
 
 	// TODO Decide if this should be changeable so we can reuse the switch
 	private final AbstractRule rule;

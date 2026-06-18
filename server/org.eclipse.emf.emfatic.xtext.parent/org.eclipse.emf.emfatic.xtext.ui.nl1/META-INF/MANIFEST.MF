@@ -1,0 +1,7 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: org.eclipse.emf.emfatic.xtext.ui.nl1 Fragment
+Bundle-SymbolicName: org.eclipse.emf.emfatic.xtext.ui.nl1
+Bundle-Version: 1.0.0
+Fragment-Host: org.eclipse.emf.emfatic.xtext.ui;bundle-version="[1.0.0,1.1.0)"
+Automatic-Module-Name: org.eclipse.emf.emfatic.xtext.ui.nl1

@@ -39,7 +39,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-dependency-plugin</artifactId>
-				<version>3.3.0</version>
+				<version>3.5.0</version>
 				<executions>
 					<execution>
 						<id>copy-dependencies</id>
@@ -55,10 +55,8 @@
 							<overWriteIfNewer>true</overWriteIfNewer>
 							<excludeTransitive>true</excludeTransitive>
 							<excludeArtifactIds>
-								com.ibm.icu,
-								org.apache.ant,
-								org.apache.commons.lang,
-								org.apache.commons.logging,
+								icu4j,
+								commons-logging,
 								org.eclipse.core.commands,
 								org.eclipse.core.contenttype,
 								org.eclipse.core.expressions,
@@ -109,7 +107,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-shade-plugin</artifactId>
-				<version>3.3.0</version>
+				<version>3.4.1</version>
 				<configuration>
 					<transformers>
 						<transformer
@@ -127,20 +125,20 @@
 					<artifactSet>
 						<excludes><!-- avoid duplicate inclusion due to addjars plugin -->
 							<exclude>*:org.eclipse.emf.emfatic.xtext.ide-org.eclipse.lsp4j*</exclude>
-							<exclude>*:org.eclipse.emf.emfatic.xtext.ide-org.eclipse.xtext.xbase.lib*</exclude>
-							<exclude>*:org.eclipse.emf.emfatic.xtext.ide-org.eclipse.xtend.lib*</exclude>
 							<exclude>*:org.eclipse.emf.emfatic.xtext.ide-com.google.guava*</exclude>
 							<exclude>*:org.eclipse.emf.emfatic.xtext.ide-asm*</exclude>
 							<exclude>*:org.eclipse.emf.emfatic.xtext.ide-log4j*</exclude>
 							<exclude>*:org.eclipse.emf.emfatic.xtext.ide-reload4j*</exclude>
 							<exclude>*:org.eclipse.emf.emfatic.xtext.ide-org.objectweb.asm*</exclude>
 							<exclude>*:org.eclipse.emf.emfatic.xtext.ide-org.apache.log4j*</exclude>
+							<exclude>*:*commons-logging*</exclude>
 						</excludes>
 					</artifactSet>
 					<filters>
 						<filter>
 							<artifact>*:*</artifact>
 							<excludes>
+								<exclude>**/*.java</exclude>
 								<exclude>META-INF/INDEX.LIST</exclude>
 								<exclude>META-INF/*.SF</exclude>
 								<exclude>META-INF/*.DSA</exclude>

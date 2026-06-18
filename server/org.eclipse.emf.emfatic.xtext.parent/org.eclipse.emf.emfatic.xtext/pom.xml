@@ -17,6 +17,7 @@
 				<version>3.0.0</version>
 				<executions>
 					<execution>
+						<?m2e ignore?>
 						<id>mwe2Launcher</id>
 						<phase>generate-sources</phase>
 						<goals>
@@ -27,7 +28,7 @@
 				<configuration>
 					<mainClass>org.eclipse.emf.mwe2.launch.runtime.Mwe2Launcher</mainClass>
 					<arguments>
-						<argument>/${project.basedir}/src/org/eclipse/emf/emfatic/xtext/GenerateEmfatic.mwe2</argument>
+						<argument>/${project.basedir}/src/org/eclipse/emf/emfatic/GenerateEmfatic.mwe2</argument>
 						<argument>-p</argument>
 						<argument>rootPath=/${project.basedir}/..</argument>
 					</arguments>
@@ -43,31 +44,33 @@
 					</dependency>
 				</dependencies>
 			</plugin>
-			<!-- Add src-gen -->
+			<!-- Add src-gen folder to compile source roots -->
 			<plugin>
-	            <groupId>org.codehaus.mojo</groupId>
-	            <artifactId>build-helper-maven-plugin</artifactId>
-	            <version>3.6.0</version>
-	            <executions>
-	                <execution>
-	                    <id>add-source</id>
-	                    <phase>generate-sources</phase>
-	                    <goals>
-	                        <goal>add-source</goal>
-	                    </goals>
-	                    <configuration>
-	                        <sources>
-	                            <source>${project.basedir}/src-gen</source>
-	                        </sources>
-	                    </configuration>
-	                </execution>
-	            </executions>
-	        </plugin>
+		      <groupId>io.github.lengors</groupId>
+		      <artifactId>init-sources-maven-plugin</artifactId>
+		      <version>1.0.0</version> <!-- replace with the latest version -->
+		      <executions>
+		          <execution>
+		            <id>default-initSources</id>
+		            <goals>
+		              <goal>init-sources</goal>
+		            </goals>
+		            <phase>initialize</phase> <!-- Optional -->
+		        </execution>
+		      </executions>
+		      <configuration>
+		        <compileSourceRoots>
+		          <compileSourceRoot>${basedir}/src-gen</compileSourceRoot>
+		        </compileSourceRoots>
+		        <!-- <skip>BOTH</skip>  Skip both compile and test source root modification -->
+		      </configuration>
+		    </plugin>
+			<!-- -->
 			<plugin>
 				<groupId>org.eclipse.xtend</groupId>
 				<artifactId>xtend-maven-plugin</artifactId>
 			</plugin>
-	
+			
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-clean-plugin</artifactId>
@@ -104,46 +107,18 @@
 							</includes>
 						</fileset>
 						<fileset>
+							<directory>${basedir}/../org.eclipse.emf.emfatic.xtext.web/src-gen/</directory>
+							<includes>
+								<include>**/*</include>
+							</includes>
+						</fileset>
+						<fileset>
 							<directory>${basedir}/model/generated/</directory>
 						</fileset>
 					</filesets>
 				</configuration>
 			</plugin>
 		</plugins>
-		<pluginManagement>
-			<plugins>
-				<plugin>
-					<groupId>org.eclipse.m2e</groupId>
-					<artifactId>lifecycle-mapping</artifactId>
-					<version>1.0.0</version>
-					<configuration>
-						<lifecycleMappingMetadata>
-							<pluginExecutions>
-								<pluginExecution>
-									<pluginExecutionFilter>
-										<groupId>
-											org.codehaus.mojo
-										</groupId>
-										<artifactId>
-											exec-maven-plugin
-										</artifactId>
-										<versionRange>
-											[1.2.1,)
-										</versionRange>
-										<goals>
-											<goal>java</goal>
-										</goals>
-									</pluginExecutionFilter>
-									<action>
-										<ignore></ignore>
-									</action>
-								</pluginExecution>
-							</pluginExecutions>
-						</lifecycleMappingMetadata>
-					</configuration>
-				</plugin>
-			</plugins>
-		</pluginManagement>
 	</build>
 
 </project>

@@ -1,0 +1,14 @@
+@namespace(uri="http://www.example.com/emfatic", prefix="main")
+package main;
+
+@namespace(uri="http://www.example.com/emfatic/sub1", prefix="sub1")
+package sub1 {
+}
+
+@namespace(uri="http://www.example.com/emfatic/sub1", prefix="sub2")
+package sub2 {
+  @namespace(uri="http://www.example.com/emfatic/sub1", prefix="sub2_1")
+  package sub2_1 { }
+  @namespace(uri="http://www.example.com/emfatic/sub1", prefix="sub2_2")
+  package sub2_2 { }
+}

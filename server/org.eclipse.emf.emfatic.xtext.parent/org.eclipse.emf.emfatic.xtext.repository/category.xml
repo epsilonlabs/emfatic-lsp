@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<site>
+	<feature id="org.eclipse.emf.emfatic.xtext.feature" version="0.0.0">
+		<category name="emfatic"/>
+	</feature>
+	<feature id="org.eclipse.emf.emfatic.xtext.feature.source" version="0.0.0">
+		<category name="emfatic.source"/>
+	</feature>
+	<category-def name="emfatic" label="Emfatic"/>
+	<category-def name="emfatic.source" label="Emfatic (Sources)"/>
+</site>

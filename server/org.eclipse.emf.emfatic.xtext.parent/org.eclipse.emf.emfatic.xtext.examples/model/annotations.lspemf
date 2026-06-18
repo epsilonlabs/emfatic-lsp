@@ -1,3 +1,4 @@
+@namespace(uri="http://test", prefix="test")
 @"http://source/uri"("key1"="value1", "key2"="value2")
 package test;
 
@@ -12,6 +13,12 @@ class C {
     int b
    );
    op String getFullName(String ~id);
+}
+
+class Container<T> { }
+			
+class MyClass {
+	attr Container<String> field;
 }
 
 enum E { 
